@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.25)
 project(GalaxySlicer)
 
 include("version.inc")
@@ -151,7 +151,7 @@ message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
 enable_testing ()
 
-# Enable C++17 language standard.
+# Enable C++23 language standard.
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

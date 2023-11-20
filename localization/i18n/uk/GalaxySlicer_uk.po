@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-01 19:20+0200\n"
+"POT-Creation-Date: 2023-11-19 13:08+0100\n"
 "PO-Revision-Date: 2023-08-10 20:25-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -102,6 +102,9 @@ msgstr "Немає автоматичної підтримки"
 msgid "Support Generated"
 msgstr "Генерація підтримки"
 
+msgid "Gizmo-Place on Face"
+msgstr ""
+
 msgid "Lay on face"
 msgstr "Покласти в обличчя"
 
@@ -164,6 +167,12 @@ msgstr "Трикутник"
 msgid "Height Range"
 msgstr "Переключити каркас"
 
+msgid "Vertical"
+msgstr "Vertical"
+
+msgid "Horizontal"
+msgstr "Horizontal"
+
 msgid "Remove painted color"
 msgstr "Видалити зафарбований колір"
 
@@ -174,8 +183,14 @@ msgstr "Забарвлений за допомогою: Філамент %1%"
 msgid "Move"
 msgstr "Перемістити"
 
+msgid "Gizmo-Move"
+msgstr ""
+
 msgid "Rotate"
 msgstr "Повернути"
+
+msgid "Gizmo-Rotate"
+msgstr ""
 
 msgid "Optimize orientation"
 msgstr "Оптимізувати орієнтацію"
@@ -186,11 +201,11 @@ msgstr "Готово"
 msgid "Scale"
 msgstr "Масштаб"
 
+msgid "Gizmo-Scale"
+msgstr ""
+
 msgid "Error: Please close all toolbar menus first"
 msgstr "Помилка: будь ласка, спочатку закрийте все меню панелі інструментів"
-
-msgid "Tool-Lay on Face"
-msgstr "Інструмент-укладання на обличчя"
 
 msgid "in"
 msgstr "in"
@@ -484,26 +499,20 @@ msgstr "Малювання шва"
 msgid "Remove selection"
 msgstr "Видалити виділення"
 
-msgid "Shift + Mouse move up or dowm"
-msgstr "Shift + переміщення миші вгору або вниз"
+msgid "Entering Seam painting"
+msgstr ""
 
-msgid "Rotate text"
-msgstr "Повернути текст"
+msgid "Leaving Seam painting"
+msgstr ""
 
-msgid "Text shape"
-msgstr "Форма тексту"
+msgid "Paint-on seam editing"
+msgstr ""
 
 msgid "Font"
 msgstr "Шрифт"
 
 msgid "Thickness"
 msgstr "Товщина"
-
-msgid "Input text"
-msgstr "Введення тексту"
-
-msgid "Embeded"
-msgstr "Вбудовано"
 
 msgid "Text Gap"
 msgstr "Пробіл у тексті"
@@ -516,11 +525,23 @@ msgid ""
 "depth"
 msgstr "Вбудована глибина"
 
+msgid "Input text"
+msgstr "Введення тексту"
+
 msgid "Surface"
 msgstr "Поверхня"
 
 msgid "Horizontal text"
 msgstr "Горизонтальний текст"
+
+msgid "Shift + Mouse move up or dowm"
+msgstr "Shift + переміщення миші вгору або вниз"
+
+msgid "Rotate text"
+msgstr "Повернути текст"
+
+msgid "Text shape"
+msgstr "Форма тексту"
 
 msgid "Ctrl+"
 msgstr "Ctrl+"
@@ -613,13 +634,6 @@ msgstr ""
 msgid "WebView2 Runtime"
 msgstr ""
 
-msgid ""
-"GalaxySlicer configuration file may be corrupted and is not abled to be "
-"parsed.Please delete the file and try again."
-msgstr ""
-"Файл конфігурації GalaxySlicer може бути пошкоджений і не підлягає розбору. "
-"Видаліть файл і спробуйте ще раз."
-
 #, c-format, boost-format
 msgid ""
 "%s\n"
@@ -644,6 +658,13 @@ msgstr "Це найновіша версія."
 
 msgid "Info"
 msgstr "Інформація"
+
+msgid ""
+"The GalaxySlicer configuration file may be corrupted and cannot be parsed.\n"
+"GalaxySlicer has attempted to recreate the configuration file.\n"
+"Please note, application settings will be lost, but printer profiles will "
+"not be affected."
+msgstr ""
 
 msgid "Rebuild"
 msgstr "Відновити"
@@ -851,6 +872,9 @@ msgstr "Orca Куб"
 
 msgid "Voron Cube"
 msgstr "Voron Куб"
+
+msgid "Disc"
+msgstr ""
 
 msgid "3DBenchy"
 msgstr "3DBenchy"
@@ -1879,14 +1903,26 @@ msgid "GNU Affero General Public License, version 3"
 msgstr "Стандартна громадська ліцензія GNU Affero, версія 3"
 
 msgid ""
-"GalaxySlicer is based on BambuStudio by Bambulab, which is from PrusaSlicer "
-"by Prusa Research.  PrusaSlicer is from Slic3r by Alessandro Ranellucci and "
-"the RepRap community"
+"GalaxySlicer is based on OrcaSlicer, BambuStudio, PrusaSlicer, and "
+"SuperSlicer."
 msgstr ""
-"GalaxySlicer заснований на BambuStudio від Bambulab, який належить "
-"PrusaSlicer.\n"
-"Prusa Research. PrusaSlicer від Slic3r Алессандро Ранеллуччі і\n"
-"спільнота RepRap"
+
+msgid "OrcaSlicer is originally based on BambuStudio by BambuLab."
+msgstr ""
+
+msgid "BambuStudio is originally based on PrusaSlicer by PrusaResearch."
+msgstr "BambuStudio спочатку базується на PrusaSlicer від PrusaResearch."
+
+msgid ""
+"PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
+msgstr ""
+
+msgid ""
+"Slic3r was created by Alessandro Ranellucci with the help of many other "
+"contributors."
+msgstr ""
+"Slic3r був створений Алессандро Ранеллуччі за допомогою багатьох інших\n"
+"учасники."
 
 msgid "Libraries"
 msgstr "Бібліотеки"
@@ -1903,26 +1939,8 @@ msgstr ""
 msgid "About %s"
 msgstr "Про %s"
 
-msgid ""
-"GalaxySlicer is based on OrcaSlicer, BambuStudio, PrusaSlicer, and "
-"SuperSlicer."
-msgstr ""
-
-msgid "OrcaSlicer is originally based on BambuStudio by BambuLab."
-msgstr ""
-
-msgid "BambuStudio is originally based on PrusaSlicer by PrusaResearch."
-msgstr "BambuStudio спочатку базується на PrusaSlicer від PrusaResearch."
-
 msgid "PrusaSlicer is originally based on Slic3r by Alessandro Ranellucci."
 msgstr "PrusaSlicer спочатку базується на Slic3r від Алессандро Ранеллуччі."
-
-msgid ""
-"Slic3r was created by Alessandro Ranellucci with the help of many other "
-"contributors."
-msgstr ""
-"Slic3r був створений Алессандро Ранеллуччі за допомогою багатьох інших\n"
-"учасники."
 
 msgid "Version"
 msgstr "Версія"
@@ -2169,9 +2187,16 @@ msgstr ""
 msgid "Group"
 msgstr "Група"
 
+msgid "The printer does not currently support auto refill."
+msgstr ""
+
 msgid ""
-"There are currently no identical spare consumables available, and automatic "
-"replenishment is currently not possible. \n"
+"AMS filament backup is not enabled, please enable it in the AMS settings."
+msgstr ""
+
+msgid ""
+"If there are two identical filaments in AMS, AMS filament backup will be "
+"enabled. \n"
 "(Currently supporting automatic supply of consumables with the same brand, "
 "material type, and color)"
 msgstr ""
@@ -2566,20 +2591,6 @@ msgstr ""
 "ТАК - Зберегти Башту Очистки\n"
 "НІ - Зберегти незалежну висоту опорного шару"
 
-#, boost-format
-msgid "%1% infill pattern doesn't support 100%% density."
-msgstr "Шаблон заповнення %1% не підтримує щільність 100%%."
-
-msgid ""
-"Switch to rectilinear pattern?\n"
-"Yes - switch to rectilinear pattern automaticlly\n"
-"No  - reset density to default non 100% value automaticlly"
-msgstr ""
-"Переключити на прямолінійний шаблон?\n"
-"Так - автоматично перемикатися на прямолінійний шаблон\n"
-"Ні - автоматично скинути щільність до значення за замовчуванням, "
-"відмінноговід 100%"
-
 msgid ""
 "While printing by Object, the extruder may collide skirt.\n"
 "Thus, reset the skirt layer to 1 to avoid that."
@@ -2737,7 +2748,17 @@ msgstr ""
 msgid "Failed to start printing job"
 msgstr "Не вдалося запустити завдання друку"
 
-msgid "Invalid nozzle diameter"
+msgid ""
+"This calibration does not support the currently selected nozzle diameter"
+msgstr ""
+
+msgid "Current flowrate cali param is invalid"
+msgstr ""
+
+msgid "Selected diameter and machine diameter do not match"
+msgstr ""
+
+msgid "Failed to generate cali gcode"
 msgstr ""
 
 msgid "Calibration error"
@@ -2957,6 +2978,15 @@ msgstr "Принтер"
 
 msgid "Print settings"
 msgstr "Параметри друку"
+
+msgid "Custom g-code"
+msgstr ""
+
+msgid "Template"
+msgstr ""
+
+msgid "ToolChange"
+msgstr ""
 
 msgid "Time Estimation"
 msgstr "Оцінка часу"
@@ -3745,9 +3775,12 @@ msgstr "Завантаження інструментів віртуальної
 
 msgid ""
 "Another virtual camera is running.\n"
-"Bambu Studio supports only a single virtual camera.\n"
+"GalaxySlicer supports only a single virtual camera.\n"
 "Do you want to stop this virtual camera?"
 msgstr ""
+"Запущено іншу віртуальну камеру.\n"
+"GalaxySlicer підтримує лише одну віртуальну камеру.\n"
+"Ви хочете зупинити цю віртуальну камеру?"
 
 #, c-format, boost-format
 msgid "Virtual camera initialize failed (%s)!"
@@ -3944,6 +3977,11 @@ msgstr "Шар: немає даних"
 msgid "Clear"
 msgstr "Очищення"
 
+msgid ""
+"You have completed printing the mall model, \n"
+"but the synchronization of rating information has failed."
+msgstr ""
+
 msgid "How do you like this printing file?"
 msgstr ""
 
@@ -4002,9 +4040,6 @@ msgstr "Скасувати друк"
 
 msgid "Are you sure you want to cancel this print?"
 msgstr "Ви впевнені, що хочете скасувати цей друк?"
-
-msgid "Done"
-msgstr "Виконано"
 
 msgid "Downloading..."
 msgstr "Завантаження..."
@@ -4396,6 +4431,24 @@ msgstr "Настінні філаменти"
 msgid "Printer settings"
 msgstr "Налаштування принтера"
 
+msgid "Remove current plate (if not last one)"
+msgstr ""
+
+msgid "Auto orient objects on current plate"
+msgstr ""
+
+msgid "Arrange objects on current plate"
+msgstr ""
+
+msgid "Unlock current plate"
+msgstr ""
+
+msgid "Lock current plate"
+msgstr ""
+
+msgid "Customize current plate"
+msgstr ""
+
 msgid "Untitled"
 msgstr "Без імені"
 
@@ -4515,12 +4568,10 @@ msgid "Restore"
 msgstr "Відновити"
 
 msgid ""
-"The bed temperature exceeds filament's vitrification temperature. Please "
-"open the front door of printer before printing to avoid nozzle clog."
+"The current hot bed temperature is relatively high. The nozzle may be "
+"clogged when printing this filament in a closed enclosure. Please open the "
+"front door and/or remove the upper glass."
 msgstr ""
-"Температура шару перевищує температуру скловання нитки. Будь ласка\n"
-"відчиняйте передні дверцята принтера перед печаткою, щоб уникнути засмічення "
-"сопла."
 
 msgid ""
 "The nozzle hardness required by the filament is higher than the default "
@@ -4649,8 +4700,14 @@ msgstr "Об'єкт занадто великий"
 msgid "Export STL file:"
 msgstr "Експорт файлу STL:"
 
+msgid "Export AMF file:"
+msgstr ""
+
 msgid "Save file as:"
 msgstr "Зберегти файл як:"
+
+msgid "Export OBJ file:"
+msgstr ""
 
 msgid "Delete object which is a part of cut object"
 msgstr "Видалити об'єкт, який є частиною обрізаного об'єкта"
@@ -4670,17 +4727,38 @@ msgstr "Вибраний об'єкт не може бути поділений."
 msgid "Another export job is running."
 msgstr "Виконується інше завдання експорту."
 
+msgid "Replace from:"
+msgstr ""
+
+msgid "Unable to replace with more than one volume"
+msgstr ""
+
+msgid "Error during replace"
+msgstr "Помилка заміни"
+
 msgid "Select a new file"
 msgstr "Виберіть новий файл"
 
 msgid "File for the replace wasn't selected"
 msgstr "Не вибраний файл для заміни"
 
-msgid "Error during replace"
-msgstr "Помилка заміни"
-
 msgid "Please select a file"
 msgstr "Будь ласка, виберіть файл"
+
+msgid "Do you want to replace it"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Reload from:"
+msgstr ""
+
+msgid "Unable to reload:"
+msgstr ""
+
+msgid "Error during reload"
+msgstr ""
 
 msgid "Slicing"
 msgstr "Нарізка"
@@ -4753,7 +4831,7 @@ msgid "Project downloaded %d%%"
 msgstr "Проект завантажено %d%%"
 
 msgid ""
-"Importing to Bambu Studio failed. Please download the file and manually "
+"Importing to GalaxySlicer failed. Please download the file and manually "
 "import it."
 msgstr ""
 
@@ -4811,6 +4889,15 @@ msgstr "Копії вибраного об'єкта"
 
 msgid "Save G-code file as:"
 msgstr "Збережіть файл G-коду як:"
+
+msgid "Save SLA file as:"
+msgstr ""
+
+msgid "The provided file name is not valid."
+msgstr ""
+
+msgid "The following characters are not allowed by a FAT file system:"
+msgstr ""
 
 msgid "Save Sliced file as:"
 msgstr "Зберегти нарізаний файл як:"
@@ -4977,6 +5064,15 @@ msgstr "Імперський"
 msgid "Units"
 msgstr "Одиниці"
 
+msgid "Home"
+msgstr ""
+
+msgid "Default Page"
+msgstr ""
+
+msgid "Set the page opened on startup."
+msgstr ""
+
 msgid "Zoom to mouse position"
 msgstr "Наблизити до положення миші"
 
@@ -4985,6 +5081,18 @@ msgid ""
 "2D window center."
 msgstr ""
 "Наблизьтеся до положення покажчика миші у 3D-виді, а не до центру 2D вікна."
+
+msgid "Use free camera"
+msgstr ""
+
+msgid "If enabled, use free camera. If not enabled, use constrained camera."
+msgstr ""
+
+msgid "Show splash screen"
+msgstr ""
+
+msgid "Show the splash screen during startup."
+msgstr ""
 
 msgid "Show \"Tip of the day\" notification after start"
 msgstr "Показувати повідомлення \"Рада дня\" після запуску"
@@ -5044,12 +5152,6 @@ msgid ""
 msgstr ""
 "Якщо включено, встановлює GalaxySlicer як програму за замовчуваннямдля "
 "відкриття файлів .step"
-
-msgid "Online Models"
-msgstr ""
-
-msgid "Show online staff-picked models on the home page"
-msgstr ""
 
 msgid "Maximum recent projects"
 msgstr "Максимум останніх проектів"
@@ -5608,8 +5710,9 @@ msgstr "Не вдалося надіслати завдання на друк п
 msgid "An SD card needs to be inserted before send to printer SD card."
 msgstr "Перед надсиланням на картку SD принтера необхідно вставити картку SD."
 
-msgid "The printer is required to be in the same LAN as Bambu Studio."
+msgid "The printer is required to be in the same LAN as GalaxySlicer."
 msgstr ""
+"Принтер повинен знаходитися в тій же локальній мережі, що й GalaxySlicer."
 
 msgid "The printer does not support sending to printer SD card."
 msgstr "Принтер не підтримує надсилання на картку SD принтера."
@@ -5910,6 +6013,9 @@ msgstr ""
 "Рекомендований діапазон температур сопла для цього філаменту. 0 означає "
 "відсутність установки"
 
+msgid "Print chamber temperature"
+msgstr ""
+
 msgid "Print temperature"
 msgstr "Температура друку"
 
@@ -6064,6 +6170,9 @@ msgstr ""
 
 msgid "Change filament G-code"
 msgstr "G-code Зміни філаменту"
+
+msgid "Change extrusion role G-code"
+msgstr ""
 
 msgid "Pause G-code"
 msgstr "G-code Паузи"
@@ -6678,25 +6787,32 @@ msgid "Network plug-in update"
 msgstr "Оновлення мережевого плагіна"
 
 msgid ""
-"Click OK to update the Network plug-in when Bambu Studio launches next time."
+"Click OK to update the Network plug-in when GalaxySlicer launches next time."
 msgstr ""
+"Натисніть OK, щоб оновити плагін Network під час наступного запуску Orca "
+"Slicer."
 
 #, c-format, boost-format
 msgid "A new Network plug-in(%s) available, Do you want to install it?"
 msgstr "Доступний новий мережевий плагін (%s), чи хочете ви встановити його?"
 
-msgid "New version of Bambu Studio"
-msgstr ""
+msgid "New version of GalaxySlicer"
+msgstr "Нова версія програми GalaxySlicer"
 
 msgid "Don't remind me of this version again"
 msgstr "Не нагадуйте мені більше про цю версію"
+
+msgid "Done"
+msgstr "Виконано"
 
 msgid "LAN Connection Failed (Sending print file)"
 msgstr "Помилка з’єднання LAN (Надсилання файлу друку)"
 
 msgid ""
-"Step 1, please confirm Bambu Studio and your printer are in the same LAN."
+"Step 1, please confirm GalaxySlicer and your printer are in the same LAN."
 msgstr ""
+"Крок 1. Переконайтеся, що GalaxySlicer та ваш принтер знаходяться в одній "
+"локальніймережі."
 
 msgid ""
 "Step 2, if the IP and Access Code below are different from the actual values "
@@ -7623,6 +7739,31 @@ msgid ""
 "bridges cannot be anchored. "
 msgstr ""
 
+msgid "Reverse on odd"
+msgstr ""
+
+msgid "Overhang reversal"
+msgstr ""
+
+msgid ""
+"Extrude perimeters that have a part over an overhang in the reverse "
+"direction on odd layers. This alternating pattern can drastically improve "
+"steep overhang."
+msgstr ""
+
+msgid "Reverse threshold"
+msgstr ""
+
+msgid "Overhang reversal threshold"
+msgstr ""
+
+#, c-format, boost-format
+msgid ""
+"Number of mm the overhang need to be for the reversal to be considered "
+"useful. Can be a % of the perimeter width.\n"
+"Value 0 enables reversal on every odd layers regardless."
+msgstr ""
+
 msgid "Classic mode"
 msgstr "Класичний режим"
 
@@ -7780,11 +7921,8 @@ msgstr "Профіль за промовчанням при перемиканн
 msgid "Activate air filtration"
 msgstr ""
 
-msgid "Activate for better air filtration"
+msgid "Activate for better air filtration. G-code command: M106 P3 S(0-255)"
 msgstr ""
-
-msgid "Fan speed"
-msgstr "Швидкість вентилятора"
 
 msgid ""
 "Speed of exhuast fan during printing.This speed will overwrite the speed in "
@@ -8271,15 +8409,14 @@ msgid ""
 "Support material is commonly used to print support and support interface"
 msgstr "Допоміжний матеріал зазвичай використовується для друку підтримки"
 
-msgid "Temperature of vitrificaiton"
-msgstr "Температура склування"
+msgid "Softening temperature"
+msgstr ""
 
 msgid ""
-"Material becomes soft at this temperature. Thus the heatbed cannot be hotter "
-"than this tempature"
+"The material softens at this temperature, so when the bed temperature is "
+"equal to or greater than it, it's highly recommended to open the front door "
+"and/or remove the upper glass to avoid cloggings."
 msgstr ""
-"При цій температурі матеріал стає м'яким. Таким чином, нагріваєтьсяшар не "
-"може бути гарячішим, ніж ця температура"
 
 msgid "Price"
 msgstr "Ціна"
@@ -8312,11 +8449,11 @@ msgstr ""
 msgid "Sparse infill density"
 msgstr "Щільність заповнення"
 
-#, c-format
-msgid "Density of internal sparse infill, 100% means solid throughout"
+#, c-format, boost-format
+msgid ""
+"Density of internal sparse infill, 100% turns all sparse infill into solid "
+"infill and internal solid infill pattern will be used"
 msgstr ""
-"Щільність внутрішнього розрідженого заповнення, 100%% означає суцільне "
-"заповнення по всій площі"
 
 msgid "Sparse infill pattern"
 msgstr "Малюнок заповнення"
@@ -8463,7 +8600,7 @@ msgstr ""
 
 msgid ""
 "Acceleration of initial layer. Using a lower value can improve build plate "
-"adhensive"
+"adhesive"
 msgstr ""
 "Прискорення вихідного шару. Використання меншого значення може покращити "
 "прилипання будівельної плити"
@@ -8628,9 +8765,7 @@ msgstr "Відфільтрувати крихітні зазори"
 msgid "Layers and Perimeters"
 msgstr "Шари та периметри"
 
-msgid ""
-"Filter out gaps smaller than the threshold specified. This setting won't "
-"affect top/bottom layers"
+msgid "Filter out gaps smaller than the threshold specified"
 msgstr ""
 
 msgid ""
@@ -8727,10 +8862,18 @@ msgstr ""
 msgid "Best auto arranging position in range [0,1] w.r.t. bed shape."
 msgstr ""
 
-msgid "Enable this option if machine has auxiliary part cooling fan"
+msgid ""
+"Enable this option if machine has auxiliary part cooling fan. G-code "
+"command: M106 P2 S(0-255)."
 msgstr ""
-"Увімкніть цю опцію, якщо машина оснащена вентилятором охолодженнядопоміжної "
-"частини"
+
+msgid "Exhaust cooling fan"
+msgstr ""
+
+msgid ""
+"Enable this option if machine has exhaust cooling fan. G-code command: M106 "
+"P3 S(0-255)."
+msgstr ""
 
 msgid ""
 "Start the fan this number of seconds earlier than its target start time (you "
@@ -8790,13 +8933,16 @@ msgid "Support control chamber temperature"
 msgstr ""
 
 msgid ""
-"This option is enabled if machine support controlling chamber temperature"
+"This option is enabled if machine support controlling chamber temperature\n"
+"G-code command: M141 S(0-255)"
 msgstr ""
 
 msgid "Support air filtration"
 msgstr ""
 
-msgid "Enable this if printer support air filtration"
+msgid ""
+"Enable this if printer support air filtration\n"
+"G-code command: M106 P3 S(0-255)"
 msgstr ""
 
 msgid "G-code flavor"
@@ -8908,6 +9054,9 @@ msgstr "Весь суцільний шар"
 msgid "Ironing Pattern"
 msgstr ""
 
+msgid "The pattern that will be used when ironing"
+msgstr ""
+
 msgid "Ironing flow"
 msgstr "Плавний потік"
 
@@ -8930,6 +9079,14 @@ msgstr "Швидкість розглажування"
 
 msgid "Print speed of ironing lines"
 msgstr "Швидкість друку прасувальних ліній"
+
+msgid "Ironing angle"
+msgstr ""
+
+msgid ""
+"The angle ironing is done at. A negative number disables this function and "
+"uses the default method."
+msgstr ""
 
 msgid "This gcode part is inserted at every layer change after lift z"
 msgstr "Ця частина gcode вставляється при кожній зміні шару після підйому z"
@@ -9059,6 +9216,9 @@ msgstr "Максимальне прискорення руху"
 msgid "Maximum acceleration for travel (M204 T), it only applies to Marlin 2"
 msgstr ""
 
+msgid "Fan speed"
+msgstr "Швидкість вентилятора"
+
 msgid ""
 "Part cooling fan speed may be increased when auto cooling is enabled. This "
 "is the maximum speed limitation of part cooling fan"
@@ -9132,11 +9292,10 @@ msgstr "Мінімальна швидкість вентилятора охол�
 msgid ""
 "Speed of auxiliary part cooling fan. Auxiliary fan will run at this speed "
 "during printing except the first several layers which is defined by no "
-"cooling layers"
+"cooling layers.\n"
+"Please enable auxiliary_fan in printer settings to use this feature. G-code "
+"command: M106 P2 S(0-255)"
 msgstr ""
-"Швидкість вентилятора охолодження допоміжної частини. ДопоміжнийВентилятор "
-"буде працювати з такою швидкістю під час друку, за винятком перших кількох "
-"шарів, які не визначаються шарами охолодження"
 
 msgid "Min"
 msgstr "Мін"
@@ -9151,8 +9310,11 @@ msgstr ""
 msgid "Min print speed"
 msgstr "Мін. швидкість друку"
 
-msgid "The minimum printing speed when slow down for cooling"
-msgstr "Мінімальна швидкість друку при уповільненні для охолодження"
+msgid ""
+"The minimum printing speed for the filament when slow down for better layer "
+"cooling is enabled, when printing overhangs and when feature speeds are not "
+"specified explicitly."
+msgstr ""
 
 msgid "Nozzle diameter"
 msgstr "Діаметр сопла"
@@ -9409,22 +9571,6 @@ msgstr ""
 "соплом та об’єктом який друкується. Це запобігає удару сопла об об’єкт при "
 "переміщення. Використання спіралевої лінії підняття по осі Z може "
 "перешкоджати появі висячих ниток"
-
-msgid "Z hop lower boundary"
-msgstr ""
-
-msgid ""
-"Z hop will only come into effect when Z is above this value and is below the "
-"parameter: \"Z hop upper boundary\""
-msgstr ""
-
-msgid "Z hop upper boundary"
-msgstr ""
-
-msgid ""
-"If this value is positive, Z hop will only come into effect when Z is above "
-"the parameter: \"Z hop lower boundary\" and is below this value"
-msgstr ""
 
 msgid "Z hop type"
 msgstr "Тип Z-стрибка"
@@ -9705,6 +9851,17 @@ msgstr ""
 msgid "Use single nozzle to print multi filament"
 msgstr ""
 
+msgid "Manual Filament Change"
+msgstr ""
+
+msgid ""
+"Enable this option to omit the custom Change filament G-code only at the "
+"beginning of the print. The tool change command (e.g., T0) will be skipped "
+"throughout the entire print. This is useful for manual multi-material "
+"printing, where we use M600/PAUSE to trigger the manual filament change "
+"action."
+msgstr ""
+
 msgid "Purge in prime tower"
 msgstr ""
 
@@ -9761,6 +9918,16 @@ msgstr "Парний-непарний"
 
 msgid "Close holes"
 msgstr "Закрити отвори"
+
+msgid "Z offset"
+msgstr ""
+
+msgid ""
+"This value will be added (or subtracted) from all the Z coordinates in the "
+"output G-code. It is used to compensate for bad Z endstop position: for "
+"example, if your endstop zero actually leaves the nozzle 0.3mm far from the "
+"print bed, set this to -0.3 (or fix your endstop)."
+msgstr ""
 
 msgid "Enable support"
 msgstr "Увімкнути підтримку"
@@ -10102,6 +10269,15 @@ msgstr ""
 "Цей параметр визначає, чи слід додавати заповнення всередині "
 "великихПорожнини підтримки дерева"
 
+msgid "Activate temperature control"
+msgstr ""
+
+msgid ""
+"Enable this option for chamber temperature control. An M191 command will be "
+"added before \"machine_start_gcode\"\n"
+"G-code commands: M141/M191 S(0-255)"
+msgstr ""
+
 msgid "Chamber temperature"
 msgstr "Температура в камері"
 
@@ -10135,6 +10311,9 @@ msgid ""
 msgstr ""
 "Цей gcode вставляється при зміні філаменту, включаючи команду T для запуску "
 "зміни інструменту"
+
+msgid "This gcode is inserted when the extrusion role is changed"
+msgstr ""
 
 msgid ""
 "Line width for top surfaces. If expressed as a %, it will be computed over "
@@ -10324,6 +10503,34 @@ msgstr ""
 "функція використовується для невеликої Корегування розміру, коли об'єкт має "
 "проблему складання"
 
+msgid "Convert holes to polyholes"
+msgstr ""
+
+msgid ""
+"Search for almost-circular holes that span more than one layer and convert "
+"the geometry to polyholes. Use the nozzle size and the (biggest) diameter to "
+"compute the polyhole.\n"
+"See http://hydraraptor.blogspot.com/2011/02/polyholes.html"
+msgstr ""
+
+msgid "Polyhole detection margin"
+msgstr ""
+
+#, c-format, boost-format
+msgid ""
+"Maximum defection of a point to the estimated radius of the circle.\n"
+"As cylinders are often exported as triangles of varying size, points may not "
+"be on the circle circumference. This setting allows you some leway to "
+"broaden the detection.\n"
+"In mm or in % of the radius."
+msgstr ""
+
+msgid "Polyhole twist"
+msgstr ""
+
+msgid "Rotate the polyhole every layer."
+msgstr ""
+
 msgid "G-code thumbnails"
 msgstr "Мініатюри G-code"
 
@@ -10333,6 +10540,14 @@ msgid ""
 msgstr ""
 "Розміри малюнків повинні зберігатися у файлах .gcode та .sl1/.sl1s, у "
 "наступному форматі: «XxY, XxY»,..."
+
+msgid "Format of G-code thumbnails"
+msgstr ""
+
+msgid ""
+"Format of G-code thumbnails: PNG for best quality, JPG for smallest size, "
+"QOI for low memory firmware"
+msgstr ""
 
 msgid "Use relative E distances"
 msgstr "Використовуйте відносні відстані E екструдера"
@@ -10467,10 +10682,6 @@ msgstr ""
 
 msgid "invalid value "
 msgstr "неправильне значення "
-
-#, c-format, boost-format
-msgid " doesn't work at 100%% density "
-msgstr " не працює на 100%% щільності "
 
 msgid "Invalid value when spiral vase mode is enabled: "
 msgstr "Неприпустиме значення при увімкненому режимі спіральної вази: "
@@ -10723,12 +10934,6 @@ msgstr ""
 
 msgid "Optimizing toolpath"
 msgstr "Оптимізація траєкторії інструменту"
-
-msgid "Empty layers around bottom are replaced by nearest normal layers."
-msgstr "Порожні шари навколо дна замінюються найближчими нормальними шарами."
-
-msgid "The model has too many empty layers."
-msgstr "У моделі занадто багато порожніх шарів."
 
 msgid "Slicing mesh"
 msgstr "Нарізка сітки"
@@ -11341,9 +11546,6 @@ msgstr ""
 msgid "Filename"
 msgstr ""
 
-msgid "Message"
-msgstr ""
-
 msgid "Cancel selected"
 msgstr ""
 
@@ -11770,7 +11972,7 @@ msgstr ""
 msgid ""
 "Brim for better adhesion\n"
 "Did you know that when printing models have a small contact interface with "
-"the printing surface, it's recommended to use a brim?"
+"the printing surface, it is recommended to use a brim?"
 msgstr ""
 "Кайма для кращої адгезії\n"
 "Чи знаєте ви, що коли моделі друку мають невеликий контактний інтерфейс з "
@@ -11813,6 +12015,261 @@ msgstr ""
 "Підвищення міцності\n"
 "Чи знаєте ви, що для підвищення міцності моделі можна використовувати "
 "більшепериметрів та вищу щільність заповнення?"
+
+#: resources/data/hints.ini: [hint:When need to print with the printer door
+#: opened]
+msgid ""
+"When need to print with the printer door opened\n"
+"Opening the printer door can reduce the probability of extruder/hotend "
+"clogging when printing lower temperature filament with a higher enclosure "
+"temperature. More info about this in the Wiki."
+msgstr ""
+
+#~ msgid "Tool-Lay on Face"
+#~ msgstr "Інструмент-укладання на обличчя"
+
+#, boost-format
+#~ msgid "%1% infill pattern doesn't support 100%% density."
+#~ msgstr "Шаблон заповнення %1% не підтримує щільність 100%%."
+
+#~ msgid ""
+#~ "Switch to rectilinear pattern?\n"
+#~ "Yes - switch to rectilinear pattern automaticlly\n"
+#~ "No  - reset density to default non 100% value automaticlly"
+#~ msgstr ""
+#~ "Переключити на прямолінійний шаблон?\n"
+#~ "Так - автоматично перемикатися на прямолінійний шаблон\n"
+#~ "Ні - автоматично скинути щільність до значення за замовчуванням, "
+#~ "відмінноговід 100%"
+
+#, c-format
+#~ msgid "Density of internal sparse infill, 100% means solid throughout"
+#~ msgstr ""
+#~ "Щільність внутрішнього розрідженого заповнення, 100%% означає суцільне "
+#~ "заповнення по всій площі"
+
+#, c-format, boost-format
+#~ msgid " doesn't work at 100%% density "
+#~ msgstr " не працює на 100%% щільності "
+
+#~ msgid ""
+#~ "GalaxySlicer configuration file may be corrupted and is not abled to be "
+#~ "parsed.Please delete the file and try again."
+#~ msgstr ""
+#~ "Файл конфігурації GalaxySlicer може бути пошкоджений і не підлягає "
+#~ "розбору. Видаліть файл і спробуйте ще раз."
+
+#~ msgid "Embeded"
+#~ msgstr "Вбудовано"
+
+#~ msgid ""
+#~ "Acceleration of initial layer. Using a lower value can improve build "
+#~ "plate adhensive"
+#~ msgstr ""
+#~ "Прискорення вихідного шару. Використання меншого значення може покращити "
+#~ "прилипання будівельної плити"
+
+#~ msgid "The minimum printing speed when slow down for cooling"
+#~ msgstr "Мінімальна швидкість друку при уповільненні для охолодження"
+
+#~ msgid ""
+#~ "GalaxySlicer is based on BambuStudio by Bambulab, which is from "
+#~ "PrusaSlicer by Prusa Research.  PrusaSlicer is from Slic3r by Alessandro "
+#~ "Ranellucci and the RepRap community"
+#~ msgstr ""
+#~ "GalaxySlicer заснований на BambuStudio від Bambulab, який належить "
+#~ "PrusaSlicer.\n"
+#~ "Prusa Research. PrusaSlicer від Slic3r Алессандро Ранеллуччі і\n"
+#~ "спільнота RepRap"
+
+#~ msgid ""
+#~ "The bed temperature exceeds filament's vitrification temperature. Please "
+#~ "open the front door of printer before printing to avoid nozzle clog."
+#~ msgstr ""
+#~ "Температура шару перевищує температуру скловання нитки. Будь ласка\n"
+#~ "відчиняйте передні дверцята принтера перед печаткою, щоб уникнути "
+#~ "засмічення сопла."
+
+#~ msgid "Temperature of vitrificaiton"
+#~ msgstr "Температура склування"
+
+#~ msgid ""
+#~ "Material becomes soft at this temperature. Thus the heatbed cannot be "
+#~ "hotter than this tempature"
+#~ msgstr ""
+#~ "При цій температурі матеріал стає м'яким. Таким чином, нагріваєтьсяшар не "
+#~ "може бути гарячішим, ніж ця температура"
+
+#~ msgid "Enable this option if machine has auxiliary part cooling fan"
+#~ msgstr ""
+#~ "Увімкніть цю опцію, якщо машина оснащена вентилятором "
+#~ "охолодженнядопоміжної частини"
+
+#~ msgid ""
+#~ "Speed of auxiliary part cooling fan. Auxiliary fan will run at this speed "
+#~ "during printing except the first several layers which is defined by no "
+#~ "cooling layers"
+#~ msgstr ""
+#~ "Швидкість вентилятора охолодження допоміжної частини. "
+#~ "ДопоміжнийВентилятор буде працювати з такою швидкістю під час друку, за "
+#~ "винятком перших кількох шарів, які не визначаються шарами охолодження"
+
+#~ msgid "Empty layers around bottom are replaced by nearest normal layers."
+#~ msgstr ""
+#~ "Порожні шари навколо дна замінюються найближчими нормальними шарами."
+
+#~ msgid "The model has too many empty layers."
+#~ msgstr "У моделі занадто багато порожніх шарів."
+
+#~ msgid "The configuration may be generated by a newer version of OrcaSlicer."
+#~ msgstr "Конфігурація може бути створена новішою версією OrcaSlicer."
+
+#~ msgid ""
+#~ "OrcaSlicer will terminate because of running out of memory.It may be a "
+#~ "bug. It will be appreciated if you report the issue to our team."
+#~ msgstr ""
+#~ "OrcaSlicer завершить роботу через брак пам'яті. Можливо, це помилка. Ми "
+#~ "будемо вдячні, якщо ви повідомите про проблему нашій команді."
+
+#~ msgid ""
+#~ "OrcaSlicer will terminate because of a localization error. It will be "
+#~ "appreciated if you report the specific scenario this issue happened."
+#~ msgstr ""
+#~ "Програма OrcaSlicer завершить роботу через помилку локалізації. Буде "
+#~ "вдячний, якщо ви повідомите про конкретний сценарій виникнення цієї "
+#~ "проблеми."
+
+#, boost-format
+#~ msgid "OrcaSlicer got an unhandled exception: %1%"
+#~ msgstr "OrcaSlicer отримав необроблений виняток: %1%"
+
+#~ msgid ""
+#~ "OrcaSlicer configuration file may be corrupted and is not abled to be "
+#~ "parsed.Please delete the file and try again."
+#~ msgstr ""
+#~ "Файл конфігурації OrcaSlicer може бути пошкоджений і не підлягає розбору. "
+#~ "Видаліть файл і спробуйте ще раз."
+
+#~ msgid "The Orca Slicer needs an upgrade"
+#~ msgstr "Orca Slicer потребує оновлення"
+
+#~ msgid ""
+#~ "The version of Orca Slicer is too low and needs to be updated to the "
+#~ "latest version before it can be used normally"
+#~ msgstr ""
+#~ "Версія студії Bambu надто низька, її необхідно оновити до "
+#~ "останньоїверсії, перш ніж її можна буде використовувати у звичайному "
+#~ "режимі"
+
+#~ msgid "Orca Slicer GUI initialization failed"
+#~ msgstr "Помилка ініціалізації графічного інтерфейсу Orca Slicer"
+
+#~ msgid "Orca Slicer is licensed under "
+#~ msgstr "Orca Slicer знаходиться під ліцензією "
+
+#~ msgid ""
+#~ "Orca Slicer is based on BambuStudio by Bambulab, which is from "
+#~ "PrusaSlicer by Prusa Research.  PrusaSlicer is from Slic3r by Alessandro "
+#~ "Ranellucci and the RepRap community"
+#~ msgstr ""
+#~ "Orca Slicer заснований на BambuStudio від Bambulab, який належить "
+#~ "PrusaSlicer.\n"
+#~ "Prusa Research. PrusaSlicer від Slic3r Алессандро Ранеллуччі і\n"
+#~ "спільнота RepRap"
+
+#~ msgid "Orca Slicer "
+#~ msgstr "Orca Slicer "
+
+#~ msgid "OrcaSlicer is based on BambuStudio, PrusaSlicer, and SuperSlicer."
+#~ msgstr "OrcaSlicer базується на BambuStudio, PrusaSlicer та SuperSlicer."
+
+#~ msgid ""
+#~ "There are some unknown filaments mapped to generic preset. Please update "
+#~ "Orca Slicer or restart Orca Slicer to check if there is an update to "
+#~ "system presets."
+#~ msgstr ""
+#~ "Є кілька невідомих ниток, зіставлених із загальною передустановкою.Будь "
+#~ "ласка, оновіть Orca Slicer або перезапустіть Orca Slicer, щоб перевірити, "
+#~ "чи є оновлення для системи пресети."
+
+#~ msgid "The 3mf is not supported by OrcaSlicer, load geometry data only."
+#~ msgstr "3mf не від Orca Slicer, завантажуйте лише дані геометрії."
+
+#~ msgid "The 3mf is generated by old Orca Slicer, load geometry data only."
+#~ msgstr ""
+#~ "3mf генерується старим слайсером Orca, завантажувати лише дані геометрії."
+
+#~ msgid ""
+#~ "\"Fix Model\" feature is currently only on Windows. Please repair the "
+#~ "model on Orca Slicer(windows) or CAD softwares."
+#~ msgstr ""
+#~ "Функція \\Fix Model\\ доступна лише у Windows. Будь ласка, відремонтуйте "
+#~ "модель \n"
+#~ "на Orca Slicer (Windows) або у програмах САПР."
+
+#~ msgid "Associate files to OrcaSlicer"
+#~ msgstr "Асоціювати файли з OrcaSlicer"
+
+#~ msgid "Associate .3mf files to OrcaSlicer"
+#~ msgstr "Асоціювати файли .3mf з OrcaSlicer"
+
+#~ msgid ""
+#~ "If enabled, sets OrcaSlicer as default application to open .3mf files"
+#~ msgstr ""
+#~ "Якщо включено, встановлює OrcaSlicer як програму за замовчуваннямдля "
+#~ "відкриття файлів .3mf"
+
+#~ msgid "Associate .stl files to OrcaSlicer"
+#~ msgstr "Асоціювати файли .stl з OrcaSlicer"
+
+#~ msgid ""
+#~ "If enabled, sets OrcaSlicer as default application to open .stl files"
+#~ msgstr ""
+#~ "Якщо включено, встановлює OrcaSlicer як програму за замовчуваннямдля "
+#~ "відкриття файлів .stl"
+
+#~ msgid "Associate .step/.stp files to OrcaSlicer"
+#~ msgstr "Асоціювати файли .step/.stp з OrcaSlicer"
+
+#~ msgid ""
+#~ "If enabled, sets OrcaSlicer as default application to open .step files"
+#~ msgstr ""
+#~ "Якщо включено, встановлює OrcaSlicer як програму за замовчуваннямдля "
+#~ "відкриття файлів .step"
+
+#~ msgid ""
+#~ "Subtract a Part\n"
+#~ "Did you know that you can subtract one mesh from another using the "
+#~ "Negative part modifier? That way you can, for example, create easily "
+#~ "resizable holes directly in Orca Slicer. Read more in the documentation."
+#~ msgstr ""
+#~ "Відняти деталь\n"
+#~ "Чи знаєте ви, що можна віднімати одну мережу з іншої за допомогою "
+#~ "модифікаторанегативної деталі? Таким чином можна, наприклад, створити "
+#~ "легкоотвори, що змінюються безпосередньо в Orca Slicer. Додаткова "
+#~ "інформацію наведено в документації."
+
+#~ msgid ""
+#~ "STEP\n"
+#~ "Did you know that you can improve your print quality by slicing a STEP "
+#~ "file instead of an STL?\n"
+#~ "Orca Slicer supports slicing STEP files, providing smoother results than "
+#~ "a lower resolution STL. Give it a try!"
+#~ msgstr ""
+#~ "STEP\n"
+#~ "Чи знаєте ви, що ви можете покращити якість друку, нарізавши файл "
+#~ "STEPзамість STL?\n"
+#~ "Orca Slicer підтримує нарізання файлів STEP, забезпечуючи більш "
+#~ "плавнірезультати порівняно з нижчою роздільною здатністю STL. Спробуй!"
+
+#~ msgid ""
+#~ "Brim for better adhesion\n"
+#~ "Did you know that when printing models have a small contact interface "
+#~ "with the printing surface, it's recommended to use a brim?"
+#~ msgstr ""
+#~ "Кайма для кращої адгезії\n"
+#~ "Чи знаєте ви, що коли моделі друку мають невеликий контактний інтерфейс з "
+#~ "Поверхня друку, рекомендується використовувати Кайму?"
 
 #~ msgid "Cali"
 #~ msgstr "Калі"
@@ -12049,15 +12506,6 @@ msgstr ""
 #~ msgid "Initialize failed (Not supported by printer)!"
 #~ msgstr "Помилка ініціалізації (не підтримується принтером)!"
 
-#~ msgid ""
-#~ "Another virtual camera is running.\n"
-#~ "GalaxySlicer supports only a single virtual camera.\n"
-#~ "Do you want to stop this virtual camera?"
-#~ msgstr ""
-#~ "Запущено іншу віртуальну камеру.\n"
-#~ "GalaxySlicer підтримує лише одну віртуальну камеру.\n"
-#~ "Ви хочете зупинити цю віртуальну камеру?"
-
 #~ msgid "Not supported by this model of printer!"
 #~ msgstr "Не підтримується цією моделлю принтера!"
 
@@ -12104,26 +12552,6 @@ msgstr ""
 
 #~ msgid "Flow Calibration"
 #~ msgstr "Калібрування потоку"
-
-#~ msgid "The printer is required to be in the same LAN as GalaxySlicer."
-#~ msgstr ""
-#~ "Принтер повинен знаходитися в тій же локальній мережі, що й GalaxySlicer."
-
-#~ msgid ""
-#~ "Click OK to update the Network plug-in when GalaxySlicer launches next "
-#~ "time."
-#~ msgstr ""
-#~ "Натисніть OK, щоб оновити плагін Network під час наступного запуску Orca "
-#~ "Slicer."
-
-#~ msgid "New version of GalaxySlicer"
-#~ msgstr "Нова версія програми GalaxySlicer"
-
-#~ msgid ""
-#~ "Step 1, please confirm GalaxySlicer and your printer are in the same LAN."
-#~ msgstr ""
-#~ "Крок 1. Переконайтеся, що GalaxySlicer та ваш принтер знаходяться в одній "
-#~ "локальніймережі."
 
 #~ msgid "ERROR:"
 #~ msgstr "ПОМИЛКА:"

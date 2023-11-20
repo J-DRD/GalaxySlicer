@@ -6,6 +6,7 @@
 #include "MsgDialog.hpp"
 #include "I18N.hpp"
 #include "libslic3r/AppConfig.hpp"
+#include <wx/language.h>
 #include <wx/notebook.h>
 #include "Notebook.hpp"
 #include "OG_CustomCtrl.hpp"
@@ -111,6 +112,9 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
 
         if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_CHINESE_SIMPLIFIED)) {
             language_name = wxString::FromUTF8("\xe4\xb8\xad\xe6\x96\x87\x28\xe7\xae\x80\xe4\xbd\x93\x29");
+        }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_CHINESE)) {
+            language_name = wxString::FromUTF8("\xe4\xb8\xad\xe6\x96\x87\x28\xe7\xb9\x81\xe4\xbd\x93\x29");
         }
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_SPANISH)) {
             language_name = wxString::FromUTF8("\x45\x73\x70\x61\xc3\xb1\x6f\x6c");
@@ -626,10 +630,10 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *pa
         app_config->set_bool(param, checkbox->GetValue());
         app_config->save();
 
-        if (param == "staff_pick_switch") {
-            bool pbool = app_config->get("staff_pick_switch") == "true";
-            wxGetApp().switch_staff_pick(pbool);
-        }
+        // if (param == "staff_pick_switch") {
+        //     bool pbool = app_config->get("staff_pick_switch") == "true";
+        //     wxGetApp().switch_staff_pick(pbool);
+        // }
 
          // backup
         if (param == "backup_switch") {
@@ -931,6 +935,7 @@ wxWindow* PreferencesDialog::create_general_page()
     wxLanguage supported_languages[]{
         wxLANGUAGE_ENGLISH,
         wxLANGUAGE_CHINESE_SIMPLIFIED,
+        wxLANGUAGE_CHINESE,
         wxLANGUAGE_GERMAN,
         wxLANGUAGE_CZECH,
         wxLANGUAGE_FRENCH,
@@ -974,8 +979,13 @@ wxWindow* PreferencesDialog::create_general_page()
     std::vector<wxString> Units         = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};
     auto item_currency = create_item_combobox(_L("Units"), page, _L("Units"), "use_inches", Units);
 
-    auto item_mouse_zoom_settings = create_item_checkbox(_L("Zoom to mouse position"), page, _L("Zoom in towards the mouse pointer's position in the 3D view, rather than the 2D window center."), 50, "zoom_to_mouse");
+    std::vector<wxString> DefaultPage = {_L("Home"), _L("Prepare")};
+    auto item_default_page = create_item_combobox(_L("Default Page"), page, _L("Set the page opened on startup."), "default_page", DefaultPage);
 
+    auto item_mouse_zoom_settings = create_item_checkbox(_L("Zoom to mouse position"), page, _L("Zoom in towards the mouse pointer's position in the 3D view, rather than the 2D window center."), 50, "zoom_to_mouse");
+    auto item_use_free_camera_settings = create_item_checkbox(_L("Use free camera"), page, _L("If enabled, use free camera. If not enabled, use constrained camera."), 50, "use_free_camera");
+
+    auto item_show_splash_screen = create_item_checkbox(_L("Show splash screen"), page, _L("Show the splash screen during startup."), 50, "show_splash_screen");
     auto item_hints = create_item_checkbox(_L("Show \"Tip of the day\" notification after start"), page, _L("If enabled, useful hints are displayed at startup."), 50, "show_hints");
     auto item_gcode_window = create_item_checkbox(_L("Show g-code window"), page, _L("If enabled, g-code window will be displayed."), 50, "show_gcode_window");
 
@@ -998,9 +1008,9 @@ wxWindow* PreferencesDialog::create_general_page()
                                                          _L("If enabled, sets GalaxySlicer as default application to open .step files"), 50, "associate_step");
 #endif // _WIN32
 
-    auto title_modelmall = create_item_title(_L("Online Models"), page, _L("Online Models"));
+    // auto title_modelmall = create_item_title(_L("Online Models"), page, _L("Online Models"));
     // auto item_backup = create_item_switch(_L("Backup switch"), page, _L("Backup switch"), "units");
-    auto item_modelmall = create_item_checkbox(_L("Show online staff-picked models on the home page"), page, _L("Show online staff-picked models on the home page"), 50, "staff_pick_switch");
+    // auto item_modelmall = create_item_checkbox(_L("Show online staff-picked models on the home page"), page, _L("Show online staff-picked models on the home page"), 50, "staff_pick_switch");
 
     auto title_project = create_item_title(_L("Project"), page, "");
     auto item_max_recent_count = create_item_input(_L("Maximum recent projects"), "", page, _L("Maximum count of recent projects"), "max_recent_count", [](wxString value) {
@@ -1033,7 +1043,10 @@ wxWindow* PreferencesDialog::create_general_page()
     sizer_page->Add(item_language, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_region, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_currency, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_default_page, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_mouse_zoom_settings, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_use_free_camera_settings, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_show_splash_screen, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_hints, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_gcode_window, 0, wxTOP, FromDIP(3));
     sizer_page->Add(title_presets, 0, wxTOP | wxEXPAND, FromDIP(20));
@@ -1047,18 +1060,18 @@ wxWindow* PreferencesDialog::create_general_page()
     sizer_page->Add(item_associate_stl, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_associate_step, 0, wxTOP, FromDIP(3));
 #endif // _WIN32
-    auto item_title_modelmall = sizer_page->Add(title_modelmall, 0, wxTOP | wxEXPAND, FromDIP(20));
-    auto item_item_modelmall = sizer_page->Add(item_modelmall, 0, wxTOP, FromDIP(3));
-    auto update_modelmall = [this, item_title_modelmall, item_item_modelmall] (wxEvent & e) {
-        bool has_model_mall = wxGetApp().has_model_mall();
-        item_title_modelmall->Show(has_model_mall);
-        item_item_modelmall->Show(has_model_mall);
-        Layout();
-        Fit();
-    };
-    wxCommandEvent eee(wxEVT_COMBOBOX);
-    update_modelmall(eee);
-    item_region->GetItem(size_t(2))->GetWindow()->Bind(wxEVT_COMBOBOX, update_modelmall);
+    // auto item_title_modelmall = sizer_page->Add(title_modelmall, 0, wxTOP | wxEXPAND, FromDIP(20));
+    // auto item_item_modelmall = sizer_page->Add(item_modelmall, 0, wxTOP, FromDIP(3));
+    // auto update_modelmall = [this, item_title_modelmall, item_item_modelmall] (wxEvent & e) {
+    //     bool has_model_mall = wxGetApp().has_model_mall();
+    //     item_title_modelmall->Show(has_model_mall);
+    //     item_item_modelmall->Show(has_model_mall);
+    //     Layout();
+    //     Fit();
+    // };
+    // wxCommandEvent eee(wxEVT_COMBOBOX);
+    // update_modelmall(eee);
+    // item_region->GetItem(size_t(2))->GetWindow()->Bind(wxEVT_COMBOBOX, update_modelmall);
     sizer_page->Add(title_project, 0, wxTOP| wxEXPAND, FromDIP(20));
     sizer_page->Add(item_max_recent_count, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_save_choise, 0, wxTOP, FromDIP(3));

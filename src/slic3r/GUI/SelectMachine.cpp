@@ -3,6 +3,7 @@
 
 #include "libslic3r/Utils.hpp"
 #include "libslic3r/Thread.hpp"
+#include "libslic3r/Color.hpp"
 #include "GUI.hpp"
 #include "GUI_App.hpp"
 #include "GUI_Preview.hpp"
@@ -1918,10 +1919,10 @@ void SelectMachineDialog::update_ams_status_msg(wxString msg, bool is_warning)
     } else {
         msg = format_text(msg);
 
-        auto str_new = msg.ToStdString();
+        auto str_new = msg.utf8_string();
         stripWhiteSpace(str_new);
 
-        auto str_old = m_statictext_ams_msg->GetLabel().ToStdString();
+        auto str_old = m_statictext_ams_msg->GetLabel().utf8_string();
         stripWhiteSpace(str_old);
 
         if (str_new != str_old) {
@@ -1953,10 +1954,10 @@ void SelectMachineDialog::update_priner_status_msg(wxString msg, bool is_warning
     } else {
         msg          = format_text(msg);
 
-        auto str_new = msg.ToStdString();
+        auto str_new = msg.utf8_string();
         stripWhiteSpace(str_new);
 
-        auto str_old = m_statictext_printer_msg->GetLabel().ToStdString();
+        auto str_old = m_statictext_printer_msg->GetLabel().utf8_string();
         stripWhiteSpace(str_old);
 
         if (str_new != str_old) {
@@ -2244,9 +2245,13 @@ bool SelectMachineDialog::is_same_printer_model()
     }
 
     PresetBundle* preset_bundle = wxGetApp().preset_bundle;
-    if (preset_bundle && preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle) != obj_->printer_type) {
-        BOOST_LOG_TRIVIAL(info) << "printer_model: source = " << preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
-        BOOST_LOG_TRIVIAL(info) << "printer_model: target = " << obj_->printer_type;
+    if(preset_bundle == nullptr) return result;
+    const auto source_model = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
+    const auto target_model = obj_->printer_type;
+    // Orca: ignore P1P -> P1S
+    if (source_model != target_model && !(target_model == "C11" && source_model == "C12")) {
+        BOOST_LOG_TRIVIAL(info) << "printer_model: source = " << source_model;
+        BOOST_LOG_TRIVIAL(info) << "printer_model: target = " << target_model;
         return false;
     }
 
@@ -2286,9 +2291,9 @@ void SelectMachineDialog::on_ok_btn(wxCommandEvent &event)
 
     for (auto warning : plate->get_slice_result()->warnings) {
         if (warning.msg == BED_TEMP_TOO_HIGH_THAN_FILAMENT) {
-            if ((obj_->get_printer_series() == PrinterSeries::SERIES_X1)) {
-                confirm_text.push_back(Plater::get_slice_warning_string(warning) + "\n");
-                has_slice_warnings = true;
+            if (obj_->is_printer_enclosed()) {
+                //confirm_text.push_back(Plater::get_slice_warning_string(warning) + "\n");
+                //has_slice_warnings = true;
             }
         }
         else if (warning.msg == NOT_SUPPORT_TRADITIONAL_TIMELAPSE) {
@@ -3046,11 +3051,28 @@ void SelectMachineDialog::on_selection_changed(wxCommandEvent &event)
 
 
     //reset print status
+    update_flow_cali_check(obj);
+
     show_status(PrintDialogStatus::PrintStatusInit);
 
     reset_ams_material();
 
     update_show_status();
+}
+
+void SelectMachineDialog::update_flow_cali_check(MachineObject* obj)
+{
+    auto bed_type = m_plater->get_partplate_list().get_curr_plate()->get_bed_type(true);
+    auto show_cali_tips = true;
+
+    if (obj && obj->printer_type == "N1") { show_cali_tips = false; }
+
+    if (bed_type == BedType::btPTE) {
+        set_flow_calibration_state(false, show_cali_tips);
+    }
+    else {
+        set_flow_calibration_state(true, show_cali_tips);
+    }
 }
 
 void SelectMachineDialog::update_ams_check(MachineObject* obj)
@@ -3442,18 +3464,17 @@ wxImage *SelectMachineDialog::LoadImageFromBlob(const unsigned char *data, int s
     return NULL;
 }
 
-void SelectMachineDialog::set_flow_calibration_state(bool state)
+void SelectMachineDialog::set_flow_calibration_state(bool state, bool show_tips)
 {
     if (!state) {
         m_checkbox_list["flow_cali"]->SetValue(state);
         auto tool_tip = _L("Caution to use! Flow calibration on Textured PEI Plate may fail due to the scattered surface.");
         m_checkbox_list["flow_cali"]->SetToolTip(tool_tip);
         m_checkbox_list["flow_cali"]->Enable();
-        //m_checkbox_state_list["flow_cali"] = state;
         for (auto win : select_flow->GetWindowChildren()) {
             win->SetToolTip(tool_tip);
         }
-        select_flow->SetToolTip(tool_tip);
+        //select_flow->SetToolTip(tool_tip);
     }
     else {
 
@@ -3466,9 +3487,14 @@ void SelectMachineDialog::set_flow_calibration_state(bool state)
         }
 
         m_checkbox_list["flow_cali"]->Enable();
-        //m_checkbox_state_list["flow_cali"] = state;
         for (auto win : select_flow->GetWindowChildren()) {
             win->SetToolTip( _L("Automatic flow calibration using Micro Lidar"));
+        }
+    }
+
+    if (!show_tips) {
+        for (auto win : select_flow->GetWindowChildren()) {
+            win->SetToolTip(wxEmptyString);
         }
     }
 }
@@ -3618,7 +3644,6 @@ void SelectMachineDialog::set_default_normal()
 
     //init MaterialItem
     auto        extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
-    BitmapCache bmcache;
 
     MaterialHash::iterator iter = m_materialList.begin();
     while (iter != m_materialList.end()) {
@@ -3636,10 +3661,10 @@ void SelectMachineDialog::set_default_normal()
     for (auto i = 0; i < extruders.size(); i++) {
         auto          extruder = extruders[i] - 1;
         auto          colour   = wxGetApp().preset_bundle->project_config.opt_string("filament_colour", (unsigned int) extruder);
-        unsigned char rgb[4];
-        bmcache.parse_color4(colour, rgb);
+        ColorRGBA     rgb;
+        decode_color(colour, rgb);
 
-        auto          colour_rgb = wxColour((int) rgb[0], (int) rgb[1], (int) rgb[2], (int) rgb[3]);
+        auto          colour_rgb = wxColour((int) rgb.r_uchar(), (int) rgb.g_uchar(), (int) rgb.b_uchar(), (int) rgb.a_uchar());
         if (extruder >= materials.size() || extruder < 0 || extruder >= display_materials.size())
             continue;
 
@@ -3648,6 +3673,11 @@ void SelectMachineDialog::set_default_normal()
 
         item->Bind(wxEVT_LEFT_UP, [this, item, materials, extruder](wxMouseEvent& e) {});
         item->Bind(wxEVT_LEFT_DOWN, [this, item, materials, extruder](wxMouseEvent& e) {
+
+            DeviceManager* dev_manager = Slic3r::GUI::wxGetApp().getDeviceManager();
+            if (!dev_manager) return;
+            MachineObject* curr_obj = dev_manager->get_selected_machine();
+
             MaterialHash::iterator iter = m_materialList.begin();
             while (iter != m_materialList.end()) {
                 int           id = iter->first;
@@ -3664,29 +3694,25 @@ void SelectMachineDialog::set_default_normal()
             auto    mouse_pos = ClientToScreen(e.GetPosition());
             wxPoint rect = item->ClientToScreen(wxPoint(0, 0));
             // update ams data
-            DeviceManager* dev_manager = Slic3r::GUI::wxGetApp().getDeviceManager();
-            if (!dev_manager) return;
-            MachineObject* obj_ = dev_manager->get_selected_machine();
-
-            if (obj_ && obj_->is_support_ams_mapping()) {
+           
+            if (curr_obj && curr_obj->is_support_ams_mapping()) {
                 if (m_mapping_popup.IsShown()) return;
                 wxPoint pos = item->ClientToScreen(wxPoint(0, 0));
                 pos.y += item->GetRect().height;
                 m_mapping_popup.Move(pos);
 
-                if (obj_ &&
-                    obj_->has_ams() &&
+                if (curr_obj->has_ams() &&
                     m_checkbox_list["use_ams"]->GetValue() &&
-                    obj_->dev_id == m_printer_last_select)
+                    curr_obj->dev_id == m_printer_last_select)
                 {
                     m_mapping_popup.set_parent_item(item);
                     m_mapping_popup.set_current_filament_id(extruder);
                     m_mapping_popup.set_tag_texture(materials[extruder]);
-                    m_mapping_popup.update_ams_data(obj_->amsList);
+                    m_mapping_popup.update_ams_data(curr_obj->amsList);
                     m_mapping_popup.Popup();
                 }
             }
-            });
+         });
 
         Material* material_item = new Material();
         material_item->id = extruder;
@@ -3719,13 +3745,10 @@ void SelectMachineDialog::set_default_normal()
     m_scrollable_view->SetMaxSize(m_scrollable_region->GetSize());
 
     //disable pei bed
-    auto bed_type = m_plater->get_partplate_list().get_curr_plate()->get_bed_type(true);
-    if (bed_type == BedType::btPTE) {
-        set_flow_calibration_state(false);
-    }
-    else {
-        set_flow_calibration_state(true);
-    }
+    DeviceManager* dev_manager = Slic3r::GUI::wxGetApp().getDeviceManager();
+    if (!dev_manager) return;
+    MachineObject* obj_ = dev_manager->get_selected_machine();
+    update_flow_cali_check(obj_);
 
     wxSize screenSize = wxGetDisplaySize();
     auto dialogSize = this->GetSize();

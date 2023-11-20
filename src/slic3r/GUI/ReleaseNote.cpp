@@ -26,7 +26,7 @@ namespace Slic3r { namespace GUI {
 
 wxDEFINE_EVENT(EVT_SECONDARY_CHECK_CONFIRM, wxCommandEvent);
 wxDEFINE_EVENT(EVT_SECONDARY_CHECK_CANCEL, wxCommandEvent);
-wxDEFINE_EVENT(EVT_SECONDARY_CHECK_FUNC, wxCommandEvent);
+wxDEFINE_EVENT(EVT_SECONDARY_CHECK_DONE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CHECKBOX_CHANGE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_ENTER_IP_ADDRESS, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CLOSE_IPADDRESS_DLG, wxCommandEvent);
@@ -131,7 +131,7 @@ UpdatePluginDialog::UpdatePluginDialog(wxWindow* parent /*= nullptr*/)
     m_text_up_info->SetForegroundColour(wxColour(0x26, 0x2E, 0x30));
 
 
-    operation_tips = new ::Label(this, Label::Body_12, _L("Click OK to update the Network plug-in when Bambu Studio launches next time."), LB_AUTO_WRAP);
+    operation_tips = new ::Label(this, Label::Body_12, _L("Click OK to update the Network plug-in when GalaxySlicer launches next time."), LB_AUTO_WRAP);
     operation_tips->SetMinSize(wxSize(FromDIP(260), -1));
     operation_tips->SetMaxSize(wxSize(FromDIP(260), -1));
 
@@ -247,7 +247,7 @@ void UpdatePluginDialog::update_info(std::string json_path)
 }
 
 UpdateVersionDialog::UpdateVersionDialog(wxWindow *parent)
-    : DPIDialog(parent, wxID_ANY, _L("New version of Bambu Studio"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER)
+    : DPIDialog(parent, wxID_ANY, _L("New version of GalaxySlicer"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER)
 {
     std::string icon_path = (boost::format("%1%/images/GalaxySlicerTitle.ico") % resources_dir()).str();
     SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
@@ -559,10 +559,10 @@ SecondaryCheckDialog::SecondaryCheckDialog(wxWindow* parent, wxWindowID id, cons
 
     auto bottom_sizer = new wxBoxSizer(wxVERTICAL);
     auto sizer_button = new wxBoxSizer(wxHORIZONTAL);
-    StateColor btn_bg_green(std::pair<wxColour, int>(wxColour(199, 172, 203), StateColor::Pressed), std::pair<wxColour, int>(wxColour(156, 109, 164), StateColor::Hovered),
+    btn_bg_green = StateColor(std::pair<wxColour, int>(wxColour(0, 137, 123), StateColor::Pressed), std::pair<wxColour, int>(wxColour(38, 166, 154), StateColor::Hovered),
         std::pair<wxColour, int>(AMS_CONTROL_BRAND_COLOUR, StateColor::Normal));
 
-    StateColor btn_bg_white(std::pair<wxColour, int>(wxColour(206, 206, 206), StateColor::Pressed), std::pair<wxColour, int>(wxColour(238, 238, 238), StateColor::Hovered),
+    btn_bg_white = StateColor(std::pair<wxColour, int>(wxColour(206, 206, 206), StateColor::Pressed), std::pair<wxColour, int>(wxColour(238, 238, 238), StateColor::Hovered),
         std::pair<wxColour, int>(*wxWHITE, StateColor::Normal));
 
 
@@ -637,7 +637,7 @@ SecondaryCheckDialog::SecondaryCheckDialog(wxWindow* parent, wxWindowID id, cons
     m_button_fn->SetCornerRadius(FromDIP(12));
 
     m_button_fn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
-            post_event(wxCommandEvent(EVT_SECONDARY_CHECK_FUNC));
+            post_event(wxCommandEvent(EVT_SECONDARY_CHECK_DONE));
             e.Skip();
         });
 
@@ -645,14 +645,20 @@ SecondaryCheckDialog::SecondaryCheckDialog(wxWindow* parent, wxWindowID id, cons
         m_button_cancel->Show();
         m_button_fn->Hide();
         m_button_retry->Hide();
-    } else if (btn_style == CONFIRM_AND_FUNC) {
+    } else if (btn_style == CONFIRM_AND_DONE) {
         m_button_cancel->Hide();
         m_button_fn->Show();
         m_button_retry->Hide();
     } else if (btn_style == CONFIRM_AND_RETRY) {
         m_button_retry->Show();
         m_button_cancel->Hide();
-    } else {
+        m_button_fn->Hide();
+    } else if (style == DONE_AND_RETRY) {
+        m_button_retry->Show();
+        m_button_fn->Show();
+        m_button_cancel->Hide();
+    }
+    else {
         m_button_retry->Hide();
         m_button_cancel->Hide();
         m_button_fn->Hide();
@@ -762,13 +768,19 @@ void SecondaryCheckDialog::update_title_style(wxString title, SecondaryCheckDial
         m_button_fn->Hide();
         m_button_retry->Hide();
     }
-    else if (style == CONFIRM_AND_FUNC) {
+    else if (style == CONFIRM_AND_DONE) {
         m_button_cancel->Hide();
         m_button_fn->Show();
         m_button_retry->Hide();
     }
     else if (style == CONFIRM_AND_RETRY) {
         m_button_retry->Show();
+        m_button_cancel->Hide();
+        m_button_fn->Hide();
+    }
+    else if (style == DONE_AND_RETRY) {
+        m_button_retry->Show();
+        m_button_fn->Show();
         m_button_cancel->Hide();
     }
     else {
@@ -779,12 +791,6 @@ void SecondaryCheckDialog::update_title_style(wxString title, SecondaryCheckDial
 
 
     Layout();
-}
-
-void SecondaryCheckDialog::update_func_btn(wxString func_btn_text)
-{
-    m_button_fn->SetLabel(func_btn_text);
-    rescale();
 }
 
 void SecondaryCheckDialog::update_btn_label(wxString ok_btn_text, wxString cancel_btn_text)
@@ -1022,7 +1028,7 @@ InputIpAddressDialog::InputIpAddressDialog(wxWindow* parent)
     auto        m_line_top = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1));
     m_line_top->SetBackgroundColour(wxColour(166, 169, 170));
 
-    comfirm_before_enter_text = _L("Step 1, please confirm Bambu Studio and your printer are in the same LAN.");
+    comfirm_before_enter_text = _L("Step 1, please confirm GalaxySlicer and your printer are in the same LAN.");
     comfirm_after_enter_text = _L("Step 2, if the IP and Access Code below are different from the actual values on your printer, please correct them.");
 
 

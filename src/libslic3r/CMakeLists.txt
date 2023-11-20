@@ -1,3 +1,10 @@
+#/|/ Copyright (c) Prusa Research 2018 - 2023 Tomáš Mészáros @tamasmeszaros, Oleksandra Iushchenko @YuSanka, Enrico Turri @enricoturri1966, Vojtěch Bubník @bubnikv, Pavel Mikuš @Godrak, Lukáš Hejl @hejllukas, Lukáš Matěna @lukasmatena, Filip Sykala @Jony01, David Kocík @kocikdav, Vojtěch Král @vojtechkral
+#/|/ Copyright (c) BambuStudio 2023 manch1n @manch1n
+#/|/ Copyright (c) 2023 Mimoja @Mimoja
+#/|/ Copyright (c) 2022 ole00 @ole00
+#/|/
+#/|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+#/|/
 cmake_minimum_required(VERSION 3.13)
 project(libslic3r)
 
@@ -26,6 +33,9 @@ set(lisbslic3r_sources
     AABBTreeLines.hpp
     AABBMesh.hpp
     AABBMesh.cpp
+    Algorithm/PathSorting.hpp
+    Algorithm/RegionExpansion.hpp
+    Algorithm/RegionExpansion.cpp
     AnyPtr.hpp
     BoundingBox.cpp
     BoundingBox.hpp
@@ -45,6 +55,9 @@ set(lisbslic3r_sources
     ClipperUtils.hpp
     Clipper2Utils.cpp
     Clipper2Utils.hpp
+    ClipperZUtils.hpp
+    Color.cpp
+    Color.hpp
     Config.cpp
     Config.hpp
     CurveAnalyzer.cpp
@@ -189,12 +202,17 @@ set(lisbslic3r_sources
     BlacklistedLibraryCheck.hpp
     LocalesUtils.cpp
     LocalesUtils.hpp
+    CutUtils.cpp
+    CutUtils.hpp
     Model.cpp
     Model.hpp
     ModelArrange.hpp
     ModelArrange.cpp
     MultiMaterialSegmentation.cpp
     MultiMaterialSegmentation.hpp
+    Measure.hpp
+    Measure.cpp
+    MeasureUtils.hpp
     CustomGCode.cpp
     CustomGCode.hpp
     Arrange.hpp
@@ -294,6 +312,7 @@ set(lisbslic3r_sources
     Surface.hpp
     SurfaceCollection.cpp
     SurfaceCollection.hpp
+    SurfaceMesh.hpp
     SVG.cpp
     SVG.hpp
     Technologies.hpp
@@ -411,6 +430,8 @@ set(lisbslic3r_sources
     Shape/TextShape.cpp
     calib.hpp
     calib.cpp
+        GCode/Thumbnails.cpp
+        GCode/Thumbnails.hpp
 )
 
 if (APPLE)
@@ -473,6 +494,8 @@ set(OpenCASCADE_DIR "${CMAKE_PREFIX_PATH}/lib/cmake/occt")
 find_package(OpenCASCADE REQUIRED)
 target_include_directories(libslic3r PUBLIC ${OpenCASCADE_INCLUDE_DIR})
 
+find_package(JPEG REQUIRED)
+
 set(OCCT_LIBS
     TKXDESTEP
     TKSTEP
@@ -525,6 +548,8 @@ target_link_libraries(libslic3r
     ${OCCT_LIBS}
     Clipper2
     mcut
+    JPEG::JPEG
+    qoi
     )
 
 if(NOT WIN32)

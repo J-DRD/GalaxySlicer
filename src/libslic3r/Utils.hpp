@@ -1,3 +1,8 @@
+///|/ Copyright (c) Prusa Research 2016 - 2023 Oleksandra Iushchenko @YuSanka, Vojtěch Bubník @bubnikv, Filip Sykala @Jony01, David Kocík @kocikdav, Enrico Turri @enricoturri1966, Tomáš Mészáros @tamasmeszaros, Lukáš Matěna @lukasmatena, Vojtěch Král @vojtechkral
+///|/ Copyright (c) 2019 Sijmen Schoon
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #ifndef slic3r_Utils_hpp_
 #define slic3r_Utils_hpp_
 
@@ -60,7 +65,7 @@
 #define CLI_FILAMENTS_DIFFERENT_TEMP        -62
 #define CLI_OBJECT_COLLISION_IN_SEQ_PRINT   -63
 #define CLI_OBJECT_COLLISION_IN_LAYER_PRINT -64
-#define CLI_SPIRAL_MODE_CANNOT_DUPLICATE    -65
+#define CLI_SPIRAL_MODE_INVALID_PARAMS      -65
 
 #define CLI_SLICING_ERROR                  -100
 #define CLI_GCODE_PATH_CONFLICTS           -101
@@ -96,6 +101,18 @@ std::string var(const std::string &file_name);
 void set_resources_dir(const std::string &path);
 // Return a full path to the resources directory.
 const std::string& resources_dir();
+
+#if WIN32
+//GalaxySlicer: add python dir
+void set_python_dir(const std::string &path);
+// Return a full path to the python directory.
+const std::string& python_dir();
+
+//GalaxySlicer: add applications dir
+void set_applications_dir(const std::string &path);
+// Return a full path to the applications directory.
+const std::string& applications_dir();
+#endif
 
 //BBS: add temp dir
 void set_temporary_dir(const std::string &path);
@@ -154,6 +171,11 @@ void flush_logs();
 // A special type for strings encoded in the local Windows 8-bit code page.
 // This type is only needed for Perl bindings to relay to Perl that the string is raw, not UTF-8 encoded.
 typedef std::string local_encoded_string;
+
+// Returns next utf8 sequence length. =number of bytes in string, that creates together one utf-8 character. 
+// Starting at pos. ASCII characters returns 1. Works also if pos is in the middle of the sequence.
+extern size_t get_utf8_sequence_length(const std::string& text, size_t pos = 0);
+extern size_t get_utf8_sequence_length(const char *seq, size_t size);
 
 // Convert an UTF-8 encoded string into local coding.
 // On Windows, the UTF-8 string is converted to a local 8-bit code page.
@@ -285,6 +307,16 @@ template<class T> size_t next_highest_power_of_2(T v,
 
 template <class VectorType> void reserve_power_of_2(VectorType &vector, size_t n) {
     vector.reserve(next_highest_power_of_2(n));
+}
+
+template<class VectorType> void reserve_more(VectorType &vector, size_t n)
+{
+    vector.reserve(vector.size() + n);
+}
+
+template<class VectorType> void reserve_more_power_of_2(VectorType &vector, size_t n)
+{
+    vector.reserve(next_highest_power_of_2(vector.size() + n));
 }
 
 template<typename INDEX_TYPE>

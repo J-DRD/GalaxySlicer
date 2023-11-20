@@ -1,3 +1,22 @@
+///|/ Copyright (c) Prusa Research 2018 - 2023 Vojtěch Bubník @bubnikv, Lukáš Matěna @lukasmatena, Oleksandra Iushchenko @YuSanka, Enrico Turri @enricoturri1966, Tomáš Mészáros @tamasmeszaros, David Kocík @kocikdav, Lukáš Hejl @hejllukas, Pavel Mikuš @Godrak, Filip Sykala @Jony01, Vojtěch Král @vojtechkral
+///|/ Copyright (c) 2022 Michael Kirsch
+///|/ Copyright (c) 2021 Boleslaw Ciesielski
+///|/ Copyright (c) 2019 John Drake @foxox
+///|/
+///|/ ported from lib/Slic3r/GUI/Plater.pm:
+///|/ Copyright (c) Prusa Research 2016 - 2019 Vojtěch Bubník @bubnikv, Vojtěch Král @vojtechkral, Enrico Turri @enricoturri1966, Oleksandra Iushchenko @YuSanka, Lukáš Matěna @lukasmatena, Tomáš Mészáros @tamasmeszaros
+///|/ Copyright (c) 2018 Martin Loidl @LoidlM
+///|/ Copyright (c) 2017 Matthias Gazzari @qtux
+///|/ Copyright (c) Slic3r 2012 - 2016 Alessandro Ranellucci @alranel
+///|/ Copyright (c) 2017 Joseph Lenox @lordofhyphens
+///|/ Copyright (c) 2015 Daren Schwenke
+///|/ Copyright (c) 2014 Mark Hindess
+///|/ Copyright (c) 2012 Mike Sheldrake @mesheldrake
+///|/ Copyright (c) 2012 Henrik Brix Andersen @henrikbrixandersen
+///|/ Copyright (c) 2012 Sam Wong
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #include "Plater.hpp"
 #include "libslic3r/Config.hpp"
 
@@ -128,6 +147,7 @@
 #include "Gizmos/GLGizmosManager.hpp"
 #endif // __APPLE__
 
+#include <libslic3r/CutUtils.hpp>
 #include <wx/glcanvas.h>    // Needs to be last because reasons :-/
 #include "WipeTowerDialog.hpp"
 
@@ -1057,6 +1077,13 @@ void Sidebar::update_all_preset_comboboxes()
             m_bed_type_list->SelectAndNotify((int)bed_type - 1);
         }
         m_bed_type_list->Enable();
+        auto str_bed_type = wxGetApp().app_config->get_printer_setting(wxGetApp().preset_bundle->printers.get_selected_preset_name(), "curr_bed_type");
+        if(!str_bed_type.empty()){
+            int bed_type_value = atoi(str_bed_type.c_str());
+            if(bed_type_value == 0)
+                bed_type_value = 1;
+            m_bed_type_list->SelectAndNotify(bed_type_value - 1);
+        }
     } else {
         connection_btn->Show();
         ams_btn->Hide();
@@ -2842,7 +2869,7 @@ wxColour Plater::get_next_color_for_filament()
 wxString Plater::get_slice_warning_string(GCodeProcessorResult::SliceWarning& warning)
 {
     if (warning.msg == BED_TEMP_TOO_HIGH_THAN_FILAMENT) {
-        return _L("The bed temperature exceeds filament's vitrification temperature. Please open the front door of printer before printing to avoid nozzle clog.");
+        return _L("The current hot bed temperature is relatively high. The nozzle may be clogged when printing this filament in a closed enclosure. Please open the front door and/or remove the upper glass.");
     } else if (warning.msg == NOZZLE_HRC_CHECKER) {
         return _L("The nozzle hardness required by the filament is higher than the default nozzle hardness of the printer. Please replace the hardened nozzle or filament, otherwise, the nozzle will be attrited or damaged.");
     } else if (warning.msg == NOT_SUPPORT_TRADITIONAL_TIMELAPSE) {
@@ -2862,11 +2889,7 @@ void Plater::priv::apply_free_camera_correction(bool apply/* = true*/)
         camera.set_type(Camera::EType::Perspective);
     else
         camera.set_type(Camera::EType::Ortho);
-    if (apply
-#ifdef SUPPORT_FREE_CAMERA
-        && wxGetApp().app_config->get("use_free_camera") != "1"
-#endif
-        )
+    if (apply && wxGetApp().app_config->get_bool("use_free_camera"))
         camera.recover_from_free_camera();
 }
 
@@ -3973,7 +3996,7 @@ wxString Plater::priv::get_export_file(GUI::FileType file_type)
         {
             // XXX: Problem on OS X with double extension?
             output_file.replace_extension("zip.amf");
-            dlg_title = _devL("Export AMF file:");
+            dlg_title = _L("Export AMF file:");
             break;
         }
         case FT_3MF:
@@ -3985,7 +4008,7 @@ wxString Plater::priv::get_export_file(GUI::FileType file_type)
         case FT_OBJ:
         {
             output_file.replace_extension("obj");
-            dlg_title = _devL("Export OBJ file:");
+            dlg_title = _L("Export OBJ file:");
             break;
         }
         default: break;
@@ -4037,7 +4060,7 @@ int Plater::priv::get_selected_volume_idx() const
     int idx = selection.get_object_idx();
     if ((0 > idx) || (idx > 1000))
         return-1;
-    const GLVolume* v = selection.get_volume(*selection.get_volume_idxs().begin());
+    const GLVolume* v = selection.get_first_volume();
     if (model.objects[idx]->volumes.size() > 1)
         return v->volume_idx();
     return -1;
@@ -4252,7 +4275,7 @@ void Plater::priv::mirror(Axis axis)
 void Plater::find_new_position(const ModelInstancePtrs &instances)
 {
     arrangement::ArrangePolygons movable, fixed;
-    arrangement::ArrangeParams arr_params = get_arrange_params(this);
+    arrangement::ArrangeParams arr_params = init_arrange_params(this);
 
     for (const ModelObject *mo : p->model.objects)
         for (ModelInstance *inst : mo->instances) {
@@ -4774,7 +4797,7 @@ bool Plater::priv::replace_volume_with_stl(int object_idx, int volume_idx, const
 {
     const std::string path = new_path.string();
     wxBusyCursor wait;
-    wxBusyInfo info(_devL("Replace from:") + " " + from_u8(path), q->get_current_canvas3D()->get_wxglcanvas());
+    wxBusyInfo info(_L("Replace from:") + " " + from_u8(path), q->get_current_canvas3D()->get_wxglcanvas());
 
     Model new_model;
     try {
@@ -4790,7 +4813,7 @@ bool Plater::priv::replace_volume_with_stl(int object_idx, int volume_idx, const
     }
 
     if (new_model.objects.size() > 1 || new_model.objects.front()->volumes.size() > 1) {
-        MessageDialog dlg(q, _devL("Unable to replace with more than one volume"), _devL("Error during replace"), wxOK | wxOK_DEFAULT | wxICON_WARNING);
+        MessageDialog dlg(q, _L("Unable to replace with more than one volume"), _L("Error during replace"), wxOK | wxOK_DEFAULT | wxICON_WARNING);
         dlg.ShowModal();
         return false;
     }
@@ -4848,7 +4871,7 @@ void Plater::priv::replace_with_stl()
     if (selection.is_wipe_tower() || get_selection().get_volume_idxs().size() != 1)
         return;
 
-    const GLVolume* v = selection.get_volume(*selection.get_volume_idxs().begin());
+    const GLVolume* v = selection.get_first_volume();
     int object_idx = v->object_idx();
     int volume_idx = v->volume_idx();
 
@@ -5055,8 +5078,8 @@ void Plater::priv::reload_from_disk()
             }
         }
         else {
-            wxString      message = _devL("Do you want to replace it") + " ?";
-            MessageDialog dlg(q, message, wxMessageBoxCaptionStr, wxYES_NO | wxYES_DEFAULT | wxICON_QUESTION);
+            wxString      message = _L("Do you want to replace it") + " ?";
+            MessageDialog dlg(q, message, _L("Message"), wxYES_NO | wxYES_DEFAULT | wxICON_QUESTION);
             if (dlg.ShowModal() == wxID_YES)
 #if ENABLE_RELOAD_FROM_DISK_REWORK
                 replace_paths.emplace_back(search, sel_filename_path);
@@ -5084,7 +5107,7 @@ void Plater::priv::reload_from_disk()
         const auto& path = input_paths[i].string();
 
         wxBusyCursor wait;
-        wxBusyInfo info(_devL("Reload from:") + " " + from_u8(path), q->get_current_canvas3D()->get_wxglcanvas());
+        wxBusyInfo info(_L("Reload from:") + " " + from_u8(path), q->get_current_canvas3D()->get_wxglcanvas());
 
         Model new_model;
         try
@@ -5295,11 +5318,11 @@ void Plater::priv::reload_from_disk()
 #endif // ENABLE_RELOAD_FROM_DISK_REWORK
 
     if (!fail_list.empty()) {
-        wxString message = _devL("Unable to reload:") + "\n";
+        wxString message = _L("Unable to reload:") + "\n";
         for (const wxString& s : fail_list) {
             message += s + "\n";
         }
-        MessageDialog dlg(q, message, _devL("Error during reload"), wxOK | wxOK_DEFAULT | wxICON_WARNING);
+        MessageDialog dlg(q, message, _L("Error during reload"), wxOK | wxOK_DEFAULT | wxICON_WARNING);
         dlg.ShowModal();
     }
 
@@ -6315,6 +6338,7 @@ void Plater::priv::on_action_print_all(SimpleEvent&)
 
     //BBS
     if (!m_select_machine_dlg) m_select_machine_dlg = new SelectMachineDialog(q);
+    m_select_machine_dlg->set_print_type(PrintFromType::FROM_NORMAL);
     m_select_machine_dlg->prepare(PLATE_ALL_IDX);
     m_select_machine_dlg->ShowModal();
     record_start_print_preset("print_all");
@@ -7157,7 +7181,7 @@ bool Plater::priv::can_edit_text() const
         return true;
 
     if (selection.is_single_volume()) {
-        const GLVolume *gl_volume      = selection.get_volume(*selection.get_volume_idxs().begin());
+        const GLVolume *gl_volume      = selection.get_first_volume();
         int             out_object_idx = gl_volume->object_idx();
         ModelObject *   model_object   = selection.get_model()->objects[out_object_idx];
         int             out_volume_idx = gl_volume->volume_idx();
@@ -8120,9 +8144,9 @@ void Plater::import_model_id(wxString download_info)
                         body,
                         http_status,
                         error);
-                    
+
                     if (retry_count == max_retries) {
-                        msg = _L("Importing to Bambu Studio failed. Please download the file and manually import it.");
+                        msg = _L("Importing to GalaxySlicer failed. Please download the file and manually import it.");
                         cont = false;
                     }
                 })
@@ -8276,14 +8300,6 @@ void Plater::add_model(bool imperial_units, std::string fname)
         wxGetApp().mainframe->update_title();
     }
 }
-std::array<Vec3d, 4> get_cut_plane(const BoundingBoxf3& bbox, const double& cut_height) {
-    std::array<Vec3d, 4> plane_pts;
-    plane_pts[0] = Vec3d(bbox.min(0), bbox.min(1), cut_height);
-    plane_pts[1] = Vec3d(bbox.max(0), bbox.min(1), cut_height);
-    plane_pts[2] = Vec3d(bbox.max(0), bbox.max(1), cut_height);
-    plane_pts[3] = Vec3d(bbox.min(0), bbox.max(1), cut_height);
-    return plane_pts;
-}
 
 void Plater::calib_pa(const Calib_Params& params)
 {
@@ -8293,7 +8309,7 @@ void Plater::calib_pa(const Calib_Params& params)
 
     switch (params.mode) {
         case CalibMode::Calib_PA_Line:
-            add_model(false, Slic3r::resources_dir() + "/calib/PressureAdvance/pressure_advance_test.stl");
+            add_model(false, Slic3r::resources_dir() + "/calib/pressure_advance/pressure_advance_test.stl");
             break;
         case CalibMode::Calib_PA_Pattern:
             _calib_pa_pattern(params);
@@ -8406,8 +8422,27 @@ void Plater::_calib_pa_pattern(const Calib_Params& params)
     changed_objects({ 0 });
 }
 
+void Plater::cut_horizontal(size_t obj_idx, size_t instance_idx, double z, ModelObjectCutAttributes attributes)
+{
+    wxCHECK_RET(obj_idx < p->model.objects.size(), "obj_idx out of bounds");
+    auto *object = p->model.objects[obj_idx];
+
+    wxCHECK_RET(instance_idx < object->instances.size(), "instance_idx out of bounds");
+
+    if (! attributes.has(ModelObjectCutAttribute::KeepUpper) && ! attributes.has(ModelObjectCutAttribute::KeepLower))
+        return;
+
+    wxBusyCursor wait;
+
+    const Vec3d instance_offset = object->instances[instance_idx]->get_offset();
+    Cut         cut(object, instance_idx, Geometry::translation_transform(z * Vec3d::UnitZ() - instance_offset), attributes);
+    const auto  new_objects = cut.perform_with_plane();
+
+    apply_cut_object_to_model(obj_idx, new_objects);
+}
+
 void Plater::_calib_pa_tower(const Calib_Params& params) {
-    add_model(false, Slic3r::resources_dir() + "/calib/PressureAdvance/tower_with_seam.stl");
+    add_model(false, Slic3r::resources_dir() + "/calib/pressure_advance/tower_with_seam.stl");
 
     auto print_config = &wxGetApp().preset_bundle->prints.get_edited_preset().config;
     auto printer_config = &wxGetApp().preset_bundle->printers.get_edited_preset().config;
@@ -8442,8 +8477,7 @@ void Plater::_calib_pa_tower(const Calib_Params& params) {
     auto new_height = std::ceil((params.end - params.start) / params.step) + 1;
     auto obj_bb = model().objects[0]->bounding_box();
     if (new_height < obj_bb.size().z()) {
-        std::array<Vec3d, 4> plane_pts = get_cut_plane(obj_bb, new_height);
-        cut(0, 0, plane_pts, ModelObjectCutAttribute::KeepLower);
+        cut_horizontal(0, 0, new_height, ModelObjectCutAttribute::KeepLower);
     }
 
     _calib_pa_select_added_objects();
@@ -8584,8 +8618,7 @@ void Plater::calib_temp(const Calib_Params& params) {
         // add EPSILON offset to avoid cutting at the exact location where the flat surface is
         auto new_height = block_count * 10.0 + EPSILON;
         if (new_height < obj_bb.size().z()) {
-            std::array<Vec3d, 4> plane_pts = get_cut_plane(obj_bb, new_height);
-            cut(0, 0, plane_pts, ModelObjectCutAttribute::KeepLower);
+            cut_horizontal(0, 0, new_height, ModelObjectCutAttribute::KeepLower);
         }
     }
     
@@ -8595,8 +8628,7 @@ void Plater::calib_temp(const Calib_Params& params) {
     if(block_count > 0){
         auto new_height = block_count * 10.0 + EPSILON;
         if (new_height < obj_bb.size().z()) {
-            std::array<Vec3d, 4> plane_pts = get_cut_plane(obj_bb, new_height);
-            cut(0, 0, plane_pts, ModelObjectCutAttribute::KeepUpper);
+            cut_horizontal(0, 0, new_height, ModelObjectCutAttribute::KeepUpper);
         }
     }
     
@@ -8641,14 +8673,15 @@ void Plater::calib_max_vol_speed(const Calib_Params& params)
     print_config->set_key_value("timelapse_type", new ConfigOptionEnum<TimelapseType>(tlTraditional));
     print_config->set_key_value("wall_loops", new ConfigOptionInt(1));
     print_config->set_key_value("top_shell_layers", new ConfigOptionInt(0));
-    print_config->set_key_value("bottom_shell_layers", new ConfigOptionInt(1));
+    print_config->set_key_value("bottom_shell_layers", new ConfigOptionInt(0));
     print_config->set_key_value("sparse_infill_density", new ConfigOptionPercent(0));
+    print_config->set_key_value("overhang_reverse", new ConfigOptionBool(false));
     print_config->set_key_value("spiral_mode", new ConfigOptionBool(true));
     print_config->set_key_value("outer_wall_line_width", new ConfigOptionFloatOrPercent(line_width, false));
     print_config->set_key_value("initial_layer_print_height", new ConfigOptionFloat(layer_height));
     print_config->set_key_value("layer_height", new ConfigOptionFloat(layer_height));
     obj->config.set_key_value("brim_type", new ConfigOptionEnum<BrimType>(btOuterAndInner));
-    obj->config.set_key_value("brim_width", new ConfigOptionFloat(3.0));
+    obj->config.set_key_value("brim_width", new ConfigOptionFloat(5.0));
     obj->config.set_key_value("brim_object_gap", new ConfigOptionFloat(0.0));
 
     changed_objects({ 0 });
@@ -8663,8 +8696,7 @@ void Plater::calib_max_vol_speed(const Calib_Params& params)
     auto obj_bb = obj->bounding_box();
     auto height = (params.end - params.start + 1) / params.step;
     if (height < obj_bb.size().z()) {
-        std::array<Vec3d, 4> plane_pts = get_cut_plane(obj_bb, height);
-        cut(0, 0, plane_pts, ModelObjectCutAttribute::KeepLower);
+        cut_horizontal(0, 0, height, ModelObjectCutAttribute::KeepLower);
     }
 
     auto new_params = params;
@@ -8712,8 +8744,7 @@ void Plater::calib_retraction(const Calib_Params& params)
     auto obj_bb = obj->bounding_box();
     auto height = 1.0 + 0.4 + ((params.end - params.start)) / params.step;
     if (height < obj_bb.size().z()) {
-        std::array<Vec3d, 4> plane_pts = get_cut_plane(obj_bb, height);
-        cut(0, 0, plane_pts, ModelObjectCutAttribute::KeepLower);
+        cut_horizontal(0, 0, height, ModelObjectCutAttribute::KeepLower);
     }
 
     p->background_process.fff_print()->set_calib_params(params);
@@ -8738,6 +8769,7 @@ void Plater::calib_VFA(const Calib_Params& params)
     print_config->set_key_value("top_shell_layers", new ConfigOptionInt(0));
     print_config->set_key_value("bottom_shell_layers", new ConfigOptionInt(1));
     print_config->set_key_value("sparse_infill_density", new ConfigOptionPercent(0));
+    print_config->set_key_value("overhang_reverse", new ConfigOptionBool(false));
     print_config->set_key_value("spiral_mode", new ConfigOptionBool(true));
     model().objects[0]->config.set_key_value("brim_type", new ConfigOptionEnum<BrimType>(btOuterOnly));
     model().objects[0]->config.set_key_value("brim_width", new ConfigOptionFloat(3.0));
@@ -8753,8 +8785,7 @@ void Plater::calib_VFA(const Calib_Params& params)
     auto obj_bb = model().objects[0]->bounding_box();
     auto height = 5 * ((params.end - params.start) / params.step + 1);
     if (height < obj_bb.size().z()) {
-        std::array<Vec3d, 4> plane_pts = get_cut_plane(obj_bb, height);
-        cut(0, 0, plane_pts, ModelObjectCutAttribute::KeepLower);
+        cut_horizontal(0, 0, height, ModelObjectCutAttribute::KeepLower);
     }
 
     p->background_process.fff_print()->set_calib_params(params);
@@ -9859,27 +9890,16 @@ void Plater::convert_unit(ConversionType conv_type)
     }
 }
 
-// BBS: replace z with plane_points
-void Plater::cut(size_t obj_idx, size_t instance_idx, std::array<Vec3d, 4> plane_points, ModelObjectCutAttributes attributes)
+void Plater::apply_cut_object_to_model(size_t obj_idx, const ModelObjectPtrs& new_objects)
 {
-    wxCHECK_RET(obj_idx < p->model.objects.size(), "obj_idx out of bounds");
-    auto *object = p->model.objects[obj_idx];
+    model().delete_object(obj_idx);
+    sidebar().obj_list()->delete_object_from_list(obj_idx);
 
-    wxCHECK_RET(instance_idx < object->instances.size(), "instance_idx out of bounds");
-
-    if (! attributes.has(ModelObjectCutAttribute::KeepUpper) && ! attributes.has(ModelObjectCutAttribute::KeepLower))
-        return;
-
-    wxBusyCursor wait;
-    // BBS: replace z with plane_points
-    const auto new_objects = object->cut(instance_idx, plane_points, attributes);
-
-    remove(obj_idx);
-    p->load_model_objects(new_objects);
+    // suppress to call selection update for Object List to avoid call of early Gizmos on/off update
+    p->load_model_objects(new_objects, false, false);
 
     // now process all updates of the 3d scene
     update();
-
     // Update InfoItems in ObjectList after update() to use of a correct value of the GLCanvas3D::is_sinking(),
     // which is updated after a view3D->reload_scene(false, flags & (unsigned int)UpdateParams::FORCE_FULL_SCREEN_REFRESH) call
     for (size_t idx = 0; idx < p->model.objects.size(); idx++)
@@ -9889,62 +9909,10 @@ void Plater::cut(size_t obj_idx, size_t instance_idx, std::array<Vec3d, 4> plane
     size_t last_id = p->model.objects.size() - 1;
     for (size_t i = 0; i < new_objects.size(); ++i)
         selection.add_object((unsigned int)(last_id - i), i == 0);
-}
 
-// BBS
-void Plater::segment(size_t obj_idx, size_t instance_idx, double smoothing_alpha, int segment_number)
-{
-    wxCHECK_RET(obj_idx < p->model.objects.size(), "obj_idx out of bounds");
-    auto* object = p->model.objects[obj_idx];
-
-    wxCHECK_RET(instance_idx < object->instances.size(), "instance_idx out of bounds");
-
-    Plater::TakeSnapshot snapshot(this, "Segment");
-
-    wxBusyCursor wait;
-    // real process
-    PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
-    const auto print_tech = preset_bundle.printers.get_edited_preset().printer_technology();
-    const size_t filament_cnt = print_tech != ptFFF ? 1 : preset_bundle.filament_presets.size();
-    const auto new_objects = object->segment(instance_idx, filament_cnt, smoothing_alpha, segment_number);
-
-    remove(obj_idx);
-    p->load_model_objects(new_objects);
-
-    Selection& selection = p->get_selection();
-    size_t last_id = p->model.objects.size() - 1;
-    for (size_t i = 0; i < new_objects.size(); ++i)
-    {
-        selection.add_object((unsigned int)(last_id - i), i == 0);
-    }
-}
-
-// BBS
-void Plater::merge(size_t obj_idx, std::vector<int>& vol_indeces)
-{
-    wxCHECK_RET(obj_idx < p->model.objects.size(), "obj_idx out of bounds");
-    auto* object = p->model.objects[obj_idx];
-
-    Plater::TakeSnapshot snapshot(this, "Merge");
-
-    wxBusyCursor wait;
-    // real process
-    PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
-    const auto print_tech = preset_bundle.printers.get_edited_preset().printer_technology();
-    // BBS
-    const size_t filament_cnt = print_tech != ptFFF ? 1 : preset_bundle.filament_presets.size();
-
-    const auto new_objects = object->merge_volumes(vol_indeces);
-
-    remove(obj_idx);
-    p->load_model_objects(new_objects);
-
-    Selection& selection = p->get_selection();
-    size_t last_id = p->model.objects.size() - 1;
-    for (size_t i = 0; i < new_objects.size(); ++i)
-    {
-        selection.add_object((unsigned int)(last_id - i), i == 0);
-    }
+    // UIThreadWorker w;
+    // arrange(w, true);
+    // w.wait_for_idle();
 }
 
 void Plater::export_gcode(bool prefer_removable)
@@ -9992,7 +9960,7 @@ void Plater::export_gcode(bool prefer_removable)
     fs::path output_path;
     {
         std::string ext = default_output_file.extension().string();
-        wxFileDialog dlg(this, (printer_technology() == ptFFF) ? _L("Save G-code file as:") : _devL("Save SLA file as:"),
+        wxFileDialog dlg(this, (printer_technology() == ptFFF) ? _L("Save G-code file as:") : _L("Save SLA file as:"),
             start_dir,
             from_path(default_output_file.filename()),
             GUI::file_wildcards((printer_technology() == ptFFF) ? FT_GCODE : FT_SL1, ext),
@@ -10001,8 +9969,8 @@ void Plater::export_gcode(bool prefer_removable)
         if (dlg.ShowModal() == wxID_OK) {
             output_path = into_path(dlg.GetPath());
             while (has_illegal_filename_characters(output_path.filename().string())) {
-                show_error(this, _devL("The provided file name is not valid.") + "\n" +
-                    _devL("The following characters are not allowed by a FAT file system:") + " <>:/\\|?*\"");
+                show_error(this, _L("The provided file name is not valid.") + "\n" +
+                    _L("The following characters are not allowed by a FAT file system:") + " <>:/\\|?*\"");
                 dlg.SetFilename(from_path(output_path.filename()));
                 if (dlg.ShowModal() == wxID_OK)
                     output_path = into_path(dlg.GetPath());
@@ -10335,7 +10303,7 @@ void Plater::export_stl(bool extended, bool selection_only)
             if (selection.get_mode() == Selection::Instance)
                 mesh = mesh_to_export(*model_object, (model_object->instances.size() > 1) ? -1 : selection.get_instance_idx());
             else {
-                const GLVolume* volume = selection.get_volume(*selection.get_volume_idxs().begin());
+                const GLVolume* volume = selection.get_first_volume();
                 mesh = model_object->volumes[volume->volume_idx()]->mesh();
                 mesh.transform(volume->get_volume_transformation().get_matrix(), true);
             }

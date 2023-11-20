@@ -1870,6 +1870,9 @@ void TabPrint::build()
         optgroup->append_single_option_line("elefant_foot_compensation");
         optgroup->append_single_option_line("elefant_foot_compensation_layers");
         optgroup->append_single_option_line("precise_outer_wall");
+        optgroup->append_single_option_line("hole_to_polyhole");
+        optgroup->append_single_option_line("hole_to_polyhole_threshold");
+        optgroup->append_single_option_line("hole_to_polyhole_twisted");
 
         optgroup = page->new_optgroup(L("Ironing"), L"param_ironing");
         optgroup->append_single_option_line("ironing_type");
@@ -1877,6 +1880,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("ironing_speed");
         optgroup->append_single_option_line("ironing_flow");
         optgroup->append_single_option_line("ironing_spacing");
+        optgroup->append_single_option_line("ironing_angle");
 
         optgroup = page->new_optgroup(L("Wall generator"), L"param_wall");
         optgroup->append_single_option_line("wall_generator");
@@ -1906,6 +1910,8 @@ void TabPrint::build()
         optgroup->append_single_option_line("reduce_crossing_wall");
         optgroup->append_single_option_line("max_travel_detour_distance");
         optgroup->append_single_option_line("extra_perimeters_on_overhangs");
+        optgroup->append_single_option_line("overhang_reverse");
+        optgroup->append_single_option_line("overhang_reverse_threshold");
 
     page = add_options_page(L("Strength"), "empty");
         optgroup = page->new_optgroup(L("Walls"), L"param_wall");
@@ -1919,13 +1925,13 @@ void TabPrint::build()
         optgroup->append_single_option_line("bottom_surface_pattern", "fill-patterns#Infill of the top surface and bottom surface");
         optgroup->append_single_option_line("bottom_shell_layers");
         optgroup->append_single_option_line("bottom_shell_thickness");
-        optgroup->append_single_option_line("internal_solid_infill_pattern");
 
         optgroup = page->new_optgroup(L("Infill"), L"param_infill");
         optgroup->append_single_option_line("sparse_infill_density");
         optgroup->append_single_option_line("sparse_infill_pattern", "fill-patterns#infill types and their properties of sparse");
         optgroup->append_single_option_line("infill_anchor");
         optgroup->append_single_option_line("infill_anchor_max");
+        optgroup->append_single_option_line("internal_solid_infill_pattern");
 
         optgroup->append_single_option_line("filter_out_gap_fill");
 
@@ -1947,8 +1953,8 @@ void TabPrint::build()
         optgroup = page->new_optgroup(L("Other layers speed"), L"param_speed", 15);
         optgroup->append_single_option_line("outer_wall_speed");
         optgroup->append_single_option_line("inner_wall_speed");
-        optgroup->append_single_option_line("small_perimeter_speed");
         optgroup->append_single_option_line("small_perimeter_threshold");
+        optgroup->append_single_option_line("small_perimeter_speed");
         optgroup->append_single_option_line("sparse_infill_speed");
         optgroup->append_single_option_line("internal_solid_infill_speed");
         optgroup->append_single_option_line("top_surface_speed");
@@ -2094,7 +2100,7 @@ void TabPrint::build()
 
         optgroup = page->new_optgroup(L("Special mode"), L"param_special");
         optgroup->append_single_option_line("slicing_mode");
-        optgroup->append_single_option_line("print_sequence");
+        optgroup->append_single_option_line("print_sequence", "sequent-print");
         optgroup->append_single_option_line("spiral_mode", "spiral-vase");
         optgroup->append_single_option_line("timelapse_type", "Timelapse");
 
@@ -2568,8 +2574,8 @@ bool Tab::validate_custom_gcode(const wxString& title, const std::string& gcode)
     return !invalid;
 }
 
-static void validate_custom_gcode_cb(Tab* tab, ConfigOptionsGroupShp opt_group, const t_config_option_key& opt_key, const boost::any& value) {
-    tab->validate_custom_gcodes_was_shown = !Tab::validate_custom_gcode(opt_group->title, boost::any_cast<std::string>(value));
+static void validate_custom_gcode_cb(Tab* tab, const wxString& title, const t_config_option_key& opt_key, const boost::any& value) {
+    tab->validate_custom_gcodes_was_shown = !Tab::validate_custom_gcode(title, boost::any_cast<std::string>(value));
     tab->update_dirty();
     tab->on_value_change(opt_key, value);
 }
@@ -2586,18 +2592,19 @@ void TabFilament::add_filament_overrides_page()
         //BBS
         line = optgroup->create_single_option_line(optgroup->get_option(opt_key));
 
-        line.near_label_widget = [this, optgroup, opt_key, opt_index](wxWindow* parent) {
+        line.near_label_widget = [this, optgroup_wk = ConfigOptionsGroupWkp(optgroup), opt_key, opt_index](wxWindow* parent) {
             wxCheckBox* check_box = new wxCheckBox(parent, wxID_ANY, "");
 
-            check_box->Bind(wxEVT_CHECKBOX, [optgroup, opt_key, opt_index](wxCommandEvent& evt) {
+            check_box->Bind(wxEVT_CHECKBOX, [optgroup_wk, opt_key, opt_index](wxCommandEvent& evt) {
                 const bool is_checked = evt.IsChecked();
-                Field* field = optgroup->get_fieldc(opt_key, opt_index);
-                if (field != nullptr) {
-                    field->toggle(is_checked);
-                    if (is_checked)
-                        field->set_last_meaningful_value();
-                    else
-                        field->set_na_value();
+                if (auto optgroup_sh = optgroup_wk.lock(); optgroup_sh) {
+                    if (Field *field = optgroup_sh->get_fieldc(opt_key, opt_index); field != nullptr) {
+                        field->toggle(is_checked);
+                        if (is_checked)
+                            field->set_last_meaningful_value();
+                        else
+                            field->set_na_value();
+                    }
                 }
             }, check_box->GetId());
 
@@ -2721,11 +2728,14 @@ void TabFilament::build()
         optgroup->append_line(line);
 
 
-        optgroup = page->new_optgroup(L("Print temperature"), L"param_temperature");
-        optgroup->append_single_option_line("chamber_temperature");
+        optgroup = page->new_optgroup(L("Print chamber temperature"), L"param_chamber_temp");
+        optgroup->append_single_option_line("chamber_temperature", "Chamber-temperature");
+        optgroup->append_single_option_line("activate_chamber_temp_control", "Chamber-temperature");
+
         optgroup->append_separator();
 
 
+        optgroup = page->new_optgroup(L("Print temperature"), L"param_temperature");
         line = { L("Nozzle"), L("Nozzle temperature when printing") };
         line.append_option(optgroup->get_option("nozzle_temperature_initial_layer"));
         line.append_option(optgroup->get_option("nozzle_temperature"));
@@ -2751,7 +2761,7 @@ void TabFilament::build()
         line.append_option(optgroup->get_option("textured_plate_temp"));
         optgroup->append_line(line);
 
-        optgroup->m_on_change = [this, optgroup](t_config_option_key opt_key, boost::any value)
+        optgroup->m_on_change = [this](t_config_option_key opt_key, boost::any value)
         {
             DynamicPrintConfig& filament_config = wxGetApp().preset_bundle->filaments.get_edited_preset().config;
 
@@ -2825,18 +2835,18 @@ void TabFilament::build()
         optgroup->append_single_option_line("support_material_interface_fan_speed");
 
         optgroup = page->new_optgroup(L("Auxiliary part cooling fan"), L"param_cooling_fan");
-        optgroup->append_single_option_line("additional_cooling_fan_speed");
+        optgroup->append_single_option_line("additional_cooling_fan_speed", "Auxiliary-fan");
 
         optgroup = page->new_optgroup(L("Exhaust fan"),L"param_cooling_fan");
 
-        optgroup->append_single_option_line("activate_air_filtration");
+        optgroup->append_single_option_line("activate_air_filtration", "Air-filtration(Exhaust-fan)");
 
-        line = {L("During print"), L("")};
+        line = {L("During print"), ""};
         line.append_option(optgroup->get_option("during_print_exhaust_fan_speed"));
         optgroup->append_line(line);
 
 
-        line = {L("Complete print"), L("")};
+        line = {L("Complete print"), ""};
         line.append_option(optgroup->get_option("complete_print_exhaust_fan_speed"));
         optgroup->append_line(line);
         //BBS
@@ -2846,8 +2856,8 @@ void TabFilament::build()
 
     page = add_options_page(L("Advanced"), "advanced");
         optgroup = page->new_optgroup(L("Filament start G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("filament_start_gcode");
         option.opt.full_width = true;
@@ -2856,8 +2866,8 @@ void TabFilament::build()
         optgroup->append_single_option_line(option);
 
         optgroup = page->new_optgroup(L("Filament end G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("filament_end_gcode");
         option.opt.full_width = true;
@@ -2981,16 +2991,20 @@ void TabFilament::toggle_options()
     }
 
     if (m_active_page->title() == L("Cooling")) {
-      bool cooling = m_config->opt_bool("slow_down_for_layer_cooling", 0);
-      toggle_option("slow_down_min_speed", cooling);
-
       bool has_enable_overhang_bridge_fan = m_config->opt_bool("enable_overhang_bridge_fan", 0);
       for (auto el : {"overhang_fan_speed", "overhang_fan_threshold"})
             toggle_option(el, has_enable_overhang_bridge_fan);
 
-      toggle_option(
-          "additional_cooling_fan_speed",
-          m_preset_bundle->printers.get_edited_preset().config.option<ConfigOptionBool>("auxiliary_fan")->value);
+        toggle_option(
+            "additional_cooling_fan_speed",
+            m_preset_bundle->printers.get_edited_preset().config.option<ConfigOptionBool>("auxiliary_fan")->value);
+
+        //GalaxySlicer: toogle options for exhaust fan
+        bool enable_exhaust_fan_options = m_preset_bundle->printers.get_edited_preset().config.option<ConfigOptionBool>("exhaust_fan")->value || is_BBL_printer;
+        
+        toggle_option("activate_air_filtration", enable_exhaust_fan_options);
+        toggle_option("during_print_exhaust_fan_speed", enable_exhaust_fan_options);
+        toggle_option("complete_print_exhaust_fan_speed", enable_exhaust_fan_options);
     }
     if (m_active_page->title() == L("Filament"))
     {
@@ -3000,8 +3014,7 @@ void TabFilament::toggle_options()
         toggle_line("cool_plate_temp_initial_layer", is_BBL_printer);
         toggle_line("eng_plate_temp_initial_layer", is_BBL_printer);
         toggle_line("textured_plate_temp_initial_layer", is_BBL_printer);
-        // bool support_chamber_temp_control = this->m_preset_bundle->printers.get_selected_preset().config.opt_bool("support_chamber_temp_control");
-        // toggle_option("chamber_temperature", !is_BBL_printer || support_chamber_temp_control);
+
     }
     if (m_active_page->title() == L("Setting Overrides"))
         update_filament_overrides_page();
@@ -3115,10 +3128,7 @@ void TabPrinter::build_fff()
         optgroup->append_single_option_line("printable_height");
         optgroup->append_single_option_line("nozzle_volume");
         optgroup->append_single_option_line("best_object_pos");
-
-#if 0
-        //optgroup->append_single_option_line("z_offset");
-#endif
+        optgroup->append_single_option_line("z_offset");
 
         // ConfigOptionDef def;
         //    def.type =  coInt,
@@ -3138,6 +3148,7 @@ void TabPrinter::build_fff()
         option = optgroup->get_option("thumbnails");
         option.opt.full_width = true;
         optgroup->append_single_option_line(option);
+        optgroup->append_single_option_line("thumbnails_format");
         optgroup->append_single_option_line("use_relative_e_distances");
         optgroup->append_single_option_line("use_firmware_retraction");
         optgroup->append_single_option_line("scan_first_layer");
@@ -3161,16 +3172,19 @@ void TabPrinter::build_fff()
         optgroup = page->new_optgroup(L("Accessory") /*, L"param_accessory"*/);
         optgroup->append_single_option_line("nozzle_type");
         optgroup->append_single_option_line("nozzle_hrc");
-        optgroup->append_single_option_line("auxiliary_fan");
-        optgroup->append_single_option_line("support_chamber_temp_control");
-        optgroup->append_single_option_line("support_air_filtration");
+        optgroup->append_single_option_line("auxiliary_fan", "auxiliary-fan");
+        
+//GalaxySlicer: exhaust fan
+        optgroup->append_single_option_line("exhaust_fan");
 
+        optgroup->append_single_option_line("support_chamber_temp_control", "Chamber-temperature");
+        optgroup->append_single_option_line("support_air_filtration", "Air-filtration(Exhaust-fan)");
     const int gcode_field_height = 15; // 150
     const int notes_field_height = 25; // 250
     page = add_options_page(L("Machine gcode"), "cog");
         optgroup = page->new_optgroup(L("Machine start G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("machine_start_gcode");
         option.opt.full_width = true;
@@ -3179,8 +3193,8 @@ void TabPrinter::build_fff()
         optgroup->append_single_option_line(option);
 
         optgroup = page->new_optgroup(L("Machine end G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("machine_end_gcode");
         option.opt.full_width = true;
@@ -3189,8 +3203,8 @@ void TabPrinter::build_fff()
         optgroup->append_single_option_line(option);
         
         optgroup = page->new_optgroup(L("Before layer change G-code"),"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("before_layer_change_gcode");
         option.opt.full_width = true;
@@ -3199,8 +3213,8 @@ void TabPrinter::build_fff()
         optgroup->append_single_option_line(option);
 
         optgroup = page->new_optgroup(L("Layer change G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("layer_change_gcode");
         option.opt.full_width = true;
@@ -3209,8 +3223,8 @@ void TabPrinter::build_fff()
         optgroup->append_single_option_line(option);
         
         optgroup = page->new_optgroup(L("Time lapse G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("time_lapse_gcode");
         option.opt.full_width = true;
@@ -3219,8 +3233,8 @@ void TabPrinter::build_fff()
         optgroup->append_single_option_line(option);
 
         optgroup = page->new_optgroup(L("Change filament G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("change_filament_gcode");
         option.opt.full_width = true;
@@ -3228,9 +3242,20 @@ void TabPrinter::build_fff()
         option.opt.height = gcode_field_height;//150;
         optgroup->append_single_option_line(option);
 
+        optgroup = page->new_optgroup(L("Change extrusion role G-code"), L"param_gcode", 0);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key &opt_key, const boost::any &value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
+        };
+
+        option = optgroup->get_option("change_extrusion_role_gcode");
+        option.opt.full_width = true;
+        option.opt.is_code = true;
+        option.opt.height = gcode_field_height;//150;
+        optgroup->append_single_option_line(option);
+
         optgroup = page->new_optgroup(L("Pause G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("machine_pause_gcode");
         option.opt.is_code = true;
@@ -3238,8 +3263,8 @@ void TabPrinter::build_fff()
         optgroup->append_single_option_line(option);
 
         optgroup = page->new_optgroup(L("Template Custom G-code"), L"param_gcode", 0);
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key& opt_key, const boost::any& value) {
-            validate_custom_gcode_cb(this, optgroup, opt_key, value);
+        optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
+            validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         option = optgroup->get_option("template_custom_gcode");
         option.opt.is_code = true;
@@ -3430,7 +3455,7 @@ void TabPrinter::build_unregular_pages(bool from_initial_build/* = false*/)
 {
     size_t		n_before_extruders = 2;			//	Count of pages before Extruder pages
     auto        flavor = m_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor")->value;
-    bool		is_marlin_flavor = (flavor == gcfMarlinLegacy || flavor == gcfMarlinFirmware || flavor == gcfKlipper);
+    bool		is_marlin_flavor = (flavor == gcfMarlinLegacy || flavor == gcfMarlinFirmware || flavor == gcfKlipper || flavor == gcfRepRapFirmware);
 
     /* ! Freeze/Thaw in this function is needed to avoid call OnPaint() for erased pages
      * and be cause of application crash, when try to change Preset in moment,
@@ -3442,7 +3467,7 @@ void TabPrinter::build_unregular_pages(bool from_initial_build/* = false*/)
     size_t existed_page = 0;
     for (size_t i = n_before_extruders; i < m_pages.size(); ++i) // first make sure it's not there already
         if (m_pages[i]->title().find(L("Motion ability")) != std::string::npos) {
-            if (!is_marlin_flavor || m_rebuild_kinematics_page)
+            if (m_rebuild_kinematics_page)
                 m_pages.erase(m_pages.begin() + i);
             else
                 existed_page = i;
@@ -3457,8 +3482,8 @@ void TabPrinter::build_unregular_pages(bool from_initial_build/* = false*/)
             m_pages.insert(m_pages.begin() + n_before_extruders, page);
     }
 
-    if (is_marlin_flavor)
-        n_before_extruders++;
+if (is_marlin_flavor)
+    n_before_extruders++;
     size_t		n_after_single_extruder_MM = 2; //	Count of pages after single_extruder_multi_material page
 
     if (from_initial_build) {
@@ -3466,13 +3491,16 @@ void TabPrinter::build_unregular_pages(bool from_initial_build/* = false*/)
         auto page     = add_options_page(L("Multimaterial"), "printer", true);
         auto optgroup = page->new_optgroup(L("Single extruder multimaterial setup"));
         optgroup->append_single_option_line("single_extruder_multi_material");
-        optgroup->m_on_change = [this, optgroup](const t_config_option_key &opt_key, const boost::any &value) {
-            wxTheApp->CallAfter([this, opt_key, value]() {
-                if (opt_key == "single_extruder_multi_material") {
-                    build_unregular_pages();
-                }
-            });
-        };
+        // Orca: we only support Single Extruder Multi Material, so it's always enabled
+        // optgroup->m_on_change = [this](const t_config_option_key &opt_key, const boost::any &value) {
+        //     wxTheApp->CallAfter([this, opt_key, value]() {
+        //         if (opt_key == "single_extruder_multi_material") {
+        //             build_unregular_pages();
+        //         }
+        //     });
+        // };
+        optgroup->append_single_option_line("manual_filament_change");
+
         optgroup = page->new_optgroup(L("Wipe tower"));
         optgroup->append_single_option_line("purge_in_prime_tower");
         optgroup->append_single_option_line("enable_filament_ramming");
@@ -3558,8 +3586,6 @@ void TabPrinter::build_unregular_pages(bool from_initial_build/* = false*/)
             optgroup->append_single_option_line("retraction_length", "", extruder_idx);
             optgroup->append_single_option_line("retract_restart_extra", "", extruder_idx);
             optgroup->append_single_option_line("z_hop", "", extruder_idx);
-            optgroup->append_single_option_line("retract_lift_above", "", extruder_idx);
-            optgroup->append_single_option_line("retract_lift_below", "", extruder_idx);
             optgroup->append_single_option_line("z_hop_types", "", extruder_idx);
             optgroup->append_single_option_line("retraction_speed", "", extruder_idx);
             optgroup->append_single_option_line("deretraction_speed", "", extruder_idx);
@@ -3822,12 +3848,11 @@ void TabPrinter::toggle_options()
 
     if (m_active_page->title() == L("Motion ability")) {
         auto gcf = m_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor")->value;
-        assert(gcf == gcfMarlinLegacy || gcf == gcfMarlinFirmware || gcf == gcfKlipper);
         bool silent_mode = m_config->opt_bool("silent_mode");
         int  max_field   = silent_mode ? 2 : 1;
         for (int i = 0; i < max_field; ++i)
-            toggle_option("machine_max_acceleration_travel", gcf == gcfMarlinFirmware, i);
-        toggle_line("machine_max_acceleration_travel", gcf == gcfMarlinFirmware);
+            toggle_option("machine_max_acceleration_travel", gcf != gcfMarlinLegacy && gcf != gcfKlipper, i);
+        toggle_line("machine_max_acceleration_travel", gcf != gcfMarlinLegacy && gcf != gcfKlipper);
     }
 }
 

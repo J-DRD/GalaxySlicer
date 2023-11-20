@@ -1,3 +1,7 @@
+///|/ Copyright (c) Prusa Research 2019 - 2023 Lukáš Hejl @hejllukas, Vojtěch Bubník @bubnikv, Lukáš Matěna @lukasmatena, Oleksandra Iushchenko @YuSanka, Pavel Mikuš @Godrak, Tomáš Mészáros @tamasmeszaros
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 // #include "libslic3r/GCodeSender.hpp"
 #include "ConfigManipulation.hpp"
 #include "I18N.hpp"
@@ -275,6 +279,7 @@ void ConfigManipulation::update_print_fff_config(DynamicPrintConfig* config, con
            config->opt_int("enforce_support_layers") == 0 &&
            config->opt_bool("ensure_vertical_shell_thickness") &&
            ! config->opt_bool("detect_thin_wall") &&
+           ! config->opt_bool("overhang_reverse") &&
             config->opt_enum<TimelapseType>("timelapse_type") == TimelapseType::tlTraditional))
     {
         wxString msg_text = _(L("Spiral mode only works when wall loops is 1, support is disabled, top shell layers is 0, sparse infill density is 0 and timelapse type is traditional."));
@@ -302,6 +307,7 @@ void ConfigManipulation::update_print_fff_config(DynamicPrintConfig* config, con
             new_conf.set_key_value("enforce_support_layers", new ConfigOptionInt(0));
             new_conf.set_key_value("ensure_vertical_shell_thickness", new ConfigOptionBool(true));
             new_conf.set_key_value("detect_thin_wall", new ConfigOptionBool(false));
+            new_conf.set_key_value("overhang_reverse", new ConfigOptionBool(false));
             new_conf.set_key_value("timelapse_type", new ConfigOptionEnum<TimelapseType>(tlTraditional));
             sparse_infill_density = 0;
             timelapse_type = TimelapseType::tlTraditional;
@@ -410,43 +416,6 @@ void ConfigManipulation::update_print_fff_config(DynamicPrintConfig* config, con
             DynamicPrintConfig new_conf = *config;
             new_conf.set_key_value("support_style", new ConfigOptionEnum<SupportMaterialStyle>(smsDefault));
             apply(config, &new_conf);
-        }
-    }
-
-    if (config->option<ConfigOptionPercent>("sparse_infill_density")->value == 100) {
-        std::string  sparse_infill_pattern            = config->option<ConfigOptionEnum<InfillPattern>>("sparse_infill_pattern")->serialize();
-        const auto  &top_fill_pattern_values = config->def()->get("top_surface_pattern")->enum_values;
-        bool correct_100p_fill = std::find(top_fill_pattern_values.begin(), top_fill_pattern_values.end(), sparse_infill_pattern) != top_fill_pattern_values.end();
-        if (!correct_100p_fill) {
-            // get sparse_infill_pattern name from enum_labels for using this one at dialog_msg
-            const ConfigOptionDef *fill_pattern_def = config->def()->get("sparse_infill_pattern");
-            assert(fill_pattern_def != nullptr);
-            auto it_pattern = std::find(fill_pattern_def->enum_values.begin(), fill_pattern_def->enum_values.end(), sparse_infill_pattern);
-            assert(it_pattern != fill_pattern_def->enum_values.end());
-            if (it_pattern != fill_pattern_def->enum_values.end()) {
-                wxString msg_text = GUI::format_wxstr(_L("%1% infill pattern doesn't support 100%% density."),
-                    _(fill_pattern_def->enum_labels[it_pattern - fill_pattern_def->enum_values.begin()]));
-                if (is_global_config)
-                    msg_text += "\n" + _L("Switch to rectilinear pattern?\n"
-                                          "Yes - switch to rectilinear pattern automaticlly\n"
-                                          "No  - reset density to default non 100% value automaticlly") + "\n";
-                MessageDialog dialog(m_msg_dlg_parent, msg_text, "",
-                                                  wxICON_WARNING | (is_global_config ? wxYES | wxNO : wxOK) );
-                DynamicPrintConfig new_conf = *config;
-                is_msg_dlg_already_exist = true;
-                auto answer = dialog.ShowModal();
-                if (!is_global_config || answer == wxID_YES) {
-                    new_conf.set_key_value("sparse_infill_pattern", new ConfigOptionEnum<InfillPattern>(ipRectilinear));
-                    sparse_infill_density = 100;
-                }
-                else
-                    sparse_infill_density = wxGetApp().preset_bundle->prints.get_selected_preset().config.option<ConfigOptionPercent>("sparse_infill_density")->value;
-                new_conf.set_key_value("sparse_infill_density", new ConfigOptionPercent(sparse_infill_density));
-                apply(config, &new_conf);
-                if (cb_value_change)
-                    cb_value_change("sparse_infill_density", sparse_infill_density);
-                is_msg_dlg_already_exist = false;
-            }
         }
     }
 
@@ -654,7 +623,7 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, co
         toggle_field(el, have_support_material && !(support_is_normal_tree && !have_raft));
 
     bool has_ironing = (config->opt_enum<IroningType>("ironing_type") != IroningType::NoIroning);
-    for (auto el : { "ironing_flow", "ironing_spacing", "ironing_speed" })
+    for (auto el : { "ironing_pattern", "ironing_flow", "ironing_spacing", "ironing_speed", "ironing_angle" })
         toggle_line(el, has_ironing);
 
     // bool have_sequential_printing = (config->opt_enum<PrintSequence>("print_sequence") == PrintSequence::ByObject);
@@ -721,6 +690,15 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, co
     toggle_line("exclude_object", gcflavor == gcfKlipper);
 
     toggle_line("min_width_top_surface",config->opt_bool("only_one_wall_top"));
+
+    for (auto el : { "hole_to_polyhole_threshold", "hole_to_polyhole_twisted" })
+        toggle_line(el, config->opt_bool("hole_to_polyhole"));
+
+    bool has_detect_overhang_wall = config->opt_bool("detect_overhang_wall");
+    bool has_overhang_reverse     = config->opt_bool("overhang_reverse");
+    bool allow_overhang_reverse   = has_detect_overhang_wall && !has_spiral_vase;
+    toggle_field("overhang_reverse", allow_overhang_reverse);
+    toggle_line("overhang_reverse_threshold", allow_overhang_reverse && has_overhang_reverse);
 }
 
 void ConfigManipulation::update_print_sla_config(DynamicPrintConfig* config, const bool is_global_config/* = false*/)

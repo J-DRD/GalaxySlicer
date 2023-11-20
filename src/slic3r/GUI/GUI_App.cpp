@@ -56,6 +56,7 @@
 #include "libslic3r/Thread.hpp"
 #include "libslic3r/miniz_extension.hpp"
 #include "libslic3r/Utils.hpp"
+#include "libslic3r/Color.hpp"
 
 #include "GUI.hpp"
 #include "GUI_Utils.hpp"
@@ -824,6 +825,8 @@ void GUI_App::post_init()
 //#endif
         if (is_editor())
             mainframe->select_tab(size_t(0));
+        if (app_config->get("default_page") == "1")
+            mainframe->select_tab(size_t(1));
         mainframe->Thaw();
         plater_->trigger_restore_project(1);
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ", end load_gl_resources";
@@ -1451,9 +1454,9 @@ void GUI_App::restart_networking()
         if (app_config->get("sync_user_preset") == "true") {
             start_sync_user_preset();
         }
-        if (mainframe && this->app_config->get("staff_pick_switch") == "true") {
-            if (mainframe->m_webview) { mainframe->m_webview->SendDesignStaffpick(has_model_mall()); }
-        }
+        // if (mainframe && this->app_config->get("staff_pick_switch") == "true") {
+        //     if (mainframe->m_webview) { mainframe->m_webview->SendDesignStaffpick(has_model_mall()); }
+        // }
     }
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(" exit, m_agent=%1%")%m_agent;
 }
@@ -1813,15 +1816,7 @@ void GUI_App::init_app_config()
             data_dir_path = boost::filesystem::path(data_dir());
         #endif
         if (!boost::filesystem::exists(data_dir_path)){
-            auto older_data_dir = data_dir_path.parent_path() / "BambuStudio-SoftFever";
-            if(boost::filesystem::exists(older_data_dir)){
-                copy_directory_recursively(older_data_dir,data_dir_path);
-                boost::system::error_code ec;
-                boost::filesystem::rename(data_dir_path / "BambuStudio.conf", data_dir_path / "GalaxySlicer.conf", ec);
-                boost::filesystem::rename(data_dir_path / "BambuStudio.conf.bak", data_dir_path / "GalaxySlicer.conf.bak", ec);
-            }
-            else
-                boost::filesystem::create_directory(data_dir_path);
+            boost::filesystem::create_directory(data_dir_path);
         }
     } else {
         m_datadir_redefined = true;
@@ -1845,16 +1840,14 @@ void GUI_App::init_app_config()
         app_config = new AppConfig();
         //app_config = new AppConfig(is_editor() ? AppConfig::EAppMode::Editor : AppConfig::EAppMode::GCodeViewer);
 
+    m_config_corrupted = false;
 	// load settings
 	m_app_conf_exists = app_config->exists();
 	if (m_app_conf_exists) {
         std::string error = app_config->load();
         if (!error.empty()) {
-            // Error while parsing config file. We'll customize the error message and rethrow to be displayed.
-            throw Slic3r::RuntimeError(
-                _u8L("GalaxySlicer configuration file may be corrupted and is not abled to be parsed."
-                     "Please delete the file and try again.") +
-                "\n\n" + app_config->config_path() + "\n\n" + error);
+            m_config_corrupted = true;
+
         }
         // Save orig_version here, so its empty if no app_config existed before this run.
         m_last_config_version = app_config->orig_version();//parse_semver_from_ini(app_config->config_path());
@@ -2056,6 +2049,7 @@ bool GUI_App::on_init_inner()
     }
 #endif
 
+    BOOST_LOG_TRIVIAL(info) << boost::format("gui mode, Current GalaxySlicer Version %1%")%SLIC3R_VERSION;
     // Enable this to get the default Win32 COMCTRL32 behavior of static boxes.
 //    wxSystemOptions::SetOption("msw.staticbox.optimized-paint", 0);
     // Enable this to disable Windows Vista themes for all wxNotebooks. The themes seem to lead to terrible
@@ -2151,8 +2145,7 @@ bool GUI_App::on_init_inner()
     }
 
     GalaxySlicerSplashScreen * scrn = nullptr;
-    const bool show_splash_screen = true;
-    if (show_splash_screen) {
+    if (app_config->get("show_splash_screen") == "true") {
         // make a bitmap with dark grey banner on the left side
         //BBS make BBL splash screen bitmap
         wxBitmap bmp = GalaxySlicerSplashScreen::MakeBitmap();
@@ -2471,6 +2464,7 @@ bool GUI_App::on_init_inner()
 
         if (m_post_initialized && app_config->dirty())
             app_config->save();
+
     });
 
     m_initialized = true;
@@ -2478,6 +2472,13 @@ bool GUI_App::on_init_inner()
     flush_logs();
 
     BOOST_LOG_TRIVIAL(info) << "finished the gui app init";
+    if (m_config_corrupted) {
+        m_config_corrupted = false;
+        show_error(nullptr,
+                   _u8L(
+                       "The GalaxySlicer configuration file may be corrupted and cannot be parsed.\nGalaxySlicer has attempted to recreate the "
+                       "configuration file.\nPlease note, application settings will be lost, but printer profiles will not be affected."));
+    }
     //BBS: delete splash screen
     delete scrn;
     return true;
@@ -2710,10 +2711,10 @@ void GUI_App::update_label_colours_from_appconfig()
 
 void GUI_App::update_publish_status()
 {
-    mainframe->show_publish_button(has_model_mall());
-    if (app_config->get("staff_pick_switch") == "true") {
-        mainframe->m_webview->SendDesignStaffpick(has_model_mall());
-    }
+    // mainframe->show_publish_button(has_model_mall());
+    // if (app_config->get("staff_pick_switch") == "true") {
+    //     mainframe->m_webview->SendDesignStaffpick(has_model_mall());
+    // }
 }
 
 bool GUI_App::has_model_mall()
@@ -2949,8 +2950,7 @@ void GUI_App::set_label_clr_modified(const wxColour& clr)
     if (m_color_label_modified == clr)
         return;
     m_color_label_modified = clr;
-    auto clr_str = wxString::Format(wxT("#%02X%02X%02X"), clr.Red(), clr.Green(), clr.Blue());
-    std::string str = clr_str.ToStdString();
+    const std::string str = encode_color(ColorRGB(clr.Red(), clr.Green(), clr.Blue()));
     app_config->save();
     */
 }
@@ -2963,8 +2963,7 @@ void GUI_App::set_label_clr_sys(const wxColour& clr)
     if (m_color_label_sys == clr)
         return;
     m_color_label_sys = clr;
-    auto clr_str = wxString::Format(wxT("#%02X%02X%02X"), clr.Red(), clr.Green(), clr.Blue());
-    std::string str = clr_str.ToStdString();
+    const std::string str = encode_color(ColorRGB(clr.Red(), clr.Green(), clr.Blue()));
     app_config->save();
     */
 }
@@ -3539,22 +3538,22 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     }
                 }
             }
-            else if (command_str.compare("modelmall_model_advise_get") == 0) {
-                if (mainframe && this->app_config->get("staff_pick_switch") == "true") {
-                    if (mainframe->m_webview) {
-                        mainframe->m_webview->SendDesignStaffpick(has_model_mall());
-                    }
-                }
-            }
-            else if (command_str.compare("modelmall_model_open") == 0) {
-                if (root.get_child_optional("data") != boost::none) {
-                    pt::ptree data_node = root.get_child("data");
-                    boost::optional<std::string> id = data_node.get_optional<std::string>("id");
-                    if (id.has_value() && mainframe->m_webview) {
-                        mainframe->m_webview->OpenModelDetail(id.value(), m_agent);
-                    }
-                }
-            }
+            // else if (command_str.compare("modelmall_model_advise_get") == 0) {
+            //     if (mainframe && this->app_config->get("staff_pick_switch") == "true") {
+            //         if (mainframe->m_webview) {
+            //             mainframe->m_webview->SendDesignStaffpick(has_model_mall());
+            //         }
+            //     }
+            // }
+            // else if (command_str.compare("modelmall_model_open") == 0) {
+            //     if (root.get_child_optional("data") != boost::none) {
+            //         pt::ptree data_node = root.get_child("data");
+            //         boost::optional<std::string> id = data_node.get_optional<std::string>("id");
+            //         if (id.has_value() && mainframe->m_webview) {
+            //             mainframe->m_webview->OpenModelDetail(id.value(), m_agent);
+            //         }
+            //     }
+            // }
             else if (command_str.compare("homepage_open_recentfile") == 0) {
                 if (root.get_child_optional("data") != boost::none) {
                     pt::ptree data_node = root.get_child("data");
@@ -3623,6 +3622,17 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     wxPostEvent(mainframe, e);
                 }
             }
+            //GalaxySlicer: Open Library URL
+            else if (command_str.compare("homepage_open_library") == 0) {
+                if (root.get_child_optional("data") != boost::none) {
+                    pt::ptree                    data_node = root.get_child("data");
+                    boost::optional<std::string> path      = data_node.get_optional<std::string>("url");
+                    if (path.has_value()) {
+                        wxLaunchDefaultBrowser(path.value());
+                    }
+                }
+            }
+            //GalaxySlicer: Open Social URL
             else if (command_str.compare("homepage_open_social") == 0) {
                 if (root.get_child_optional("data") != boost::none) {
                     pt::ptree                    data_node = root.get_child("data");
@@ -4008,7 +4018,7 @@ void GUI_App::check_new_galaxyslicer_version(bool show_tips, int by_user)
             try 
             {
                 boost::trim(body);
-                // SoftFever (OrcaSlicer): parse github release, ported from SS
+                //parse github release, ported from SS
 
                 boost::property_tree::ptree root;
 
@@ -4746,7 +4756,7 @@ bool GUI_App::load_language(wxString language, bool initial)
     	// Get the active language from PrusaSlicer.ini, or empty string if the key does not exist.
         language = app_config->get("language");
         if (! language.empty())
-        	BOOST_LOG_TRIVIAL(info) << boost::format("language provided by BambuStudio.conf: %1%") % language;
+        	BOOST_LOG_TRIVIAL(info) << boost::format("language provided by GalaxySlicer.conf: %1%") % language;
         else {
             // Get the system language.
             const wxLanguage lang_system = wxLanguage(wxLocale::GetSystemLanguage());
@@ -5657,6 +5667,12 @@ void GUI_App::MacOpenFiles(const wxArrayString &fileNames)
 Sidebar& GUI_App::sidebar()
 {
     return plater_->sidebar();
+}
+
+GizmoObjectManipulation *GUI_App::obj_manipul()
+{
+    // If this method is called before plater_ has been initialized, return nullptr (to avoid a crash)
+    return (plater_ != nullptr) ? &plater_->get_view3D_canvas3D()->get_gizmos_manager().get_object_manipulation() : nullptr;
 }
 
 ObjectSettings* GUI_App::obj_settings()

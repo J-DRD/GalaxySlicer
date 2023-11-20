@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - dev_9
     paths:
       - 'deps/**'
       - '.github/workflows/**'

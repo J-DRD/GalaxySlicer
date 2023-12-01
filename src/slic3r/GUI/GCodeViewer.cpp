@@ -1242,8 +1242,8 @@ void GCodeViewer::render(int canvas_width, int canvas_height, int right_margin)
         return;
 
     glsafe(::glEnable(GL_DEPTH_TEST));
-    render_toolpaths();
     render_shells();
+    render_toolpaths();
     float legend_height = 0.0f;
     render_legend(legend_height, canvas_width, canvas_height, right_margin);
 
@@ -4033,16 +4033,16 @@ void GCodeViewer::render_shells()
     if (shader == nullptr)
         return;
 
-//    glsafe(::glDepthMask(GL_FALSE));
+    glsafe(::glDepthMask(GL_FALSE));
 
     shader->start_using();
     shader->set_uniform("emission_factor", 0.1f);
     const Camera& camera = wxGetApp().plater()->get_camera();
-    m_shells.volumes.render(GLVolumeCollection::ERenderType::Transparent, true, camera.get_view_matrix(), camera.get_projection_matrix());
+    m_shells.volumes.render(GLVolumeCollection::ERenderType::Transparent, false, camera.get_view_matrix(), camera.get_projection_matrix());
     shader->set_uniform("emission_factor", 0.0f);
     shader->stop_using();
 
-//    glsafe(::glDepthMask(GL_TRUE));
+    glsafe(::glDepthMask(GL_TRUE));
 }
 
 //BBS

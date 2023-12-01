@@ -211,7 +211,7 @@ static constexpr const char* ASSEMBLE_ITEM_TAG = "assemble_item";
 static constexpr const char* SLICE_HEADER_TAG = "header";
 static constexpr const char* SLICE_HEADER_ITEM_TAG = "header_item";
 
-// text_info
+// Deprecated: text_info
 static constexpr const char* TEXT_INFO_TAG        = "text_info";
 static constexpr const char* TEXT_ATTR            = "text";
 static constexpr const char* FONT_NAME_ATTR       = "font_name";

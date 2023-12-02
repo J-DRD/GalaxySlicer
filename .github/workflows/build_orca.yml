@@ -35,12 +35,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- os: ubuntu-20.04
+          - os: ubuntu-20.04
           - os: windows-latest
-          #- os: macos-12
-          #  arch: x86_64
-          #- os: macos-12
-          #  arch: arm64
+          - os: macos-12
+            arch: x86_64
+          - os: macos-12
+            arch: arm64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -204,11 +204,10 @@ jobs:
         run: .\build_release_vs2022.bat slicer
 
       - name: Create installer Win
-        if: matrix.os == 'windows-latest' && 'disabled'=='true'
+        if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/build
         run: |
-          echo "SKIPPED"
-          #cpack -G NSIS
+          cpack -G NSIS
 
       # - name: pack app
         # if: matrix.os == 'windows-latest'

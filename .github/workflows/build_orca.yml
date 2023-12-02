@@ -17,8 +17,8 @@ on:
     pull_request:
       branches: 
        - main
-       - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
-       - dev_9
+       #- codespace-opulent-parakeet-r64rrvrvw7jhx5vp
+       #- dev_9
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -35,7 +35,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- os: ubuntu-20.04
+          - os: ubuntu-20.04
           - os: windows-latest
           #- os: macos-12
             #arch: x86_64
@@ -161,12 +161,6 @@ jobs:
         run: |
           dir "C:/Program Files (x86)/Windows Kits/10/Include"
           choco install nsis
-
-      - name: Install choco
-        if: matrix.os == 'windows-latest'
-        run: |
-          dir "C:/Program Files (x86)/Windows Kits/10/Include"
-          choco install cpack
           
       - name: download deps
         if: matrix.os == 'windows-latest'

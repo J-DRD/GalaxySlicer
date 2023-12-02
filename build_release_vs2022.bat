@@ -29,6 +29,29 @@ powershell -command "Expand-Archive -Path %PY_DIR%\python_embed.zip -Destination
 del %PY_DIR%\python_embed.zip
 
 if "%1"=="deps" exit /b 0
+goto :bblprofiledir
+bblprofiledir:
+echo "Locating profiles/BBL"
+setlocal enabledelayedexpansion
+set "targetDirectory="
+set "parentDirectory=%WP%"
+for /f %%I in ('dir /b /ad "%parentDirectory%"') do (
+    set "currentDirectory=%%I"
+    set "currentDirectory=!currentDirectory: =!"
+    echo "!currentDirectory!" | find /i "profiles/BBL" >nul && (
+        set "targetDirectory=!currentDirectory!"
+        goto :foundbblprofilesdir
+    )
+:foundbblprofilesdir
+if defined targetDirectory (
+    echo Target directory found: %targetDirectory%
+    echo "cloning latest profiles for X1-Carbon from sources"
+    gh repo clone shyblower/Shyblowers-OrcaSlicer-Profiles
+    powershell -command "Copy-Item -Path 'Shyblowers-OrcaSlicer-Profiles/*' -Destination %targetDirectory%/ -Recurse"
+m
+) else (
+    echo Target directory not found.
+)
 
 :slicer
 echo "building GalaxySlicer..."

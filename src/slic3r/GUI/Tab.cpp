@@ -1896,6 +1896,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("wall_infill_order");
         optgroup->append_single_option_line("print_flow_ratio");
         optgroup->append_single_option_line("bridge_flow");
+	optgroup->append_single_option_line("internal_bridge_flow");
         optgroup->append_single_option_line("bridge_density");
         optgroup->append_single_option_line("thick_bridges");
         optgroup->append_single_option_line("top_solid_infill_flow_ratio");
@@ -1911,6 +1912,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("max_travel_detour_distance");
         optgroup->append_single_option_line("extra_perimeters_on_overhangs");
         optgroup->append_single_option_line("overhang_reverse");
+        optgroup->append_single_option_line("overhang_reverse_internal_only");
         optgroup->append_single_option_line("overhang_reverse_threshold");
 
     page = add_options_page(L("Strength"), "empty");
@@ -2107,6 +2109,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("fuzzy_skin");
         optgroup->append_single_option_line("fuzzy_skin_point_distance");
         optgroup->append_single_option_line("fuzzy_skin_thickness");
+        optgroup->append_single_option_line("fuzzy_skin_first_layer");
 
 
         optgroup = page->new_optgroup(L("G-code output"), L"param_gcode");

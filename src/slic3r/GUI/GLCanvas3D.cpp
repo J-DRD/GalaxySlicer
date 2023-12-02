@@ -3377,8 +3377,8 @@ void GLCanvas3D::on_key(wxKeyEvent& evt)
                     wxGetApp().plater()->toggle_render_statistic_dialog();
                     m_dirty = true;
 #endif
-                }
-                else  if (evt.ShiftDown() && evt.ControlDown() && keyCode == WXK_RETURN) {
+                } else if ((evt.ShiftDown() && evt.ControlDown() && keyCode == WXK_RETURN) ||
+                    evt.ShiftDown() && evt.AltDown() && keyCode == WXK_RETURN) {
                     wxGetApp().plater()->toggle_show_wireframe();
                     m_dirty = true;
                 }
@@ -7152,9 +7152,6 @@ void GLCanvas3D::_check_and_update_toolbar_icon_scale()
     float noitems_width = top_tb_width - size * items_cnt; // width of separators and borders in top toolbars
 
     // calculate scale needed for items in all top toolbars
-#ifdef __WINDOWS__
-    cnv_size.set_width(cnv_size.get_width() + m_separator_toolbar.get_width() + collapse_toolbar_width);
-#endif
     float new_h_scale = (cnv_size.get_width() - noitems_width) / (items_cnt * GLToolbar::Default_Icons_Size);
 
     //for protect

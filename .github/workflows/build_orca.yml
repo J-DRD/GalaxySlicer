@@ -4,6 +4,7 @@ on:
     push:
       branches: 
        - main
+       - dev_9A
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -15,6 +16,7 @@ on:
     pull_request:
       branches: 
        - main 
+       - dev_9A
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'

@@ -6,10 +6,10 @@
     "setting_id": "GFSL99",
     "instantiation": "true",
     "compatible_printers": [
-        "Bambu Lab X1 Carbon 0.4 nozzle",
+        "BIQU B1 0.4 nozzle",
         "Bambu Lab X1 0.4 nozzle",
-        "Bambu Lab X1 Carbon 0.6 nozzle",
-        "Bambu Lab X1 Carbon 0.8 nozzle",
+        "BIQU B1 0.6 nozzle",
+        "BIQU B1 0.8 nozzle",
         "Bambu Lab X1 0.6 nozzle",
         "Bambu Lab X1 0.8 nozzle",
 

@@ -30,6 +30,7 @@ goto :eof
     if %FULL_MODE%==1 (
         msgmerge -N -o "%file%" "%file%" "%pot_file%"
     )
+    if exist "./extra_printer_profiles" cp -R "./extra_printer_profiles/" "./resources/"
     if not exist "./resources/i18n/%lang%" mkdir "./resources/i18n/%lang%"
     msgfmt --check-format -o "./resources/i18n/%lang%/GalaxySlicer.mo" "%file%"
 goto :eof

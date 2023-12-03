@@ -29,6 +29,7 @@ powershell -command "Expand-Archive -Path %PY_DIR%\python_embed.zip -Destination
 del %PY_DIR%\python_embed.zip
 
 if "%1"=="deps" exit /b 0
+goto :slicer
 goto :bblprofiledir
 bblprofiledir:
 echo "Locating profiles/BBL"

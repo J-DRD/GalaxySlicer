@@ -202,8 +202,8 @@ void AppConfig::set_defaults()
 #endif // _WIN32
 
     // BBS
-    /*if (get("3mf_include_gcode").empty())
-        set_bool("3mf_include_gcode", true);*/
+    if (get("3mf_include_gcode").empty())
+        set_bool("3mf_include_gcode", true);
 
     if (get("developer_mode").empty())
         set_bool("developer_mode", false);
@@ -215,10 +215,10 @@ void AppConfig::set_defaults()
         set_bool("enable_ssl_for_ftp", false);
 
     if (get("severity_level").empty())
-        set("severity_level", "warn");
+        set("severity_level", "error");
 
     if (get("internal_developer_mode").empty())
-        set_bool("internal_developer_mode", true);
+        set_bool("internal_developer_mode", false);
 
     // BBS
     if (get("preset_folder").empty())
@@ -241,7 +241,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("show_model_mesh").empty()) {
-        set_bool("show_model_mesh", false);
+        set_bool("show_model_mesh", true);
     }
 
     if (get("show_model_shadow").empty()) {
@@ -309,7 +309,7 @@ void AppConfig::set_defaults()
     }
     
     if (get("max_recent_count").empty()) {
-        set("max_recent_count", "18");
+        set("max_recent_count", "10");
     }
 
     // if (get("staff_pick_switch").empty()) {

@@ -53,7 +53,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         id: get-version-unix
         run: |
-          ver=$(grep 'set(SoftFever_VERSION' version.inc | cut -d '"' -f2)
+          ver=1.0 #$(grep 'set(SoftFever_VERSION' version.inc | cut -d '"' -f2)
           echo "ver=$ver" >> $GITHUB_ENV
           echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
         shell: bash

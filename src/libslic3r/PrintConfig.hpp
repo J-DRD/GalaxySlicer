@@ -90,6 +90,14 @@ enum class WallInfillOrder {
     InnerOuterInnerInfill,
     Count,
 };
+
+// BBS
+enum class WallSequence {
+    InnerOuter,
+    OuterInner,
+    InnerOuterInner,
+    Count,
+};
 //BBS
 enum class PrintSequence {
     ByLayer,
@@ -171,7 +179,7 @@ enum SLAPillarConnectionMode {
 
 enum BrimType {
     btAutoBrim,  // BBS
-    btEar, // Orca
+    btEar, // Galaxy
     btOuterOnly,
     btInnerOnly,
     btOuterAndInner,
@@ -217,6 +225,12 @@ enum BedType {
 };
 
 // BBS
+enum FirstLayerSeq {
+    flsAuto, 
+    flsCutomize
+};
+
+// BBS
 enum NozzleType {
     ntUndefine = 0,
     ntHardenedSteel,
@@ -258,7 +272,7 @@ enum RetractLiftEnforceType {
 };
 
 enum class GCodeThumbnailsFormat {
-    PNG, JPG, QOI, BTT_TFT
+    PNG, JPG, QOI, BTT_TFT, ColPic
 };
 
 static std::string bed_type_to_gcode_string(const BedType type)
@@ -348,7 +362,6 @@ CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(GCodeThumbnailsFormat)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(PrintHostType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(AuthorizationType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(PerimeterGeneratorType)
-
 #undef CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS
 
 // Defines each and every confiuration option of Slic3r, including the properties of the GUI dialogs.
@@ -687,6 +700,8 @@ PRINT_CONFIG_CLASS_DEFINE(
     // Force the generation of solid shells between adjacent materials/volumes.
     ((ConfigOptionBool,                interface_shells))
     ((ConfigOptionFloat,               layer_height))
+    ((ConfigOptionFloat,               mmu_segmented_region_max_width))
+    ((ConfigOptionFloat,               mmu_segmented_region_interlocking_depth))
     ((ConfigOptionFloat,               raft_contact_distance))
     ((ConfigOptionFloat,               raft_expansion))
     ((ConfigOptionPercent,             raft_first_layer_density))
@@ -709,6 +724,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionInt,                 enforce_support_layers))
     ((ConfigOptionInt,                 support_filament))
     ((ConfigOptionFloatOrPercent,      support_line_width))
+    ((ConfigOptionBool,                support_interface_not_for_body))
     ((ConfigOptionBool,                support_interface_loop_pattern))
     ((ConfigOptionInt,                 support_interface_filament))
     ((ConfigOptionInt,                 support_interface_top_layers))
@@ -725,7 +741,9 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionEnum<SupportMaterialStyle>, support_style))
     // BBS
     //((ConfigOptionBool,                independent_support_layer_height))
+    // Galaxy internal thick bridge
     ((ConfigOptionBool,                thick_bridges))
+    ((ConfigOptionBool,                thick_internal_bridges))
     // Overhang angle threshold.
     ((ConfigOptionInt,                 support_threshold_angle))
     ((ConfigOptionFloat,               support_object_xy_distance))
@@ -735,6 +753,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     // BBS
     ((ConfigOptionBool,                flush_into_infill))
     ((ConfigOptionBool,                flush_into_support))
+    ((ConfigOptionEnum<WallSequence>,  wall_sequence))
     // BBS
     ((ConfigOptionFloat,              tree_support_branch_distance))
     ((ConfigOptionFloat,              tree_support_tip_diameter))
@@ -759,7 +778,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionPercent,            initial_layer_min_bead_width))
     ((ConfigOptionPercent,            min_bead_width))
 
-    // Orca
+    // Galaxy
     ((ConfigOptionFloat,              make_overhang_printable_angle))
     ((ConfigOptionFloat,              make_overhang_printable_hole_size))
     ((ConfigOptionFloat,              tree_support_branch_distance_organic))
@@ -824,6 +843,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionEnum<InfillPattern>, ironing_pattern))
     ((ConfigOptionPercent, ironing_flow))
     ((ConfigOptionFloat, ironing_spacing))
+    ((ConfigOptionFloat, ironing_direction))
     ((ConfigOptionFloat, ironing_speed))
     ((ConfigOptionFloat, ironing_angle))
     // Detect bridging perimeters
@@ -833,6 +853,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat, inner_wall_speed))
     // Total number of perimeters.
     ((ConfigOptionInt, wall_loops))
+    ((ConfigOptionBool, alternate_extra_wall))
     ((ConfigOptionFloat, minimum_sparse_infill_area))
     ((ConfigOptionInt, solid_infill_filament))
     ((ConfigOptionFloatOrPercent, internal_solid_infill_line_width))
@@ -871,7 +892,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloatOrPercent,       infill_anchor))
     ((ConfigOptionFloatOrPercent,       infill_anchor_max))
 
-    // Orca
+    // Galaxy
     ((ConfigOptionBool,                 make_overhang_printable))
     ((ConfigOptionBool,                 extra_perimeters_on_overhangs))
     ((ConfigOptionBool,                 slowdown_for_curled_perimeters))
@@ -886,6 +907,8 @@ PRINT_CONFIG_CLASS_DEFINE(
 PRINT_CONFIG_CLASS_DEFINE(
     MachineEnvelopeConfig,
 
+    // Orca: whether emit machine limits into the beginning of the G-code.
+    ((ConfigOptionBool,                 emit_machine_limits_to_gcode))
     // M201 X... Y... Z... E... [mm/sec^2]
     ((ConfigOptionFloats,               machine_max_acceleration_x))
     ((ConfigOptionFloats,               machine_max_acceleration_y))
@@ -917,7 +940,8 @@ PRINT_CONFIG_CLASS_DEFINE(
 PRINT_CONFIG_CLASS_DEFINE(
     GCodeConfig,
 
-    ((ConfigOptionString,              before_layer_change_gcode))
+    ((ConfigOptionString,              before_layer_change_gcode)) 
+    ((ConfigOptionString,              printing_by_object_gcode)) 
     ((ConfigOptionFloats,              deretraction_speed))
     //BBS
     ((ConfigOptionBool,                enable_arc_fitting))
@@ -941,6 +965,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionInts,                required_nozzle_HRC))
     // BBS
     ((ConfigOptionBool,                scan_first_layer))
+    ((ConfigOptionPoints,              thumbnail_size))
     // ((ConfigOptionBool,                spaghetti_detector))
     ((ConfigOptionBool,                gcode_add_line_number))
     ((ConfigOptionBool,                bbl_bed_temperature_gcode))
@@ -986,8 +1011,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionEnum<PrinterStructure>,printer_structure))
     ((ConfigOptionBool,                support_chamber_temp_control))
 
-    //GalaxySlicer
-    ((ConfigOptionBool,                exhaust_fan))
 
     // SoftFever
     ((ConfigOptionBool,                use_firmware_retraction))
@@ -996,8 +1019,9 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionPercent,             accel_to_decel_factor))
     ((ConfigOptionFloatOrPercent,      initial_layer_travel_speed))
     ((ConfigOptionBool,                bbl_calib_mark_logo))
+    ((ConfigOptionBool,                disable_m73))
 
-    // Orca: mmu
+    // Galaxy: mmu
     ((ConfigOptionFloat,               cooling_tube_retraction))
     ((ConfigOptionFloat,               cooling_tube_length))
     ((ConfigOptionBool,                high_current_on_filament_swap))
@@ -1011,7 +1035,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloats,              filament_unloading_speed))
     ((ConfigOptionFloats,              filament_unloading_speed_start))
     ((ConfigOptionFloats,              filament_toolchange_delay))
-    // Orca todo: consolidate with machine_load_filament_time
+    // Galaxy todo: consolidate with machine_load_filament_time
     ((ConfigOptionFloats,              filament_unload_time))
     ((ConfigOptionInts,                filament_cooling_moves))
     ((ConfigOptionFloats,              filament_cooling_initial_speed))
@@ -1038,7 +1062,10 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionPoints,             printable_area))
     //BBS: add bed_exclude_area
     ((ConfigOptionPoints,             bed_exclude_area))
+    ((ConfigOptionPoints,             head_wrap_detect_zone))
     // BBS
+    ((ConfigOptionString,             bed_custom_texture))
+    ((ConfigOptionString,             bed_custom_model))
     ((ConfigOptionEnum<BedType>,      curr_bed_type))
     ((ConfigOptionInts,               cool_plate_temp))
     ((ConfigOptionInts,               eng_plate_temp))
@@ -1075,9 +1102,9 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionFloat,              initial_layer_infill_speed))
     ((ConfigOptionInts,               nozzle_temperature_initial_layer))
     ((ConfigOptionInts,               full_fan_speed_layer))
-    ((ConfigOptionInts,               fan_max_speed))
+    ((ConfigOptionFloats,               fan_max_speed))
     ((ConfigOptionFloats,             max_layer_height))
-    ((ConfigOptionInts,               fan_min_speed))
+    ((ConfigOptionFloats,               fan_min_speed))
     ((ConfigOptionFloats,             min_layer_height))
     ((ConfigOptionFloat,              printable_height))
     ((ConfigOptionPoint,              best_object_pos))
@@ -1097,6 +1124,8 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionFloat,              skirt_speed))
     ((ConfigOptionFloats,             slow_down_layer_time))
     ((ConfigOptionBool,               spiral_mode))
+    ((ConfigOptionBool,               spiral_mode_smooth))
+    ((ConfigOptionFloatOrPercent,     spiral_mode_max_xy_smoothing))
     ((ConfigOptionInt,                standby_temperature_delta))
     ((ConfigOptionInts,               nozzle_temperature))
     ((ConfigOptionBools,              wipe))
@@ -1116,7 +1145,7 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionFloats,             flush_volumes_matrix))
     ((ConfigOptionFloats,             flush_volumes_vector))
 
-    // Orca: mmu support
+    // Galaxy: mmu support
     ((ConfigOptionFloat,              wipe_tower_cone_angle))
     ((ConfigOptionPercent,            wipe_tower_extra_spacing))
     ((ConfigOptionInt,                wipe_tower_extruder))
@@ -1142,14 +1171,16 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionBool,                gcode_comments))
     ((ConfigOptionInt,                 slow_down_layers))
     ((ConfigOptionInts,                support_material_interface_fan_speed))
-    // Orca: notes for profiles from PrusaSlicer
-    ((ConfigOptionStrings,            filament_notes))
-    ((ConfigOptionString,             notes))
-    ((ConfigOptionString,             printer_notes))
+    // Galaxy: notes for profiles from PrusaSlicer
+    ((ConfigOptionStrings,             filament_notes))
+    ((ConfigOptionString,              notes))
+    ((ConfigOptionString,              printer_notes))
 
     ((ConfigOptionBools,               activate_chamber_temp_control))
     ((ConfigOptionInts ,               chamber_temperature))
-
+    ((ConfigOptionBool,                is_infill_first))
+    
+    ((ConfigOptionFloat,               preferred_orientation))
 
 
 )

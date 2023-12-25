@@ -9,6 +9,7 @@
 #include "DownloadProgressDialog.hpp"
 
 #include <boost/filesystem/string_file.hpp>
+#include <boost/nowide/utf8_codecvt.hpp>
 #undef pid_t
 #include <boost/process.hpp>
 #ifdef __WIN32__
@@ -41,7 +42,23 @@ MediaPlayCtrl::MediaPlayCtrl(wxWindow *parent, wxMediaCtrl2 *media_ctrl, const w
         wxLaunchDefaultBrowser(url);
     });
 
-    Bind(wxEVT_RIGHT_UP, [this](auto & e) { wxClipboard & c = *wxTheClipboard; if (c.Open()) { c.SetData(new wxTextDataObject(m_url)); c.Close(); } });
+    Bind(wxEVT_RIGHT_UP, [this](auto & e) {
+        wxClipboard & c = *wxTheClipboard;
+        if (c.Open()) {
+            if (wxGetKeyState(WXK_SHIFT)) {
+                if (c.IsSupported(wxDF_TEXT)) {
+                    wxTextDataObject data;
+                    c.GetData(data);
+                    Stop();
+                    m_url = data.GetText();
+                    load();
+                }
+            } else {
+                c.SetData(new wxTextDataObject(m_url));
+            }
+            c.Close();
+        }
+    });
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(m_button_play, 0, wxEXPAND | wxALL, 0);
@@ -77,29 +94,38 @@ MediaPlayCtrl::~MediaPlayCtrl()
 void MediaPlayCtrl::SetMachineObject(MachineObject* obj)
 {
     std::string machine = obj ? obj->dev_id : "";
-    if (obj && obj->is_function_supported(PrinterFunction::FUNC_CAMERA_VIDEO)) {
-        m_camera_exists = obj->has_ipcam;
-        m_lan_mode      = obj->is_lan_mode_printer();
-        m_lan_ip       = obj->is_function_supported(PrinterFunction::FUNC_LOCAL_TUNNEL) ? obj->dev_ip : "";
-        m_lan_passwd    = obj->is_function_supported(PrinterFunction::FUNC_LOCAL_TUNNEL) ? obj->get_access_code() : "";
-        m_tutk_support = obj->is_function_supported(PrinterFunction::FUNC_REMOTE_TUNNEL);
-        m_device_busy   = obj->is_in_prepare() || obj->is_in_upgrading();
+    if (obj) {
+        m_camera_exists  = obj->has_ipcam;
+        m_dev_ver        = obj->get_ota_version();
+        m_lan_mode       = obj->is_lan_mode_printer();
+        m_lan_proto      = obj->liveview_local;
+        m_remote_support = obj->liveview_remote;
+        m_lan_ip         = obj->dev_ip;
+        m_lan_passwd     = obj->get_access_code();
+        m_device_busy    = obj->is_camera_busy_off();
+        m_tutk_state     = obj->tutk_state;
     } else {
         m_camera_exists = false;
         m_lan_mode = false;
+        m_lan_proto = MachineObject::LVL_None;
         m_lan_ip.clear();
         m_lan_passwd.clear();
-        m_tutk_support = true;
+        m_dev_ver.clear();
+        m_tutk_state.clear();
+        m_remote_support = true;
         m_device_busy = false;
     }
     if (machine == m_machine) {
-        if (m_last_state == MEDIASTATE_IDLE)
+        if (m_last_state == MEDIASTATE_IDLE && IsEnabled())
             Play();
         return;
     }
     m_machine = machine;
     BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl switch machine: " << m_machine;
+    m_disable_lan = false;
     m_failed_retry = 0;
+    m_last_failed_codes.clear();
+    m_last_user_play = wxDateTime::Now();
     std::string stream_url;
     if (get_stream_url(&stream_url)) {
         m_streaming = boost::algorithm::contains(stream_url, "device=" + m_machine);
@@ -107,11 +133,31 @@ void MediaPlayCtrl::SetMachineObject(MachineObject* obj)
         m_streaming = false;
     }
     if (m_last_state != MEDIASTATE_IDLE)
-        Stop();
+        Stop(" ");
     if (m_next_retry.IsValid()) // Try open 2 seconds later, to avoid state conflict
-        m_next_retry = wxDateTime::Now() + wxTimeSpan::Seconds(2 * m_failed_retry);
+        m_next_retry = wxDateTime::Now() + wxTimeSpan::Seconds(2);
     else
         SetStatus("", false);
+}
+
+wxString hide_passwd(wxString url, std::vector<wxString> const &passwords)
+{
+    for (auto &p : passwords) {
+        auto i = url.find(p);
+        if (i == wxString::npos)
+            continue;
+        auto j = i + p.length();
+        if (p[p.length() - 1] == '=') {
+            i = j;
+            j = url.find('&', i);
+            if (j == wxString::npos)
+                j = url.length();
+        }
+        auto l = size_t(j - i);
+        if (j == url.length() || url[j] == '@' || url[j] == '&')
+            url.replace(i, l, l, wxUniChar('*'));
+    }
+    return url;
 }
 
 void MediaPlayCtrl::Play()
@@ -128,82 +174,81 @@ void MediaPlayCtrl::Play()
         Stop(_L("Initialize failed (No Device)!"));
         return;
     }
+    if (!IsEnabled()) {
+        Stop(_L("Initialize failed (Device connection not ready)!"));
+        return;
+    }
     if (!m_camera_exists) {
         Stop(_L("Initialize failed (No Camera Device)!"));
+        return;
+    }
+    if (m_device_busy) {
+        Stop(_L("Printer is busy downloading, Please wait for the downloading to finish."));
+        m_failed_retry = 0;
         return;
     }
 
     m_last_state = MEDIASTATE_INITIALIZING;
     m_button_play->SetIcon("media_stop");
-    SetStatus(_L("Initializing..."));
-
     NetworkAgent *agent = wxGetApp().getAgent();
     std::string  agent_version = agent ? agent->get_version() : "";
-    if (!m_lan_ip.empty() && (!m_lan_mode || !m_lan_passwd.empty()) && !m_device_busy) {
-        m_url        = "bambu:///local/" + m_lan_ip + ".?port=6000&user=" + m_lan_user + "&passwd=" + m_lan_passwd + "&device=" + m_machine + "&version=" + agent_version;
-        m_last_state = MEDIASTATE_LOADING;
-        SetStatus(_L("Loading..."));
-        if (wxGetApp().app_config->get("dump_video") == "true") {
-            std::string file_h264 = data_dir() + "/video.h264";
-            std::string file_info = data_dir() + "/video.info";
-            BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl dump video to " << file_h264;
-            // closed by BambuSource
-            FILE *dump_h264_file = boost::nowide::fopen(file_h264.c_str(), "wb");
-            FILE *dump_info_file = boost::nowide::fopen(file_info.c_str(), "wb");
-            m_url                = m_url + "&dump_h264=" + boost::lexical_cast<std::string>(dump_h264_file);
-            m_url                = m_url + "&dump_info=" + boost::lexical_cast<std::string>(dump_info_file);
-        }
-        boost::unique_lock lock(m_mutex);
-        m_tasks.push_back(m_url);
-        m_cond.notify_all();
+    if (m_lan_proto > MachineObject::LVL_None && (m_lan_mode || !m_remote_support) && !m_disable_lan && !m_lan_ip.empty()) {
+        m_disable_lan = m_remote_support && !m_lan_mode; // try remote next time
+        if (m_lan_proto == MachineObject::LVL_Local)
+            m_url = "bambu:///local/" + m_lan_ip + ".?port=6000&user=" + m_lan_user + "&passwd=" + m_lan_passwd;
+        else if (m_lan_proto == MachineObject::LVL_Rtsps)
+            m_url = "bambu:///rtsps___" + m_lan_user + ":" + m_lan_passwd + "@" + m_lan_ip + "/streaming/live/1?proto=rtsps";
+        else if (m_lan_proto == MachineObject::LVL_Rtsp)
+            m_url = "bambu:///rtsp___" + m_lan_user + ":" + m_lan_passwd + "@" + m_lan_ip + "/streaming/live/1?proto=rtsp";
+        m_url += "&device=" + m_machine;
+        m_url += "&version=" + agent_version;
+        m_url += "&dev_ver=" + m_dev_ver;
+        BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl: " << hide_passwd(m_url, {m_lan_passwd} );
+        load();
         return;
     }
 
+    m_disable_lan = false;
+    if (m_lan_ip.empty())
+        m_failed_code = -1;
+
     if (m_lan_mode) {
-        m_failed_code = 1;
-        Stop(m_lan_passwd.empty() 
-            ? _L("Initialize failed (Not supported with LAN-only mode)!") 
-            : _L("Initialize failed (Not accessible in LAN-only mode)!"));
+        Stop(m_lan_proto < 0
+                ? _L("Initialize failed (Not supported on the current printer version)!")
+                : _L("Initialize failed (Not accessible in LAN-only mode)!"));
         return;
     }
     
-    if (!m_tutk_support) { // not support tutk
-        if (m_device_busy) {
-            Stop(_L("Printer is busy downloading, Please wait for the downloading to finish."));
-            m_failed_retry = 0;
-            return;
-        }
-        m_failed_code = 1;
+    if (!m_remote_support) { // not support tutk
         Stop(m_lan_ip.empty() 
             ? _L("Initialize failed (Missing LAN ip of printer)!") 
-            : _L("Initialize failed (Not supported by printer)!"));
+            : _L("Initialize failed (Not supported on the current printer version)!"));
         return;
     }
 
+    m_failed_code = 0;
+    SetStatus(_L("Initializing..."));
+
     if (agent) {
-        agent->get_camera_url(m_machine, [this, m = m_machine, v = agent_version](std::string url) {
+        agent->get_camera_url(m_machine, [this, m = m_machine, v = agent_version, dv = m_dev_ver](std::string url) {
             if (boost::algorithm::starts_with(url, "bambu:///")) {
                 url += "&device=" + m;
                 url += "&version=" + v;
+                url += "&dev_ver=" + dv;
             }
-            BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl camera_url: " << url << ", machine: " << m_machine;
+            BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl: " << hide_passwd(url, {"authkey=", "passwd="}) << ", machine: " << m_machine;
             CallAfter([this, m, url] {
-                if (m != m_machine) return;
+                if (m != m_machine) {
+                    BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl drop late ttcode for machine: " << m;
+                    return;
+                }
                 m_url = url;
                 if (m_last_state == MEDIASTATE_INITIALIZING) {
                     if (url.empty() || !boost::algorithm::starts_with(url, "bambu:///")) {
                         m_failed_code = 3;
                         Stop(wxString::Format(_L("Initialize failed (%s)!"), url.empty() ? _L("Network unreachable") : from_u8(url)));
                     } else {
-                        m_last_state = MEDIASTATE_LOADING;
-                        SetStatus(_L("Loading..."));
-                        if (wxGetApp().app_config->get("dump_video") == "true") {
-                            BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl dump video to " << boost::filesystem::current_path();
-                            m_url = m_url + "&dump=video.h264";
-                        }
-                        boost::unique_lock lock(m_mutex);
-                        m_tasks.push_back(m_url);
-                        m_cond.notify_all();
+                        load();
                     }
                 } else {
                     BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl drop late ttcode for state: " << m_last_state;
@@ -215,7 +260,7 @@ void MediaPlayCtrl::Play()
 
 void MediaPlayCtrl::Stop(wxString const &msg)
 {
-    bool init_failed = m_last_state != wxMEDIASTATE_PLAYING;
+    int last_state = m_last_state;
 
     if (m_last_state != MEDIASTATE_IDLE) {
         m_media_ctrl->InvalidateBestSize();
@@ -238,27 +283,25 @@ void MediaPlayCtrl::Stop(wxString const &msg)
         m_failed_code = 0;
     }
 
-    if (init_failed && m_failed_code != 0 && m_last_failed_code != m_failed_code) {
-        json j;
-        j["stage"]          = std::to_string(m_last_state);
-        j["dev_id"]         = m_machine;
-        j["dev_ip"]         = m_lan_ip;
-        j["result"]         = "failed";
-        j["code"]           = m_failed_code;
-        j["msg"]            = into_u8(msg);
-        NetworkAgent *agent = wxGetApp().getAgent();
-        if (agent)
-            agent->track_event("start_liveview", j.dump());
-    }
-    m_last_failed_code = m_failed_code;
 
+    bool remote = m_url.find("/local/") == wxString::npos && m_url.find("/rtsp") == wxString::npos;
+    if (last_state != wxMEDIASTATE_PLAYING && m_failed_code != 0 
+            && m_last_failed_codes.find(m_failed_code) == m_last_failed_codes.end()
+            && (m_user_triggered || m_failed_retry > 3)) {
+        m_last_failed_codes.insert(m_failed_code);
+    }
+
+    m_url.clear();
     ++m_failed_retry;
-    if (m_failed_code != 0 && !m_tutk_support && (m_failed_retry > 1 || m_user_triggered)) {
+    if (m_failed_code < 0 && last_state != wxMEDIASTATE_PLAYING && !remote && (m_failed_retry > 1 || m_user_triggered)) {
         m_next_retry = wxDateTime(); // stop retry
         if (wxGetApp().show_modal_ip_address_enter_dialog(_L("LAN Connection Failed (Failed to start liveview)"))) {
             m_failed_retry = 0;
             m_user_triggered = true;
-            m_last_failed_code = 0;
+            if (m_last_user_play + wxTimeSpan::Minutes(5) < wxDateTime::Now()) {
+                m_last_failed_codes.clear();
+                m_last_user_play = wxDateTime::Now();
+            }
             m_next_retry   = wxDateTime::Now();
             return;
         }
@@ -270,14 +313,18 @@ void MediaPlayCtrl::Stop(wxString const &msg)
 
 void MediaPlayCtrl::TogglePlay()
 {
+    BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl::TogglePlay";
     if (m_last_state != MEDIASTATE_IDLE) {
         m_next_retry = wxDateTime();
         Stop();
     } else {
         m_failed_retry = 0;
         m_user_triggered = true;
-        m_last_failed_code = 0;
-        m_next_retry   = wxDateTime::Now();
+        if (m_last_user_play + wxTimeSpan::Minutes(5) < wxDateTime::Now()) {
+            m_last_failed_codes.clear();
+            m_last_user_play = wxDateTime::Now();
+        }
+        m_next_retry = wxDateTime::Now();
         Play();
     }
 }
@@ -310,13 +357,13 @@ void MediaPlayCtrl::ToggleStream()
                     DownloadProgressDialog2(MediaPlayCtrl *ctrl) : DownloadProgressDialog(_L("Downloading Virtual Camera Tools")), ctrl(ctrl) {}
                     struct UpgradeNetworkJob2 : UpgradeNetworkJob
                     {
-                        UpgradeNetworkJob2(std::shared_ptr<ProgressIndicator> pri) : UpgradeNetworkJob(pri) {
+                        UpgradeNetworkJob2() {
                             name         = "cameratools";
                             package_name = "camera_tools.zip";
                         }
                     };
-                    std::shared_ptr<UpgradeNetworkJob> make_job(std::shared_ptr<ProgressIndicator> pri) override
-                    { return std::make_shared<UpgradeNetworkJob2>(pri); }
+                    std::unique_ptr<UpgradeNetworkJob> make_job() override
+                    { return std::make_unique<UpgradeNetworkJob2>(); }
                     void                               on_finish() override
                     {
                         ctrl->CallAfter([ctrl = this->ctrl] { ctrl->ToggleStream(); });
@@ -330,7 +377,7 @@ void MediaPlayCtrl::ToggleStream()
         }
     }
     if (!url.empty() && wxGetApp().app_config->get("not_show_vcamera_stop_prev") != "1") {
-        MessageDialog dlg(this->GetParent(), _L("Another virtual camera is running.\nBambu Studio supports only a single virtual camera.\nDo you want to stop this virtual camera?"), _L("Warning"),
+        MessageDialog dlg(this->GetParent(), _L("Another virtual camera is running.\nGalaxySlicer supports only a single virtual camera.\nDo you want to stop this virtual camera?"), _L("Warning"),
                                  wxYES | wxCANCEL | wxICON_INFORMATION);
         dlg.show_dsa_button();
         auto          res = dlg.ShowModal();
@@ -338,14 +385,34 @@ void MediaPlayCtrl::ToggleStream()
             wxGetApp().app_config->set("not_show_vcamera_stop_prev", "1");
         if (res == wxID_CANCEL) return;
     }
+    if (m_lan_proto > MachineObject::LVL_None && (m_lan_mode || !m_remote_support) && !m_disable_lan && !m_lan_ip.empty()) {
+        std::string url;
+        if (m_lan_proto == MachineObject::LVL_Local)
+            url = "bambu:///local/" + m_lan_ip + ".?port=6000&user=" + m_lan_user + "&passwd=" + m_lan_passwd;
+        else if (m_lan_proto == MachineObject::LVL_Rtsps)
+            url = "bambu:///rtsps___" + m_lan_user + ":" + m_lan_passwd + "@" + m_lan_ip + "/streaming/live/1?proto=rtsps";
+        else if (m_lan_proto == MachineObject::LVL_Rtsp)
+            url = "bambu:///rtsp___" + m_lan_user + ":" + m_lan_passwd + "@" + m_lan_ip + "/streaming/live/1?proto=rtsp";
+        url += "&device=" + m_machine;
+        url += "&dev_ver=" + m_dev_ver;
+        BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl::ToggleStream: " << hide_passwd(url, {m_lan_passwd});
+        std::string             file_url = data_dir() + "/cameratools/url.txt";
+        boost::nowide::ofstream file(file_url);
+        auto                    url2 = encode_path(url.c_str());
+        file.write(url2.c_str(), url2.size());
+        file.close();
+        m_streaming = true;
+        return;
+    }
     NetworkAgent *agent = wxGetApp().getAgent();
     if (!agent) return;
-    agent->get_camera_url(m_machine, [this, m = m_machine, v = agent->get_version()](std::string url) {
+    agent->get_camera_url(m_machine, [this, m = m_machine, v = agent->get_version(), dv = m_dev_ver](std::string url) {
         if (boost::algorithm::starts_with(url, "bambu:///")) {
             url += "&device=" + m;
             url += "&version=" + v;
+            url += "&dev_ver=" + dv;
         }
-        BOOST_LOG_TRIVIAL(info) << "camera_url: " << url;
+        BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl::ToggleStream: " << hide_passwd(url, {"authkey=", "passwd="});
         CallAfter([this, m, url] {
             if (m != m_machine) return;
             if (url.empty() || !boost::algorithm::starts_with(url, "bambu:///")) {
@@ -362,6 +429,10 @@ void MediaPlayCtrl::ToggleStream()
             m_streaming = true;
         });
     });
+}
+
+void MediaPlayCtrl::msw_rescale() { 
+    m_button_play->Rescale(); 
 }
 
 void MediaPlayCtrl::onStateChanged(wxMediaEvent &event)
@@ -387,23 +458,14 @@ void MediaPlayCtrl::onStateChanged(wxMediaEvent &event)
         wxSize size = m_media_ctrl->GetVideoSize();
         BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl::onStateChanged: size: " << size.x << "x" << size.y;
         m_failed_code = m_media_ctrl->GetLastError();
-        if (size.GetWidth() > 1000) {
+        if (size.GetWidth() >= 320) {
             m_last_state = state;
             SetStatus(_L("Playing..."), false);
 
-            // track event
-            json j;
-            j["stage"] =  std::to_string(m_last_state);
-            j["dev_id"] = m_machine;
-            j["dev_ip"] = m_lan_ip;
-            j["result"] = "success";
-            j["code"] = 0;
-            NetworkAgent* agent = wxGetApp().getAgent();
-            if (agent)
-                agent->track_event("start_liveview", j.dump());
 
             m_failed_retry = 0;
             m_failed_code  = 0;
+            m_disable_lan = false;
             boost::unique_lock lock(m_mutex);
             m_tasks.push_back("<play>");
             m_cond.notify_all();
@@ -438,11 +500,32 @@ void MediaPlayCtrl::SetStatus(wxString const &msg2, bool hyperlink)
 
 bool MediaPlayCtrl::IsStreaming() const { return m_streaming; }
 
+void MediaPlayCtrl::load()
+{
+    m_last_state = MEDIASTATE_LOADING;
+    SetStatus(_L("Loading..."));
+    if (wxGetApp().app_config->get("internal_developer_mode") == "true") {
+        std::string file_h264 = data_dir() + "/video.h264";
+        std::string file_info = data_dir() + "/video.info";
+        BOOST_LOG_TRIVIAL(info) << "MediaPlayCtrl dump video to " << file_h264;
+        // closed by BambuSource
+        FILE *dump_h264_file = boost::nowide::fopen(file_h264.c_str(), "wb");
+        FILE *dump_info_file = boost::nowide::fopen(file_info.c_str(), "wb");
+        m_url                = m_url + "&dump_h264=" + boost::lexical_cast<std::string>(dump_h264_file);
+        m_url                = m_url + "&dump_info=" + boost::lexical_cast<std::string>(dump_info_file);
+    }
+    boost::unique_lock lock(m_mutex);
+    m_tasks.push_back(m_url);
+    m_cond.notify_all();
+}
+
 void MediaPlayCtrl::on_show_hide(wxShowEvent &evt)
 {
     evt.Skip();
     if (m_isBeingDeleted) return;
     m_failed_retry = 0;
+    if (m_next_retry.IsValid()) // Try open 2 seconds later, to avoid quick play/stop
+        m_next_retry = wxDateTime::Now() + wxTimeSpan::Seconds(2);
     IsShownOnScreen() ? Play() : Stop();
 }
 
@@ -454,6 +537,12 @@ void MediaPlayCtrl::media_proc()
             m_cond.wait(lock);
         }
         wxString url = m_tasks.front();
+        if (m_tasks.size() >= 2 && !url.IsEmpty() && url[0] != '<' && m_tasks[1] == "<stop>") {
+            BOOST_LOG_TRIVIAL(info) <<  "MediaPlayCtrl: busy skip url: " << hide_passwd(url, {"authkey=", "passwd=", m_lan_passwd});
+            m_tasks.pop_front();
+            m_tasks.pop_front();
+            continue;
+        }
         lock.unlock();
         if (url.IsEmpty()) {
             break;
@@ -519,7 +608,9 @@ bool MediaPlayCtrl::start_stream_service(bool *need_install)
         std::string file_dll2 = data_dir() + "/plugins/BambuSource.dll";
         if (!boost::filesystem::exists(file_dll) || boost::filesystem::last_write_time(file_dll) != boost::filesystem::last_write_time(file_dll2))
             boost::filesystem::copy_file(file_dll2, file_dll, boost::filesystem::copy_option::overwrite_if_exists);
-        boost::process::child process_source(file_source, file_url2.data().AsInternal(), boost::process::start_dir(start_dir), boost::process::windows::create_no_window, 
+        static std::locale tmp = std::locale(std::locale(), new boost::nowide::utf8_codecvt<wchar_t>());
+        boost::process::imbue(tmp);
+        boost::process::child process_source(file_source, into_u8(file_url2), boost::process::start_dir(start_dir), boost::process::windows::create_no_window, 
                                              boost::process::std_out > intermediate, boost::process::limit_handles);
         boost::process::child process_ffmpeg(file_ffmpeg, configss, boost::process::windows::create_no_window, 
                                              boost::process::std_in < intermediate, boost::process::limit_handles);
@@ -584,20 +675,20 @@ void wxMediaCtrl2::DoSetSize(int x, int y, int width, int height, int sizeFlags)
 #else
     wxMediaCtrl::DoSetSize(x, y, width, height, sizeFlags);
 #endif
-    if (sizeFlags & wxSIZE_USE_EXISTING) return;
-    wxSize size = GetVideoSize();
-    if (size.GetWidth() <= 0)
-        size = wxSize{16, 9};
-    int maxHeight = (width * size.GetHeight() + size.GetHeight() - 1) / size.GetWidth();
-    if (maxHeight != GetMaxHeight()) {
-        // BOOST_LOG_TRIVIAL(info) << "wxMediaCtrl2::DoSetSize: width: " << width << ", height: " << height << ", maxHeight: " << maxHeight;
-        SetMaxSize({-1, maxHeight});
-        CallAfter([this] {
-            if (auto p = GetParent()) {
-                p->Layout();
-                p->Refresh();
-            }
-        });
-    }
+    //if (sizeFlags & wxSIZE_USE_EXISTING) return;
+    //wxSize size = GetVideoSize();
+    //if (size.GetWidth() <= 0)
+    //    size = wxSize{16, 9};
+    //int maxHeight = (width * size.GetHeight() + size.GetHeight() - 1) / size.GetWidth();
+    //if (maxHeight != GetMaxHeight()) {
+    //    // BOOST_LOG_TRIVIAL(info) << "wxMediaCtrl2::DoSetSize: width: " << width << ", height: " << height << ", maxHeight: " << maxHeight;
+    //    SetMaxSize({-1, maxHeight});
+    //    CallAfter([this] {
+    //        if (auto p = GetParent()) {
+    //            p->Layout();
+    //            p->Refresh();
+    //        }
+    //    });
+    //}
 }
 

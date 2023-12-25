@@ -54,11 +54,11 @@ double Extruder::retract(double length, double restart_extra)
         if (m_config->use_relative_e_distances)
             m_share_E = 0.;
         double to_retract = std::max(0., length - m_share_retracted);
+        m_restart_extra = restart_extra;
         if (to_retract > 0.) {
             m_share_E             -= to_retract;
             m_absolute_E          -= to_retract;
             m_share_retracted     += to_retract;
-            m_restart_extra = restart_extra;
         }
         return to_retract;
     } else {
@@ -66,11 +66,11 @@ double Extruder::retract(double length, double restart_extra)
         if (m_config->use_relative_e_distances)
             m_E = 0.;
         double to_retract = std::max(0., length - m_retracted);
+        m_restart_extra = restart_extra;
         if (to_retract > 0.) {
             m_E             -= to_retract;
             m_absolute_E    -= to_retract;
             m_retracted     += to_retract;
-            m_restart_extra = restart_extra;
         }
         return to_retract;
     }
@@ -91,6 +91,24 @@ double Extruder::unretract()
         m_retracted     = 0.;
         m_restart_extra = 0.;
         return dE;
+    }
+}
+
+// Setting the retract state from the script.
+// Sets current retraction value & restart extra filament amount if retracted > 0.
+void Extruder::set_retracted(double retracted, double restart_extra)
+{
+    if (retracted < - EPSILON)
+        throw Slic3r::RuntimeError("Custom G-code reports negative z_retracted.");
+    if (restart_extra < - EPSILON)
+        throw Slic3r::RuntimeError("Custom G-code reports negative z_restart_extra.");
+
+    if (retracted > EPSILON) {
+        m_retracted     = retracted;
+        m_restart_extra = restart_extra < EPSILON ? 0 : restart_extra;
+    } else {
+        m_retracted     = 0;
+        m_restart_extra = 0;
     }
 }
 

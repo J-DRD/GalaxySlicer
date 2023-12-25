@@ -23,6 +23,7 @@ class ConfigManipulation
     bool                is_msg_dlg_already_exist{ false };
     bool                m_is_initialized_support_material_overhangs_queried{ false };
     bool                m_support_material_overhangs_queried{ false };
+    bool                is_BBL_Printer{false};
 
     // function to loading of changed configuration 
     std::function<void()>                                       load_config = nullptr;
@@ -75,9 +76,9 @@ public:
     //BBS: FFF filament nozzle temperature range
     void    check_nozzle_temperature_range(DynamicPrintConfig* config);
     void    check_nozzle_temperature_initial_layer_range(DynamicPrintConfig* config);
-    void    check_bed_temperature_difference(int bed_type, DynamicPrintConfig* config);
     void    check_filament_max_volumetric_speed(DynamicPrintConfig *config);
-
+    void    check_chamber_temperature(DynamicPrintConfig* config);
+    void    set_is_BBL_Printer(bool is_bbl_printer) { is_BBL_Printer = is_bbl_printer; };
     // SLA print
     void    update_print_sla_config(DynamicPrintConfig* config, const bool is_global_config = false);
     void    toggle_print_sla_options(DynamicPrintConfig* config);

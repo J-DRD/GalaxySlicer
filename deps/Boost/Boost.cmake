@@ -1,14 +1,14 @@
 include(ExternalProject)
 
-# Use boost ≥1.82 for Windows, to support VS2022
+# Use boost 1.78 for Windows, to support VS2022
 if (WIN32)
 	set(_boost_url "https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.gz")
 	set(_boost_hash c0685b68dd44cc46574cce86c4e17c0f611b15e195be9848dfd0769a0a207628)
     set(_bootstrap_cmd bootstrap.bat)
     set(_build_cmd  b2.exe)
 else()
-set(_boost_url "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz")
-set(_boost_hash 94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7)
+    set(_boost_url "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz")
+    set(_boost_hash 94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7)
     set(_bootstrap_cmd ./bootstrap.sh)
     set(_build_cmd ./b2)
 endif()
@@ -94,7 +94,7 @@ if (_cfg_rel GREATER -1 OR _cfg_relwdeb GREATER -1 OR _cfg_minsizerel GREATER -1
     list(APPEND _boost_variants release)
 endif()
 
-if (_cfg_deb GREATER -1 OR (MSVC AND ${DEP_DEBUG}) )
+if (MSVC AND ${DEP_DEBUG} )
     list(APPEND _boost_variants debug)
 endif()
 
@@ -154,7 +154,6 @@ if (NOT IS_CROSS_COMPILE OR NOT APPLE OR BUILD_SHARED_LIBS)
     message(STATUS "Standard boost build with patch command '${_patch_command}'")
     message(STATUS "Standard boost build with build command '${_build_cmd}'")
     message(STATUS "Standard boost build with install command '${_install_cmd}'")
-    
 ExternalProject_Add(
     dep_Boost
 	URL ${_boost_url}
@@ -180,7 +179,7 @@ ExternalProject_Add(
         --with-toolset=clang
         --with-libraries=date_time,filesystem,iostreams,locale,log,regex,system,thread
         "--prefix=${DESTDIR}/usr/local"
-	PATCH_COMMAND ${_patch_command}
+    PATCH_COMMAND ${_patch_command}
     BUILD_COMMAND "${_build_cmd}"
     BUILD_IN_SOURCE    ON
     INSTALL_COMMAND "${_install_cmd}"

@@ -1,25 +1,26 @@
-# Build Bambu Slicer in a container
+# GalaxySlicer in a container
 #
 # Build an AppImage using rootless Podman (refer to https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md):
-# rm -rf build; podman build . -t galaxy-slicer-builder && podman run --rm localhost/galaxy-slicer-builder /bin/bash -c 'tar -c $(find build | grep ubu64.AppImage | head -1)' | tar -xv
+# rm -rf build; podman build . -t bambu-studio-builder && podman run --rm localhost/bambu-studio-builder /bin/bash -c 'tar -c $(find build | grep ubu64.AppImage | head -1)' | tar -xv
 #
 # Troubleshooting the build container:
-# podman run -it --name galaxy-slicer-builder localhost/galaxy-slicer-builder /bin/bash
+# podman run -it --name bambu-studio-builder localhost/bambu-studio-builder /bin/bash
 #
 # Debugging the resulting AppImage:
 #   1) Install `gdb`
 #   2) In a terminal in the same directory as the AppImage, start it with following:
-#      echo -e "run\nbt\nquit" | gdb ./BambuStudio_ubu64.AppImage
+#      echo -e "run\nbt\nquit" | gdb ./GalaxySlicer_ubu64.AppImage
 #   3) Find related issue using backtrace output for clues and add backtrace to it on github
 #
 # Docker alternative AppImage build syntax (use this if you can't install podman):
-# rm -rf build; docker build . --file Containerfile -t galaxy-slicer-builder; docker run --rm galaxy-slicer-builder /bin/bash -c 'tar -c $(find build | grep ubu64.AppImage | head -1)' | tar -xv
+# rm -rf build; docker build . --file Containerfile -t bambu-studio-builder; docker run --rm bambu-studio-builder /bin/bash -c 'tar -c $(find build | grep ubu64.AppImage | head -1)' | tar -xv
 #
 #
-# TODO: bind mount GalaxySlicer to inside the container instead of COPY to enable faster rebuilds during dev work.
+# TODO: bind mount BambuStudio to inside the container instead of COPY to enable faster rebuilds during dev work.
 
-FROM docker.io/ubuntu:20.04
+FROM docker.io/ubuntu:22.04
 LABEL maintainer "DeftDawg <DeftDawg@gmail.com>"
+ARG BUILD_LINUX_EXTRA_ARGS=""
 
 # Disable interactive package configuration
 RUN apt-get update && \
@@ -45,7 +46,7 @@ RUN apt-get update && apt-get install  -y \
     libgstreamer1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-base1.0-dev libgstreamerd-3-dev \
     libmspack-dev \
     libosmesa6-dev \
-    libssl-dev libcurl4-openssl-dev libsecret-1-dev \
+    libssl3 libssl-dev libcurl4-openssl-dev libsecret-1-dev \
     libudev-dev \
     curl \
     wget \
@@ -54,18 +55,18 @@ RUN apt-get update && apt-get install  -y \
 
 COPY ./ GalaxySlicer
 
-WORKDIR GalaxySlicer
+WORKDIR /GalaxySlicer
 
 # These can run together, but we run them seperate for podman caching
 # Update System dependencies
-RUN ./BuildLinux.sh -u
+RUN ./BuildLinux.sh -u ${BUILD_LINUX_EXTRA_ARGS}
 
 # Build dependencies in ./deps
-RUN ./BuildLinux.sh -d
+RUN ./BuildLinux.sh -d ${BUILD_LINUX_EXTRA_ARGS}
 
 # Build slic3r
-RUN ./BuildLinux.sh -s
+RUN ./BuildLinux.sh -s ${BUILD_LINUX_EXTRA_ARGS}
 
 # Build AppImage
 ENV container podman
-RUN ./BuildLinux.sh -i
+RUN ./BuildLinux.sh -i ${BUILD_LINUX_EXTRA_ARGS}

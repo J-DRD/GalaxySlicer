@@ -41,6 +41,7 @@ public:
     RadioBox *m_radiobox;
     bool      m_selected = false;
 };
+
 WX_DECLARE_LIST(RadioSelector, RadioSelectorList);
 class CheckBox;
 class TextInput;
@@ -61,7 +62,7 @@ private:
 
 protected:
     wxBoxSizer *  m_sizer_body;
-    wxScrolledWindow *m_scrolledWindow;
+    wxScrolledWindow* m_scrolledWindow;
 
     // bool								m_settings_layout_changed {false};
     bool m_seq_top_layer_only_changed{false};
@@ -89,12 +90,12 @@ public:
 
     // debug mode
     ::CheckBox * m_developer_mode_ckeckbox   = {nullptr};
-    ::CheckBox * m_dump_video_ckeckbox       = {nullptr};
+    ::CheckBox * m_internal_developer_mode_ckeckbox = {nullptr};
     ::CheckBox * m_dark_mode_ckeckbox        = {nullptr};
     ::TextInput *m_backup_interval_textinput = {nullptr};
 
     wxString m_developer_mode_def;
-    wxString m_dump_video_def;
+    wxString m_internal_developer_mode_def;
     wxString m_backup_interval_def;
     wxString m_iot_environment_def;
 

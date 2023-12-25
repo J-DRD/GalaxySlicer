@@ -1,3 +1,7 @@
+///|/ Copyright (c) Prusa Research 2018 - 2023 Enrico Turri @enricoturri1966, Oleksandra Iushchenko @YuSanka, Lukáš Matěna @lukasmatena, Lukáš Hejl @hejllukas, Vojtěch Bubník @bubnikv, Vojtěch Král @vojtechkral
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #include "libslic3r/libslic3r.h"
 #include "OpenGLManager.hpp"
 
@@ -63,6 +67,11 @@ const std::string& OpenGLManager::GLInfo::get_renderer() const
         detect();
 
     return m_renderer;
+}
+
+bool OpenGLManager::GLInfo::is_mesa() const
+{
+    return boost::icontains(m_version, "mesa");
 }
 
 int OpenGLManager::GLInfo::get_max_tex_size() const
@@ -207,7 +216,7 @@ std::string OpenGLManager::GLInfo::to_string(bool for_github) const
 
 OpenGLManager::GLInfo OpenGLManager::s_gl_info;
 bool OpenGLManager::s_compressed_textures_supported = false;
-bool OpenGLManager::m_use_manually_generated_mipmaps = true;
+bool OpenGLManager::s_force_power_of_two_textures = false;
 OpenGLManager::EMultisampleState OpenGLManager::s_multisample = OpenGLManager::EMultisampleState::Unknown;
 OpenGLManager::EFramebufferType OpenGLManager::s_framebuffers_type = OpenGLManager::EFramebufferType::Unknown;
 
@@ -233,7 +242,7 @@ OpenGLManager::~OpenGLManager()
 #endif //__APPLE__
 }
 
-bool OpenGLManager::init_gl()
+bool OpenGLManager::init_gl(bool popup_error)
 {
     if (!m_gl_initialized) {
         GLenum result = glewInit();
@@ -263,53 +272,49 @@ bool OpenGLManager::init_gl()
 
         bool valid_version = s_gl_info.is_version_greater_or_equal_to(2, 0);
         if (!valid_version) {
-            BOOST_LOG_TRIVIAL(warning) << "Found opengl version <= 2.0"<< std::endl;
+            BOOST_LOG_TRIVIAL(error) << "Found opengl version <= 2.0"<< std::endl;
             // Complain about the OpenGL version.
-            wxString message = from_u8((boost::format(
-                _utf8(L("The application cannot run normally because OpenGL version is lower than 2.0.\n")))).str());
-            message += "\n";
-        	message += _L("Please upgrade your graphics card driver.");
-        	wxMessageBox(message, _L("Unsupported OpenGL version"), wxOK | wxICON_ERROR);
+            if (popup_error) {
+                wxString message = from_u8((boost::format(
+                    _utf8(L("The application cannot run normally because OpenGL version is lower than 2.0.\n")))).str());
+                message += "\n";
+                message += _L("Please upgrade your graphics card driver.");
+                wxMessageBox(message, _L("Unsupported OpenGL version"), wxOK | wxICON_ERROR);
+            }
         }
 
         if (valid_version)
-	{
+        {
             // load shaders
             auto [result, error] = m_shaders_manager.init();
             if (!result) {
-                wxString message = from_u8((boost::format(
-                    _utf8(L("Unable to load shaders:\n%s"))) % error).str());
-                wxMessageBox(message, _L("Error loading shaders"), wxOK | wxICON_ERROR);
+                BOOST_LOG_TRIVIAL(error) << "Unable to load shaders: "<<error<< std::endl;
+                if (popup_error) {
+                    wxString message = from_u8((boost::format(
+                        _utf8(L("Unable to load shaders:\n%s"))) % error).str());
+                    wxMessageBox(message, _L("Error loading shaders"), wxOK | wxICON_ERROR);
+                }
             }
         }
 
 #ifdef _WIN32
         // Since AMD driver version 22.7.1, there is probably some bug in the driver that causes the issue with the missing
-        // texture of the bed. It seems that this issue only triggers when mipmaps are generated manually
-        // (combined with a texture compression) and when mipmaps are generated through OpenGL glGenerateMipmap is working.
-        // So, for newer drivers than 22.6.1, the last working driver version, we use mipmaps generated through OpenGL.
-        if (const auto gl_info = OpenGLManager::get_gl_info(); boost::contains(gl_info.get_vendor(), "ATI Technologies Inc.")) {
-            // WHQL drivers seem to have one more version number at the end besides non-WHQL drivers.
-            //     WHQL: 4.6.14800 Compatibility Profile Context 22.6.1 30.0.21023.1015
-            // Non-WHQL: 4.6.0 Compatibility Profile Context 22.8.1.220810
-            std::regex version_rgx(R"(Compatibility\sProfile\sContext\s(\d+)\.(\d+)\.(\d+))");
-            if (std::smatch matches; std::regex_search(gl_info.get_version(), matches, version_rgx) && matches.size() == 4) {
-                int version_major = std::stoi(matches[1].str());
-                int version_minor = std::stoi(matches[2].str());
-                int version_patch = std::stoi(matches[3].str());
-                BOOST_LOG_TRIVIAL(debug) << "Found AMD driver version: " << version_major << "." << version_minor << "." << version_patch;
-
-                if (version_major > 22 || (version_major == 22 && version_minor > 6) || (version_major == 22 && version_minor == 6 && version_patch > 1)) {
-                    m_use_manually_generated_mipmaps = false;
-                    BOOST_LOG_TRIVIAL(debug) << "Mipmapping through OpenGL was enabled.";
-                }
-            } else {
-                BOOST_LOG_TRIVIAL(error) << "Not recognized format of version.";
-            }
-        } else {
-            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "not AMD driver.";
-        }
-#endif
+        // texture of the bed (see: https://github.com/prusa3d/PrusaSlicer/issues/8417).
+        // It seems that this issue only triggers when mipmaps are generated manually
+        // (combined with a texture compression) with texture size not being power of two.
+        // When mipmaps are generated through OpenGL function glGenerateMipmap() the driver works fine,
+        // but the mipmap generation is quite slow on some machines.
+        // There is no an easy way to detect the driver version without using Win32 API because the strings returned by OpenGL
+        // have no standardized format, only some of them contain the driver version.
+        // Until we do not know that driver will be fixed (if ever) we force the use of power of two textures on all cards
+        // 1) containing the string 'Radeon' in the string returned by glGetString(GL_RENDERER)
+        // 2) containing the string 'Custom' in the string returned by glGetString(GL_RENDERER)
+        const auto& gl_info = OpenGLManager::get_gl_info();
+        if (boost::contains(gl_info.get_vendor(), "ATI Technologies Inc.") &&
+           (boost::contains(gl_info.get_renderer(), "Radeon") ||
+            boost::contains(gl_info.get_renderer(), "Custom")))
+            s_force_power_of_two_textures = true;
+#endif // _WIN32
     }
 
     return true;

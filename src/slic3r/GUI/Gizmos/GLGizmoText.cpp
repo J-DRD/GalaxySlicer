@@ -26,6 +26,7 @@
 namespace Slic3r {
 namespace GUI {
 
+static const double PI = 3.141592653589793238;
 static const wxColour FONT_TEXTURE_BG = wxColour(0, 0, 0, 0);
 static const wxColour FONT_TEXTURE_FG = *wxWHITE;
 static const int FONT_SIZE = 12;
@@ -144,12 +145,24 @@ bool GLGizmoText::on_init()
     m_scale = m_imgui->get_font_size();
     m_shortcut_key = WXK_CONTROL_T;
 
+    m_grabbers.push_back(Grabber());
+
     reset_text_info();
+
+    m_desc["font"]          = _L("Font");
+    m_desc["size"]          = _L("Size");
+    m_desc["thickness"]     = _L("Thickness");
+    m_desc["text_gap"]      = _L("Text Gap");
+    m_desc["angle"]         = _L("Angle");
+    m_desc["embeded_depth"] = _L("Embeded\ndepth");
+    m_desc["input_text"]    = _L("Input text");
+
+    m_desc["surface"]         = _L("Surface");
+    m_desc["horizontal_text"] = _L("Horizontal text");
 
     m_desc["rotate_text_caption"] = _L("Shift + Mouse move up or dowm");
     m_desc["rotate_text"]         = _L("Rotate text");
 
-    m_grabbers.push_back(Grabber());
     return true;
 }
 
@@ -251,13 +264,8 @@ bool GLGizmoText::gizmo_event(SLAGizmoEventType action, const Vec2d &mouse_posit
         m_mouse_position = mouse_position;
     }
     else if (action == SLAGizmoEventType::LeftDown) {
-        if (!selection.is_empty() && get_hover_id() != -1) {
-            start_dragging();
-            return true;
-        }
-
         if (m_is_modify)
-            return true;
+            return false;
 
         Plater *plater = wxGetApp().plater();
         if (!plater)
@@ -286,7 +294,7 @@ bool GLGizmoText::gizmo_event(SLAGizmoEventType action, const Vec2d &mouse_posit
 
         // Cast a ray on all meshes, pick the closest hit and save it for the respective mesh
         for (int mesh_id = 0; mesh_id < int(trafo_matrices.size()); ++mesh_id) {
-            MeshRaycaster mesh_raycaster = MeshRaycaster(mo->volumes[mesh_id]->mesh());
+            MeshRaycaster mesh_raycaster = MeshRaycaster(mo->volumes[mesh_id]->mesh_ptr());
 
             if (mesh_raycaster.unproject_on_mesh(mouse_position, trafo_matrices[mesh_id], camera, hit, normal,
                                                                            m_c->object_clipper()->get_clipping_plane(), &facet)) {
@@ -317,6 +325,40 @@ bool GLGizmoText::gizmo_event(SLAGizmoEventType action, const Vec2d &mouse_posit
 
     return true;
 }
+
+bool GLGizmoText::on_mouse(const wxMouseEvent &mouse_event)
+{
+    // wxCoord == int --> wx/types.h
+    Vec2i mouse_coord(mouse_event.GetX(), mouse_event.GetY());
+    Vec2d mouse_pos = mouse_coord.cast<double>();
+    bool control_down           = mouse_event.CmdDown();
+
+    if (mouse_event.Moving()) {
+        gizmo_event(SLAGizmoEventType::Moving, mouse_pos, mouse_event.ShiftDown(), mouse_event.AltDown(), control_down);
+    }
+
+    // when control is down we allow scene pan and rotation even when clicking
+    // over some object
+    bool grabber_contains_mouse = (get_hover_id() != -1);
+
+    if (mouse_event.LeftDown()) {
+        if ((!control_down || grabber_contains_mouse) &&            
+            gizmo_event(SLAGizmoEventType::LeftDown, mouse_pos, mouse_event.ShiftDown(), mouse_event.AltDown(), false))
+            // the gizmo got the event and took some action, there is no need
+            // to do anything more
+            return true;
+    }
+
+    return use_grabbers(mouse_event);
+}
+
+void GLGizmoText::on_register_raycasters_for_picking()
+{
+    // the gizmo grabbers are rendered on top of the scene, so the raytraced picker should take it into account
+    m_parent.set_raycaster_gizmos_on_top(true);
+}
+
+void GLGizmoText::on_unregister_raycasters_for_picking() { m_parent.set_raycaster_gizmos_on_top(false); }
 
 void GLGizmoText::on_set_state()
 {
@@ -444,9 +486,15 @@ void GLGizmoText::on_render()
 
         m_grabbers[0].center       = m_mouse_position_world;
         m_grabbers[0].enabled      = true;
-        std::array<float, 4> color = picking_color_component(0);
-        m_grabbers[0].color        = color;
-        m_grabbers[0].render_for_picking(mean_size);
+
+        GLShaderProgram *shader    = wxGetApp().get_shader("gouraud_light");
+        if (shader != nullptr) {
+            shader->start_using();
+            shader->set_uniform("emission_factor", 0.1f);
+            render_grabbers(mean_size);
+
+            shader->stop_using();
+        }
     }
     
     delete_temp_preview_text_volume();
@@ -458,45 +506,7 @@ void GLGizmoText::on_render()
     plater->update();
 }
 
-void GLGizmoText::on_render_for_picking()
-{
-    glsafe(::glDisable(GL_DEPTH_TEST));
-
-    int          obejct_idx, volume_idx;
-    ModelVolume *model_volume = get_selected_single_volume(obejct_idx, volume_idx);
-    if (model_volume && !model_volume->get_text_info().m_text.empty()) {
-        if (m_grabbers.size() == 1) {
-            ModelObject *mo = m_c->selection_info()->model_object();
-            if (m_is_modify) {
-                const Selection &selection = m_parent.get_selection();
-                mo                         = selection.get_model()->objects[m_object_idx];
-            }
-            if (mo == nullptr) return;
-
-            const Selection &    selection = m_parent.get_selection();
-            const ModelInstance *mi        = mo->instances[selection.get_instance_idx()];
-
-            // Precalculate transformations of individual meshes.
-            std::vector<Transform3d> trafo_matrices;
-            for (const ModelVolume *mv : mo->volumes) {
-                if (mv->is_model_part()) {
-                    trafo_matrices.emplace_back(mi->get_transformation().get_matrix() * mv->get_matrix());
-                }
-            }
-
-            m_mouse_position_world = trafo_matrices[m_rr.mesh_id] * Vec3d(m_rr.hit(0), m_rr.hit(1), m_rr.hit(2));
-
-            float mean_size = (float) (GLGizmoBase::Grabber::FixedGrabberSize);
-            m_grabbers[0].center       = m_mouse_position_world;
-            m_grabbers[0].enabled      = true;
-            std::array<float, 4> color = picking_color_component(0);
-            m_grabbers[0].color        = color;
-            m_grabbers[0].render_for_picking(mean_size);
-        }
-    }
-}
-
-void GLGizmoText::on_update(const UpdateData &data)
+void GLGizmoText::on_dragging(const UpdateData &data)
 {
     Vec2d              mouse_pos = Vec2d(data.mouse_pos.x(), data.mouse_pos.y());
     const ModelObject *mo = m_c->selection_info()->model_object();
@@ -528,7 +538,7 @@ void GLGizmoText::on_update(const UpdateData &data)
         if (mesh_id == m_volume_idx)
             continue;
 
-        MeshRaycaster mesh_raycaster = MeshRaycaster(mo->volumes[mesh_id]->mesh());
+        MeshRaycaster mesh_raycaster = MeshRaycaster(mo->volumes[mesh_id]->mesh_ptr());
 
         if (mesh_raycaster.unproject_on_mesh(mouse_pos, trafo_matrices[mesh_id], camera, hit, normal, m_c->object_clipper()->get_clipping_plane(),
                                                                        &facet)) {
@@ -635,7 +645,7 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
 
     const Selection &selection = m_parent.get_selection();
     if (selection.is_single_full_instance() || selection.is_single_full_object()) {
-        const GLVolume * gl_volume = selection.get_volume(*selection.get_volume_idxs().begin());
+        const GLVolume * gl_volume = selection.get_first_volume();
         int object_idx = gl_volume->object_idx();
         if (object_idx != m_object_idx || (object_idx == m_object_idx && m_volume_idx != -1)) {
             m_object_idx = object_idx;
@@ -668,13 +678,13 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
     ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, 4.0f * currt_scale);
     GizmoImguiBegin("Text", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
 
-    float space_size = m_imgui->get_style_scaling() * 8;
-    float font_cap = m_imgui->calc_text_size(_L("Font")).x;
-    float size_cap = m_imgui->calc_text_size(_L("Size")).x;
-    float thickness_cap = m_imgui->calc_text_size(_L("Thickness")).x;
-    float input_cap = m_imgui->calc_text_size(_L("Input text")).x;
-    float depth_cap = m_imgui->calc_text_size(_L("Embeded")).x;
-    float caption_size  = std::max(std::max(font_cap, size_cap), std::max(depth_cap, input_cap)) + space_size + ImGui::GetStyle().WindowPadding.x;
+    const float space_size = m_imgui->get_style_scaling() * 8;
+    const std::array<std::string, 7> cap_array = std::array<std::string, 7>{ "font", "size", "thickness", "text_gap", "angle", "embeded_depth", "input_text" };
+    float caption_size  = 0.0f;
+    for (const auto &t : cap_array) {
+        caption_size = std::max(caption_size, m_imgui->calc_text_size(m_desc[t]).x);
+    }
+    caption_size += space_size + ImGui::GetStyle().WindowPadding.x;
 
     float input_text_size = m_imgui->scaled(10.0f);
     float button_size = ImGui::GetFrameHeight();
@@ -701,7 +711,7 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
 
     ImGui::AlignTextToFramePadding();
 
-    m_imgui->text(_L("Font"));
+    m_imgui->text(m_desc["font"]);
     ImGui::SameLine(caption_size);
     ImGui::PushItemWidth(list_width);
     push_combo_style(currt_scale);
@@ -741,7 +751,7 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
     ImGui::PopStyleVar(2);
     pop_combo_style();
     ImGui::AlignTextToFramePadding();
-    m_imgui->text(_L("Size"));
+    m_imgui->text(m_desc["size"]);
     ImGui::SameLine(caption_size);
     ImGui::PushItemWidth(input_size);
     if(ImGui::InputFloat("###font_size", &m_font_size, 0.0f, 0.0f, "%.2f"))
@@ -768,20 +778,22 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
     ImGui::PopStyleVar(3);
 
     ImGui::AlignTextToFramePadding();
-    m_imgui->text(_L("Thickness"));
+    m_imgui->text(m_desc["thickness"]);
     ImGui::SameLine(caption_size);
     ImGui::PushItemWidth(list_width);
-    if(ImGui::InputFloat("###text_thickness", &m_thickness,0.0f, 0.0f, "%.2f"))
-        m_need_update_text = true;
+    float old_value = m_thickness;
+    ImGui::InputFloat("###text_thickness", &m_thickness, 0.0f, 0.0f, "%.2f");
     if (m_thickness < 0.1f)
         m_thickness = 0.1f;
+    if (old_value != m_thickness)
+        m_need_update_text = true;
 
     const float slider_icon_width = m_imgui->get_slider_icon_size().x;
     const float slider_width      = list_width - 1.5 * slider_icon_width - space_size;
     const float drag_left_width   = caption_size + slider_width + space_size;
 
     ImGui::AlignTextToFramePadding();
-    m_imgui->text(_L("Text Gap"));
+    m_imgui->text(m_desc["text_gap"]);
     ImGui::SameLine(caption_size);
     ImGui::PushItemWidth(slider_width);
     if (m_imgui->bbl_slider_float_style("##text_gap", &m_text_gap, -100, 100, "%.2f", 1.0f, true))
@@ -792,7 +804,7 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
         m_need_update_text = true;
 
     ImGui::AlignTextToFramePadding();
-    m_imgui->text(_L("Angle"));
+    m_imgui->text(m_desc["angle"]);
     ImGui::SameLine(caption_size);
     ImGui::PushItemWidth(slider_width);
     if (m_imgui->bbl_slider_float_style("##angle", &m_rotate_angle, 0, 360, "%.2f", 1.0f, true))
@@ -803,16 +815,18 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
         m_need_update_text = true;
 
     ImGui::AlignTextToFramePadding();
-    m_imgui->text(_L("Embeded\ndepth"));
+    m_imgui->text(m_desc["embeded_depth"]);
     ImGui::SameLine(caption_size);
     ImGui::PushItemWidth(list_width);
-    if (ImGui::InputFloat("###text_embeded_depth", &m_embeded_depth, 0.0f, 0.0f, "%.2f"))
-        m_need_update_text = true;
+    old_value = m_embeded_depth;
+    ImGui::InputFloat("###text_embeded_depth", &m_embeded_depth, 0.0f, 0.0f, "%.2f");
     if (m_embeded_depth < 0.f)
         m_embeded_depth = 0.f;
+    if (old_value != m_embeded_depth)
+        m_need_update_text = true;
 
     ImGui::AlignTextToFramePadding();
-    m_imgui->text(_L("Input text"));
+    m_imgui->text(m_desc["input_text"]);
     ImGui::SameLine(caption_size);
     ImGui::PushItemWidth(list_width);
 
@@ -830,12 +844,12 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
     
     ImGui::SameLine(caption_size);
     ImGui::AlignTextToFramePadding();
-    if (m_imgui->bbl_checkbox(_L("Surface"), m_is_surface_text))
+    if (m_imgui->bbl_checkbox(m_desc["surface"], m_is_surface_text))
         m_need_update_text = true;
 
     ImGui::SameLine();
     ImGui::AlignTextToFramePadding();
-    if (m_imgui->bbl_checkbox(_L("Horizontal text"), m_keep_horizontal))
+    if (m_imgui->bbl_checkbox(m_desc["horizontal_text"], m_keep_horizontal))
         m_need_update_text = true;
 
     //ImGui::SameLine();
@@ -896,7 +910,7 @@ ModelVolume *GLGizmoText::get_selected_single_volume(int &out_object_idx, int &o
 {
     if (m_parent.get_selection().is_single_volume() || m_parent.get_selection().is_single_modifier()) {
         const Selection &selection = m_parent.get_selection();
-        const GLVolume * gl_volume = selection.get_volume(*selection.get_volume_idxs().begin());
+        const GLVolume * gl_volume = selection.get_first_volume();
         out_object_idx             = gl_volume->object_idx();
         ModelObject *model_object  = selection.get_model()->objects[out_object_idx];
         out_volume_idx             = gl_volume->volume_idx();
@@ -922,6 +936,7 @@ void GLGizmoText::reset_text_info()
     m_keep_horizontal = false;
 
     m_is_modify = false;
+    m_grabbers[0].enabled = false;
 }
 
 bool GLGizmoText::update_text_positions(const std::vector<std::string>& texts)
@@ -997,8 +1012,9 @@ bool GLGizmoText::update_text_positions(const std::vector<std::string>& texts)
     Vec3d temp_position = m_mouse_position_world;
     Vec3d temp_normal   = m_mouse_normal_world;
 
-    Vec3d cut_plane = Vec3d::UnitY(); 
-    if (temp_normal != Vec3d::UnitZ()) {
+    Vec3d cut_plane = Vec3d::UnitY();
+    double epson = 1e-6;
+    if (!(abs(temp_normal.x()) <= epson && abs(temp_normal.y()) <= epson && abs(temp_normal.z()) > epson)) { // temp_normal != Vec3d::UnitZ()
         Vec3d v_plane   = temp_normal.cross(Vec3d::UnitZ());
         cut_plane = v_plane.cross(temp_normal);
     }
@@ -1067,6 +1083,11 @@ bool GLGizmoText::update_text_positions(const std::vector<std::string>& texts)
     Vec3d    rotation_axis;
     Matrix3d rotation_matrix;
     Geometry::rotation_from_two_vectors(m_cut_plane_dir, Vec3d::UnitZ(), rotation_axis, phi, &rotation_matrix);
+    if (abs(phi - PI) < 1e-6) {
+        Transform3d transform = Transform3d::Identity();
+        transform.rotate(Eigen::AngleAxisd(phi, m_mouse_normal_world));
+        rotation_matrix = transform.matrix().block<3, 3>(0, 0);
+    }
 
     Transform3d transfo1;
     transfo1.setIdentity();
@@ -1082,6 +1103,9 @@ bool GLGizmoText::update_text_positions(const std::vector<std::string>& texts)
 
     MeshSlicingParams slicing_params;
     slicing_params.trafo = transfo * mi->get_transformation().get_matrix() /** volume->get_transformation().get_matrix()*/;
+    // for debug
+    // its_write_obj(slice_meshs.its, "D:/debug_files/mesh.obj");
+
     // generate polygons
     const Polygons temp_polys = slice_mesh(slice_meshs.its, click_point.z(), slicing_params);
 
@@ -1308,7 +1332,7 @@ bool GLGizmoText::update_text_positions(const std::vector<std::string>& texts)
     }
 
     TriangleMesh mesh       = slice_meshs;
-    std::vector<double> mesh_values(m_position_points.size(), 1'000'000'000);
+    std::vector<double> mesh_values(m_position_points.size(), 1e9);
     m_normal_points.resize(m_position_points.size());
     auto point_in_triangle_delete_area = [](const Vec3d &point, const Vec3d &point0, const Vec3d &point1, const Vec3d &point2) {
         Vec3d p0_p  = point - point0;
@@ -1379,7 +1403,6 @@ TriangleMesh GLGizmoText::get_text_mesh(const char* text_str, const Vec3d &posit
     new_text_dir.normalize();
     Geometry::rotation_from_two_vectors(old_text_dir, new_text_dir, rotation_axis, phi, &rotation_matrix);
 
-    static double const PI = 3.141592653589793238;
     if (abs(phi - PI) < EPSILON)
         rotation_axis = normal;
 
@@ -1462,12 +1485,20 @@ void GLGizmoText::generate_text_volume(bool is_temp)
         mesh.merge(sub_mesh);
     }
 
+    if (mesh.empty())
+        return;
+
     Plater *plater = wxGetApp().plater();
     if (!plater)
         return;
 
     TextInfo text_info = get_text_info();
     if (m_is_modify && m_need_update_text) {
+        if (m_object_idx == -1 || m_volume_idx == -1) {
+            BOOST_LOG_TRIVIAL(error) << boost::format("Text: selected object_idx = %1%, volume_idx = %2%") % m_object_idx % m_volume_idx;
+            return;
+        }
+
         plater->take_snapshot("Modify Text");
         const Selection &selection        = m_parent.get_selection();
         ModelObject *    model_object     = selection.get_model()->objects[m_object_idx];
@@ -1476,9 +1507,7 @@ void GLGizmoText::generate_text_volume(bool is_temp)
         new_model_volume->set_text_info(text_info);
         new_model_volume->name = model_volume->name;
         new_model_volume->set_type(model_volume->type());
-        if (model_volume->config.option("extruder"))
-            new_model_volume->config.set("extruder", model_volume->config.extruder());
-
+        new_model_volume->config.apply(model_volume->config);
         std::swap(model_object->volumes[m_volume_idx], model_object->volumes.back());
         model_object->delete_volume(model_object->volumes.size() - 1);
         plater->update();

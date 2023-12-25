@@ -1,3 +1,7 @@
+///|/ Copyright (c) Prusa Research 2018 - 2020 Tomáš Mészáros @tamasmeszaros, Vojtěch Bubník @bubnikv
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #ifndef IPROGRESSINDICATOR_HPP
 #define IPROGRESSINDICATOR_HPP
 
@@ -18,7 +22,7 @@ public:
     virtual ~ProgressIndicator() = default;
     
     virtual void clear_percent() = 0;
-    virtual void show_networking_test(wxString msg) = 0;
+    virtual void show_error_info(wxString msg, int code, wxString description, wxString extra) = 0;
     virtual void set_range(int range) = 0;
     virtual void set_cancel_callback(CancelFn = CancelFn()) = 0;
     virtual void set_progress(int pr) = 0;

@@ -1,3 +1,7 @@
+///|/ Copyright (c) Prusa Research 2018 - 2023 Enrico Turri @enricoturri1966, Lukáš Matěna @lukasmatena, Lukáš Hejl @hejllukas, Vojtěch Bubník @bubnikv, Vojtěch Král @vojtechkral
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #ifndef slic3r_OpenGLManager_hpp_
 #define slic3r_OpenGLManager_hpp_
 
@@ -40,6 +44,8 @@ public:
         const std::string& get_vendor() const;
         const std::string& get_renderer() const;
 
+        bool is_mesa() const;
+
         int get_max_tex_size() const;
         float get_max_anisotropy() const;
 
@@ -54,7 +60,7 @@ public:
         void detect() const;
     };
 
-#ifdef __APPLE__ 
+#ifdef __APPLE__
     // Part of hack to remove crash when closing the application on OSX 10.9.5 when building against newer wxWidgets
     struct OSInfo
     {
@@ -76,20 +82,21 @@ private:
     wxGLContext* m_context{ nullptr };
     GLShadersManager m_shaders_manager;
     static GLInfo s_gl_info;
-#ifdef __APPLE__ 
+#ifdef __APPLE__
     // Part of hack to remove crash when closing the application on OSX 10.9.5 when building against newer wxWidgets
     static OSInfo s_os_info;
 #endif //__APPLE__
     static bool s_compressed_textures_supported;
+    static bool s_force_power_of_two_textures;
+
     static EMultisampleState s_multisample;
     static EFramebufferType s_framebuffers_type;
 
-    static bool m_use_manually_generated_mipmaps;
 public:
     OpenGLManager() = default;
     ~OpenGLManager();
 
-    bool init_gl();
+    bool init_gl(bool popup_error = true);
     wxGLContext* init_glcontext(wxGLCanvas& canvas);
 
     GLShaderProgram* get_shader(const std::string& shader_name) { return m_shaders_manager.get_shader(shader_name); }
@@ -101,7 +108,7 @@ public:
     static EFramebufferType get_framebuffers_type() { return s_framebuffers_type; }
     static wxGLCanvas* create_wxglcanvas(wxWindow& parent);
     static const GLInfo& get_gl_info() { return s_gl_info; }
-    static bool use_manually_generated_mipmaps() { return m_use_manually_generated_mipmaps; }
+    static bool force_power_of_two_textures() { return s_force_power_of_two_textures; }
 
 private:
     static void detect_multisample(int* attribList);

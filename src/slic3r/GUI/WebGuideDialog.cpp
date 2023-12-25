@@ -27,12 +27,49 @@
 #include <slic3r/Utils/Http.hpp>
 #include <libslic3r/miniz_extension.hpp>
 #include <libslic3r/Utils.hpp>
+#include "CreatePresetsDialog.hpp"
 
 using namespace nlohmann;
 
 namespace Slic3r { namespace GUI {
 
 json m_ProfileJson;
+
+static wxString update_custom_filaments()
+{
+    json m_Res                                                                     = json::object();
+    m_Res["command"]                                                               = "update_custom_filaments";
+    m_Res["sequence_id"]                                                           = "2000";
+    json                                               m_CustomFilaments           = json::array();
+    PresetBundle *                                     preset_bundle               = wxGetApp().preset_bundle;
+    std::map<std::string, std::vector<Preset const *>> temp_filament_id_to_presets = preset_bundle->filaments.get_filament_presets();
+    
+    std::vector<std::pair<std::string, std::string>>   need_sort;
+    for (std::pair<std::string, std::vector<Preset const *>> filament_id_to_presets : temp_filament_id_to_presets) {
+        std::string filament_id = filament_id_to_presets.first;
+        if (filament_id.empty()) continue;
+        for (const Preset *preset : filament_id_to_presets.second) {
+            if (preset->is_system || filament_id.empty() || "null" == filament_id || filament_id.size() != 8 || filament_id[0] != 'P') break;
+            auto filament_vendor = dynamic_cast<ConfigOptionStrings *> (const_cast<Preset*>(preset)->config.option("filament_vendor",false));
+            if(filament_vendor&&filament_vendor->values.size()&&filament_vendor->values[0] == "Generic") break;
+            std::string preset_name = preset->name;
+            size_t      index_at    = preset_name.find(" @");
+            if (std::string::npos != index_at) { preset_name = preset_name.substr(0, index_at); }
+            need_sort.push_back(std::make_pair(preset_name, preset->filament_id));
+            break;
+        }
+    }
+    std::sort(need_sort.begin(), need_sort.end(), [](const std::pair<std::string, std::string> &a, const std::pair<std::string, std::string> &b) { return a.first < b.first; });
+    json temp_j;
+    for (std::pair<std::string, std::string> &filament_name_to_id : need_sort) {
+        temp_j["name"] = filament_name_to_id.first;
+        temp_j["id"]   = filament_name_to_id.second;
+        m_CustomFilaments.push_back(temp_j);
+    }
+    m_Res["data"]  = m_CustomFilaments;
+    wxString strJS = wxString::Format("HandleStudio(%s)", wxString::FromUTF8(m_Res.dump(-1, ' ', false, json::error_handler_t::ignore)));
+    return strJS;
+}
 
 GuideFrame::GuideFrame(GUI_App *pGUI, long style)
     : DPIDialog((wxWindow *) (pGUI->mainframe), wxID_ANY, "GalaxySlicer", wxDefaultPosition, wxDefaultSize, style),
@@ -171,8 +208,8 @@ wxString GuideFrame::SetStartPage(GuidePage startpage, bool load)
         TargetUrl = from_u8((boost::filesystem::path(resources_dir()) / "web/guide/21/index.html").make_preferred().string());
     }
 
-    std::string strlang = wxGetApp().app_config->get("language");
-    BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(", strlang=%1%")%strlang;
+    wxString strlang = wxGetApp().current_language_code_safe();
+    BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(", strlang=%1%") % into_u8(strlang);
     if (strlang != "")
         TargetUrl = wxString::Format("%s?lang=%s", w2s(TargetUrl), strlang);
 
@@ -322,6 +359,17 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
 
             wxGetApp().CallAfter([this,strJS] { RunScript(strJS); });
         }
+        else if (strCmd == "request_custom_filaments") {
+            wxString strJS = update_custom_filaments();
+            wxGetApp().CallAfter([this, strJS] { RunScript(strJS); });
+        }
+        else if (strCmd == "create_custom_filament") {
+            this->EndModal(wxID_OK);
+            wxQueueEvent(wxGetApp().plater(), new SimpleEvent(EVT_CREATE_FILAMENT));
+        } else if (strCmd == "modify_custom_filament") {
+            m_editing_filament_id = j["id"];
+            this->EndModal(wxID_EDIT);
+        }
         else if (strCmd == "save_userguide_models")
         {
             json MSelected = j["data"];
@@ -358,6 +406,16 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
 
                 m_ProfileJson["filament"][fName]["selected"] = 1;
             }
+        }
+        //GalaxySlicer: Download, Check & Open Profile Manager
+        else if (strCmd == "download_application_profilemanager") {
+
+        }
+        else if (strCmd == "check_application_profilemanager") {
+
+        }
+        else if (strCmd == "open_application_profilemanager") {
+
         }
         else if (strCmd == "user_guide_finish") {
             SaveProfile();
@@ -524,7 +582,7 @@ bool GuideFrame::IsFirstUse()
 
 int GuideFrame::SaveProfile()
 {
-    // GalaxySlicer: don't collect info
+    // SoftFever: don't collect info
     //privacy
     // if (PrivacyUse == true) {
     //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_str()), "privacyuse", "1");
@@ -738,19 +796,20 @@ bool GuideFrame::apply_config(AppConfig *app_config, PresetBundle *preset_bundle
         BOOST_LOG_TRIVIAL(info) << "No bundles need to be installed from resource directory";
     }
 
-    if (remove_bundles.size() > 0) {
-        //remove unused bundles
-        for (const auto &it : remove_bundles) {
-            auto vendor_file = vendor_dir/(it + ".json");
-            auto sub_dir = vendor_dir/(it);
-            if (fs::exists(vendor_file))
-                fs::remove(vendor_file);
-            if (fs::exists(sub_dir))
-                fs::remove_all(sub_dir);
-        }
-    } else {
-        BOOST_LOG_TRIVIAL(info) << "No bundles need to be removed";
-    }
+    // Not remove, because these bundles may be updated
+    //if (remove_bundles.size() > 0) {
+    //    //remove unused bundles
+    //    for (const auto &it : remove_bundles) {
+    //        auto vendor_file = vendor_dir/(it + ".json");
+    //        auto sub_dir = vendor_dir/(it);
+    //        if (fs::exists(vendor_file))
+    //            fs::remove(vendor_file);
+    //        if (fs::exists(sub_dir))
+    //            fs::remove_all(sub_dir);
+    //    }
+    //} else {
+    //    BOOST_LOG_TRIVIAL(info) << "No bundles need to be removed";
+    //}
 
     std::string preferred_model;
     std::string preferred_variant;
@@ -866,6 +925,12 @@ bool GuideFrame::run()
         }
         else
             return false;
+    } else if (result == wxID_EDIT) {
+        this->Close();
+        FilamentInfomation *filament_info = new FilamentInfomation();
+        filament_info->filament_id        = m_editing_filament_id;
+        wxQueueEvent(wxGetApp().plater(), new SimpleEvent(EVT_MODIFY_FILAMENT, filament_info));
+        return false;
     }
     else
         return false;
@@ -1009,9 +1074,10 @@ int GuideFrame::LoadProfile()
                 //cout << iter->path().string() << endl;
                 wxString strVendor = from_u8(iter->path().string()).BeforeLast('.');
                 strVendor          = strVendor.AfterLast( '\\');
-                strVendor          = strVendor.AfterLast('\/');
+                strVendor          = strVendor.AfterLast('/');
+                wxString strExtension = from_u8(iter->path().string()).AfterLast('.').Lower();
 
-                if (w2s(strVendor) == PresetBundle::BBL_BUNDLE)
+                if (w2s(strVendor) == PresetBundle::BBL_BUNDLE && strExtension.CmpNoCase("json") == 0)
                     LoadProfileFamily(w2s(strVendor), iter->path().string());
             }
         }
@@ -1027,9 +1093,10 @@ int GuideFrame::LoadProfile()
                 //cout << iter->path().string() << endl;
                 wxString strVendor = from_u8(iter->path().string()).BeforeLast('.');
                 strVendor          = strVendor.AfterLast( '\\');
-                strVendor          = strVendor.AfterLast('\/');
+                strVendor          = strVendor.AfterLast('/');
+                wxString strExtension = from_u8(iter->path().string()).AfterLast('.').Lower();
 
-                if (w2s(strVendor) != PresetBundle::BBL_BUNDLE)
+                if (w2s(strVendor) != PresetBundle::BBL_BUNDLE && strExtension.CmpNoCase("json")==0)
                     LoadProfileFamily(w2s(strVendor), iter->path().string());
             }
         }
@@ -1354,12 +1421,10 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
 
             // wxString strCoverPath = wxString::Format("%s\\%s\\%s_cover.png", strFolder, strVendor, std::string(s1.mb_str()));
             std::string             cover_file = s1 + "_cover.png";
-
             //As of the profile version (2.x), the covers are stored in an separate assets folder.
             boost::filesystem::path cover_path = boost::filesystem::absolute(boost::filesystem::path(resources_dir()) / "/profiles/" / strVendor / "/assets/cover/" / cover_file).make_preferred();
             
             if (!boost::filesystem::exists(cover_path)) {
-
                 //Under the profile version (1.x) the covers are not yet managed in an assets folder
                 cover_path = (boost::filesystem::absolute(boost::filesystem::path(resources_dir()) / "/profiles/" / strVendor / cover_file)).make_preferred();
 
@@ -1369,7 +1434,6 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
                     cover_path = (boost::filesystem::absolute(boost::filesystem::path(resources_dir()) / "/web/image/printer/") / cover_file).make_preferred();
                 }
             }
-            
             OneModel["cover"]                  = cover_path.string();
 
             OneModel["nozzle_selected"] = "";
@@ -1523,7 +1587,7 @@ std::string GuideFrame::w2s(wxString sSrc)
 
 void GuideFrame::GetStardardFilePath(std::string &FilePath) {
     StrReplace(FilePath, "\\", w2s(wxString::Format("%c", boost::filesystem::path::preferred_separator)));
-    StrReplace(FilePath, "\/", w2s(wxString::Format("%c", boost::filesystem::path::preferred_separator)));
+    StrReplace(FilePath, "/", w2s(wxString::Format("%c", boost::filesystem::path::preferred_separator)));
 }
 
 bool GuideFrame::LoadFile(std::string jPath, std::string &sContent)

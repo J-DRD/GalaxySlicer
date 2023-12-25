@@ -62,7 +62,8 @@ then
     #cmake --build . --config Release --target all 
     if [ "1." == "$PACK_DEPS". ];
     then
-        tar -zcvf GalaxySlicer_dep_mac_${ARCH}_$(date +"%d-%m-%Y").tar.gz GalaxySlicer_dep_$ARCH
+        tar -zcvf /$WD/build_$ARCH/GalaxySlicer/GalaxySlicer_dep_mac_${ARCH}_$(date +"%Y%m%d").tar.gz GalaxySlicer_dep_$ARCH
+        
     fi
 fi
 
@@ -78,6 +79,9 @@ cd build_$ARCH
 echo "building studio..."
 #cmake .. -GXcode -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="$DEPS/usr/local" -DCMAKE_INSTALL_PREFIX="$PWD/GalaxySlicer" -DCMAKE_BUILD_TYPE=Release -DCMAKE_MACOSX_RPATH=ON -DCMAKE_INSTALL_RPATH="$DEPS/usr/local" -DCMAKE_MACOSX_BUNDLE=ON -DCMAKE_OSX_ARCHITECTURES=${ARCH}
 #cmake --build . --config Release --target ALL_BUILD 
+cd $WD  
+./run_gettext.sh 
+cd build_$ARCH
 mkdir -p GalaxySlicer
 cd GalaxySlicer
 rm -r ./GalaxySlicer.app
@@ -96,5 +100,6 @@ find ./GalaxySlicer.app/ -name '.DS_Store' -delete
      ver=${ver}_dev
  fi
 
+cp -pR ./GalaxySlicer.app /Applications/GalaxySlicer.app
 
  zip -FSr GalaxySlicer${ver}_Mac_${ARCH}.zip GalaxySlicer.app

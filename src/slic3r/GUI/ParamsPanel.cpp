@@ -392,15 +392,15 @@ void ParamsPanel::create_layout()
         m_left_sizer->Add( m_tab_print, 0, wxEXPAND );
     }
 
+    if (m_tab_print_plate) {
+        m_left_sizer->Add(m_tab_print_plate, 0, wxEXPAND);
+    }
+
     if (m_tab_print_object) {
-        if (m_staticline_print_object)
-            m_left_sizer->Add( m_staticline_print_object, 0, wxEXPAND );
         m_left_sizer->Add( m_tab_print_object, 0, wxEXPAND );
     }
 
     if (m_tab_print_part) {
-        if (m_staticline_print_part)
-            m_left_sizer->Add( m_staticline_print_part, 0, wxEXPAND );
         m_left_sizer->Add( m_tab_print_part, 0, wxEXPAND );
     }
 
@@ -409,8 +409,6 @@ void ParamsPanel::create_layout()
     }
 
     if (m_tab_filament) {
-        if (m_staticline_filament)
-            m_left_sizer->Add(m_staticline_filament, 0, wxEXPAND);
         //m_filament_sizer = new wxBoxSizer( wxVERTICAL );
         //m_filament_sizer->Add( m_tab_filament, 1, wxEXPAND | wxALL, 5 );
        // m_left_sizer->Add( m_filament_sizer, 1, wxEXPAND, 5 );
@@ -418,8 +416,6 @@ void ParamsPanel::create_layout()
     }
 
     if (m_tab_printer) {
-        if (m_staticline_printer)
-            m_left_sizer->Add( m_staticline_printer, 0, wxEXPAND );
         //m_printer_sizer = new wxBoxSizer( wxVERTICAL );
         //m_printer_sizer->Add( m_tab_printer, 1, wxEXPAND | wxALL, 5 );
         m_left_sizer->Add( m_tab_printer, 0, wxEXPAND );
@@ -490,6 +486,7 @@ void ParamsPanel::refresh_tabs()
             }
         }
     if (m_top_panel) {
+        m_tab_print_plate = wxGetApp().get_plate_tab();
         m_tab_print_object = wxGetApp().get_model_tab();
         m_tab_print_part = wxGetApp().get_model_tab(true);
         m_tab_print_layer = wxGetApp().get_layer_tab();
@@ -566,6 +563,8 @@ void ParamsPanel::set_active_tab(wxPanel* tab)
             cur_tab = (Tab*)m_tab_print_layer;
         } else if (m_tab_print_object && ((TabPrintModel*) m_tab_print_object)->has_model_config()) {
             cur_tab = (Tab*) m_tab_print_object;
+        } else if (m_tab_print_plate && ((TabPrintPlate*)m_tab_print_plate)->has_model_config()) {
+            cur_tab = (Tab*)m_tab_print_plate;
         }
         Show(cur_tab != nullptr);
         wxGetApp().sidebar().show_object_list(m_mode_region->GetValue());
@@ -586,6 +585,7 @@ void ParamsPanel::set_active_tab(wxPanel* tab)
             {m_tab_print_object, m_staticline_print_object},
             {m_tab_print_part, m_staticline_print_part},
             {m_tab_print_layer, nullptr},
+            {m_tab_print_plate, nullptr},
             {m_tab_filament, m_staticline_filament},
             {m_tab_printer, m_staticline_printer}})) {
         if (!t.first) continue;
@@ -599,12 +599,12 @@ void ParamsPanel::set_active_tab(wxPanel* tab)
         wxString title = cur_tab->type() == Preset::TYPE_FILAMENT ? _L("Filament settings") : _L("Printer settings");
         dialog->SetTitle(title);
     }
-    auto tab_print = dynamic_cast<Tab*>(m_tab_print);
+
+    auto tab_print = dynamic_cast<Tab *>(m_tab_print);
     if (cur_tab == m_tab_print) {
         if (tab_print)
             tab_print->toggle_line("print_flow_ratio", false);
-    }
-    else {
+    } else {
         if (tab_print)
             tab_print->toggle_line("print_flow_ratio", false);
     }
@@ -658,7 +658,7 @@ void ParamsPanel::msw_rescale()
         ((SwitchButton* )m_mode_region)->Rescale();
     if (m_mode_view)
         ((SwitchButton* )m_mode_view)->Rescale();
-    for (auto tab : {m_tab_print, m_tab_print_object, m_tab_print_part, m_tab_print_layer, m_tab_filament, m_tab_printer}) {
+    for (auto tab : {m_tab_print, m_tab_print_plate, m_tab_print_object, m_tab_print_part, m_tab_print_layer, m_tab_filament, m_tab_printer}) {
         if (tab) dynamic_cast<Tab*>(tab)->msw_rescale();
     }
     //((Button*)m_export_to_file)->Rescale();
@@ -715,7 +715,9 @@ void ParamsPanel::notify_object_config_changed()
 
 void ParamsPanel::switch_to_object_if_has_object_configs()
 {
-    if (m_has_object_config) m_mode_region->SetValue(true);
+    if (m_has_object_config)
+        m_mode_region->SetValue(true);
+    set_active_tab(nullptr);
 }
 
 void ParamsPanel::free_sizers()

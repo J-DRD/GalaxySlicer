@@ -58,7 +58,7 @@ void ExtrusionPath::polygons_covered_by_spacing(Polygons &out, const float scale
     // Instantiating the Flow class to get the line spacing.
     // Don't know the nozzle diameter, setting to zero. It shall not matter it shall be optimized out by the compiler.
     bool bridge = is_bridge(this->role());
-    // GalaxySlicer: TODO Mac trigger assersion errors
+    // SoftFever: TODO Mac trigger assersion errors
 //    assert(! bridge || this->width == this->height);
     auto flow = bridge ? Flow::bridging_flow(this->width, 0.f) : Flow(this->width, this->height, 0.f);
     polygons_append(out, offset(this->polyline, 0.5f * float(flow.scaled_spacing()) + scaled_epsilon));
@@ -354,9 +354,10 @@ std::string ExtrusionEntity::role_to_string(ExtrusionRole role)
         case erBottomSurface                : return L("Bottom surface");
         case erIroning                      : return L("Ironing");
         case erBridgeInfill                 : return L("Bridge");
+        case erInternalBridgeInfill         : return L("Internal Bridge");
         case erGapFill                      : return L("Gap infill");
-        case erSkirt                        : return ("Skirt");
-        case erBrim                         : return ("Brim");
+        case erSkirt                        : return L("Skirt");
+        case erBrim                         : return L("Brim");
         case erSupportMaterial              : return L("Support");
         case erSupportMaterialInterface     : return L("Support interface");
         case erSupportTransition            : return L("Support transition");
@@ -388,6 +389,8 @@ ExtrusionRole ExtrusionEntity::string_to_role(const std::string_view role)
         return erIroning;
     else if (role == L("Bridge"))
         return erBridgeInfill;
+    else if (role == L("Internal Bridge"))
+        return erInternalBridgeInfill;
     else if (role == L("Gap infill"))
         return erGapFill;
     else if (role == ("Skirt"))

@@ -2,6 +2,7 @@
 #include "I18N.hpp"
 
 #include "libslic3r/Utils.hpp"
+#include "libslic3r/Color.hpp"
 #include "GUI.hpp"
 #include "GUI_App.hpp"
 #include "MainFrame.hpp"
@@ -17,7 +18,7 @@ AboutDialogLogo::AboutDialogLogo(wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 {
     this->SetBackgroundColour(*wxWHITE);
-    this->logo = ScalableBitmap(this, Slic3r::var("BambuStudio_192px.png"), wxBITMAP_TYPE_PNG);
+    this->logo = ScalableBitmap(this, Slic3r::var("GalaxySlicer_192px.png"), wxBITMAP_TYPE_PNG);
     this->SetMinSize(this->logo.GetBmpSize());
 
     this->Bind(wxEVT_PAINT, &AboutDialogLogo::onRepaint, this);
@@ -99,6 +100,7 @@ void CopyrightsDialog::fill_entries()
         { "GLFW",                                           "",      "https://www.glfw.org" },
         { "GNU gettext",                                    "",      "https://www.gnu.org/software/gettext" },
         { "ImGUI",                                          "",      "https://github.com/ocornut/imgui" },
+        { "libcurl",                                        "",      "https://curl.se/libcurl" },
         { "Libigl",                                         "",      "https://libigl.github.io" },
         { "libnest2d",                                      "",      "https://github.com/tamasmeszaros/libnest2d" },
         { "lib_fts",                                        "",      "https://www.forrestthewoods.com" },
@@ -109,16 +111,19 @@ void CopyrightsDialog::fill_entries()
         { "Qhull",                                          "",      "http://qhull.org" },
         { "Open Cascade",                                   "",      "https://www.opencascade.com" },
         { "OpenGL",                                         "",      "https://www.opengl.org" },
+        { "OpenSSL",                                        "",      "https://www.openssl.org" },
+        { "OrcaSlicer",                                     "",      "https://github.com/SoftFever/OrcaSlicer" },
         { "PoEdit",                                         "",      "https://poedit.net" },
         { "PrusaSlicer",                                    "",      "https://www.prusa3d.com" },
+        { "Python",                                         "",      "https://www.python.org" },
+        { "Qhull",                                          "",      "http://qhull.org" },
         { "Real-Time DXT1/DXT5 C compression library",      "",      "https://github.com/Cyan4973/RygsDXTc" },
         { "SemVer",                                         "",      "https://semver.org" },
         { "Shinyprofiler",                                  "",      "https://code.google.com/p/shinyprofiler" },
         { "SuperSlicer",                                    "",      "https://github.com/supermerill/SuperSlicer" },
         { "TBB",                                            "",      "https://www.intel.cn/content/www/cn/zh/developer/tools/oneapi/onetbb.html" },
         { "wxWidgets",                                      "",      "https://www.wxwidgets.org" },
-        { "zlib",                                           "",      "http://zlib.net" },
-
+        { "zlib",                                           "",      "http://zlib.net" }
     };
 }
 
@@ -127,10 +132,10 @@ wxString CopyrightsDialog::get_html_text()
     wxColour bgr_clr = wxGetApp().get_window_default_clr();//wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
 
     const auto text_clr = wxGetApp().get_label_clr_default();// wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-    const auto text_clr_str = wxString::Format(wxT("#%02X%02X%02X"), text_clr.Red(), text_clr.Green(), text_clr.Blue());
-    const auto bgr_clr_str = wxString::Format(wxT("#%02X%02X%02X"), bgr_clr.Red(), bgr_clr.Green(), bgr_clr.Blue());
+    const auto text_clr_str = encode_color(ColorRGB(text_clr.Red(), text_clr.Green(), text_clr.Blue()));
+    const auto bgr_clr_str = encode_color(ColorRGB(bgr_clr.Red(), bgr_clr.Green(), bgr_clr.Blue()));
 
-    const wxString copyright_str = _(L("Copyright")) + "&copy; ";
+    const wxString copyright_str = _L("Copyright") + "&copy; ";
 
     wxString text = wxString::Format(
         "<html>"
@@ -139,6 +144,11 @@ wxString CopyrightsDialog::get_html_text()
                 "<font size=\"5\">%s</font><br/>"
                 "<font size=\"5\">%s</font>"
                 "<a href=\"%s\">%s.</a><br/>"
+                "<br />"
+                "<font size=\"5\">%s.</font><br/>"
+                "<font size=\"5\">%s.</font><br/>"
+                "<font size=\"5\">%s.</font><br/>"
+                "<font size=\"5\">%s.</font><br/>"
                 "<font size=\"5\">%s.</font><br/>"
                 "<br /><br />"
                 "<font size=\"5\">%s</font><br/>"
@@ -150,6 +160,10 @@ wxString CopyrightsDialog::get_html_text()
         _L("GalaxySlicer is licensed under "),
         "https://www.gnu.org/licenses/agpl-3.0.html",_L("GNU Affero General Public License, version 3"),
         _L("GalaxySlicer is based on OrcaSlicer, BambuStudio, PrusaSlicer, and SuperSlicer."),
+        _L("OrcaSlicer is originally based on BambuStudio by BambuLab."),
+        _L("BambuStudio is originally based on PrusaSlicer by PrusaResearch."),
+        _L("PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"),
+        _L("Slic3r was created by Alessandro Ranellucci with the help of many other contributors."),
         _L("Libraries"),
         _L("This software uses open source components whose copyright and other proprietary rights belong to their respective owners"));
 
@@ -230,18 +244,37 @@ AboutDialog::AboutDialog()
     main_sizer->Add(m_panel, 1, wxEXPAND | wxALL, 0);
     main_sizer->Add(ver_sizer, 0, wxEXPAND | wxALL, 0);
 
-    // logo
-    m_logo_bitmap = ScalableBitmap(this, "GalaxySlicer_about", 250);
+    // about image
+    m_logo_bitmap = ScalableBitmap(this, "GalaxySlicer_aboutcard", 250);
     m_logo = new wxStaticBitmap(this, wxID_ANY, m_logo_bitmap.bmp(), wxDefaultPosition,wxDefaultSize, 0);
     m_logo->SetSizer(vesizer);
 
     panel_versizer->Add(m_logo, 1, wxALL | wxEXPAND, 0);
 
+    //about build
+    wxBoxSizer *build_sizer_horiz = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *build_sizer_verti = new wxBoxSizer(wxVERTICAL);
+
+    build_sizer_verti->Add( 0, 0, 0, wxTOP, FromDIP(5));
+    build_sizer_horiz->Add(build_sizer_verti, 0, wxLEFT, FromDIP(20));
+
+    auto build_string = "Build: " + std::string(GalaxySlicer_BUILD);
+    wxStaticText *build_text = new wxStaticText(this, wxID_ANY, build_string.c_str(), wxDefaultPosition, wxDefaultSize);
+    
+    build_text->SetForegroundColour(wxColour("#6B6B6B"));
+    build_text->SetFont(Label::Body_10);
+
+    build_sizer_verti->Add(build_text, 0, wxALL , 0);
+
+    ver_sizer->Add(build_sizer_horiz, 0, wxALL,0);
+
+    // about text
     wxBoxSizer *text_sizer_horiz = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer *text_sizer = new wxBoxSizer(wxVERTICAL);
     text_sizer_horiz->Add( 0, 0, 0, wxLEFT, FromDIP(20));
 
     std::vector<wxString> text_list;
+    
     text_list.push_back(_L("GalaxySlicer is based on OrcaSlicer, BambuStudio, PrusaSlicer, and SuperSlicer."));
     text_list.push_back(_L("OrcaSlicer is originally based on BambuStudio by BambuLab."));
     text_list.push_back(_L("BambuStudio is originally based on PrusaSlicer by PrusaResearch."));
@@ -253,7 +286,7 @@ AboutDialog::AboutDialog()
     for (int i = 0; i < text_list.size(); i++)
     {
         auto staticText = new wxStaticText( this, wxID_ANY, wxEmptyString,wxDefaultPosition,wxSize(FromDIP(520), -1), wxALIGN_LEFT );
-        staticText->SetForegroundColour(wxColour(107, 107, 107));
+        staticText->SetForegroundColour(wxColour("#6B6B6B"));//
         staticText->SetBackgroundColour(*wxWHITE);
         staticText->SetMinSize(wxSize(FromDIP(520), -1));
         staticText->SetFont(Label::Body_12);
@@ -289,7 +322,8 @@ AboutDialog::AboutDialog()
     copyright_hor_sizer->Add(copyright_ver_sizer, 0, wxLEFT, FromDIP(20));
 
     wxStaticText *html_text = new wxStaticText(this, wxID_ANY, "Copyright(C) 2023 Fr3ak2402 All Rights Reserved", wxDefaultPosition, wxDefaultSize);
-    html_text->SetForegroundColour(wxColour(107, 107, 107));
+
+    html_text->SetForegroundColour(wxColour("#6B6B6B"));
     html_text->SetFont(Label::Body_10);
 
     copyright_ver_sizer->Add(html_text, 0, wxALL , 0);
@@ -316,13 +350,13 @@ AboutDialog::AboutDialog()
       }
     //Add "Portions copyright" button
     Button* button_portions = new Button(this,_L("Portions copyright"));
-    StateColor report_bg(std::pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled), std::pair<wxColour, int>(wxColour(206, 206, 206), StateColor::Pressed),
-                         std::pair<wxColour, int>(wxColour(238, 238, 238), StateColor::Hovered), std::pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Enabled),
-                         std::pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Normal));
+    StateColor report_bg(std::pair<wxColour, int>(wxColour("#FFFFFF"), StateColor::Disabled), std::pair<wxColour, int>(wxColour("#CECECE"), StateColor::Pressed),
+                         std::pair<wxColour, int>(wxColour("#EEEEEE"), StateColor::Hovered), std::pair<wxColour, int>(wxColour("#FFFFFF"), StateColor::Enabled),
+                         std::pair<wxColour, int>(wxColour("#FFFFFF"), StateColor::Normal));
     button_portions->SetBackgroundColor(report_bg);
-    StateColor report_bd(std::pair<wxColour, int>(wxColour(144, 144, 144), StateColor::Disabled), std::pair<wxColour, int>(wxColour(38, 46, 48), StateColor::Enabled));
+    StateColor report_bd(std::pair<wxColour, int>(wxColour("#909090"), StateColor::Disabled), std::pair<wxColour, int>(wxColour("#262E30"), StateColor::Enabled));
     button_portions->SetBorderColor(report_bd);
-    StateColor report_text(std::pair<wxColour, int>(wxColour(144, 144, 144), StateColor::Disabled), std::pair<wxColour, int>(wxColour(38, 46, 48), StateColor::Enabled));
+    StateColor report_text(std::pair<wxColour, int>(wxColour("#909090"), StateColor::Disabled), std::pair<wxColour, int>(wxColour("#262E30"), StateColor::Enabled));
     button_portions->SetTextColor(report_text);
     button_portions->SetFont(Label::Body_12);
     button_portions->SetCornerRadius(FromDIP(12));

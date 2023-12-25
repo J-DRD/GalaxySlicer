@@ -6,6 +6,7 @@
 #include "MsgDialog.hpp"
 #include "I18N.hpp"
 #include "libslic3r/AppConfig.hpp"
+#include <wx/language.h>
 #include <wx/notebook.h>
 #include "Notebook.hpp"
 #include "OG_CustomCtrl.hpp"
@@ -27,6 +28,18 @@ namespace Slic3r { namespace GUI {
 
 WX_DEFINE_LIST(RadioSelectorList);
 wxDEFINE_EVENT(EVT_PREFERENCES_SELECT_TAB, wxCommandEvent);
+
+
+class MyscrolledWindow : public wxScrolledWindow {
+public:
+    MyscrolledWindow(wxWindow* parent,
+        wxWindowID id = wxID_ANY,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxVSCROLL) : wxScrolledWindow(parent, id, pos, size, style) {}
+
+    bool ShouldScrollToChildOnFocus(wxWindow* child) override { return false; }
+};
 
 
 wxBoxSizer *PreferencesDialog::create_item_title(wxString title, wxWindow *parent, wxString tooltip)
@@ -81,7 +94,6 @@ wxBoxSizer *PreferencesDialog::create_item_combobox(wxString title, wxWindow *pa
     //// save config
     combobox->GetDropDown().Bind(wxEVT_COMBOBOX, [this, param](wxCommandEvent &e) {
         app_config->set(param, std::to_string(e.GetSelection()));
-        app_config->save();
         e.Skip();
     });
     return m_sizer_combox;
@@ -104,13 +116,17 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
     auto combobox = new ::ComboBox(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, DESIGN_LARGE_COMBOBOX_SIZE, 0, nullptr, wxCB_READONLY);
     combobox->SetFont(::Label::Body_13);
     combobox->GetDropDown().SetFont(::Label::Body_13);
-
+    auto language = app_config->get(param);
+    m_current_language_selected = -1;
     std::vector<wxString>::iterator iter;
     for (size_t i = 0; i < vlist.size(); ++i) {
         auto language_name = vlist[i]->Description;
 
         if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_CHINESE_SIMPLIFIED)) {
             language_name = wxString::FromUTF8("\xe4\xb8\xad\xe6\x96\x87\x28\xe7\xae\x80\xe4\xbd\x93\x29");
+        }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_CHINESE)) {
+            language_name = wxString::FromUTF8("\xe4\xb8\xad\xe6\x96\x87\x28\xe7\xb9\x81\xe4\xbd\x93\x29");
         }
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_SPANISH)) {
             language_name = wxString::FromUTF8("\x45\x73\x70\x61\xc3\xb1\x6f\x6c");
@@ -139,11 +155,35 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_ITALIAN)) {
             language_name = wxString::FromUTF8("\x69\x74\x61\x6c\x69\x61\x6e\x6f");
         }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_KOREAN)) {
+            language_name = wxString::FromUTF8("\xED\x95\x9C\xEA\xB5\xAD\xEC\x96\xB4");
+        }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_RUSSIAN)) {
+            language_name = wxString::FromUTF8("\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xB8\xD0\xB9");
+        }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_CZECH)) {
+            language_name = wxString::FromUTF8("\xC4\x8D\x65\xC5\xA1\x74\x69\x6E\x61");
+        }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_UKRAINIAN)) {
+            language_name = wxString::FromUTF8("\xC4\x8D\x65\xC5\xA1\x74\x69\x6E\x61");
+        }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_TURKISH)) {
+            language_name = wxString::FromUTF8("\xD1\x83\xD0\xBA\xD1\x80\xD0\xB0\xD1\x97\xD1\x9D\xD1\x81\xD1\x8C\xD0\xBA\xD0\xB0");
+        }
 
-        if (app_config->get(param) == vlist[i]->CanonicalName) {
+        if (language == vlist[i]->CanonicalName) {
             m_current_language_selected = i;
         }
         combobox->Append(language_name);
+    }
+    if (m_current_language_selected == -1 && language.size() >= 5) {
+        language = language.substr(0, 2);
+        for (size_t i = 0; i < vlist.size(); ++i) {
+            if (vlist[i]->CanonicalName.StartsWith(language)) {
+                m_current_language_selected = i;
+                break;
+            }
+        }
     }
     combobox->SetSelection(m_current_language_selected);
 
@@ -193,7 +233,6 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
             m_current_language_selected = combobox->GetSelection();
             if (m_current_language_selected >= 0 && m_current_language_selected < vlist.size()) {
                 app_config->set(param, vlist[m_current_language_selected]->CanonicalName.ToUTF8().data());
-                app_config->save();
 
                 wxGetApp().load_language(vlist[m_current_language_selected]->CanonicalName, false);
                 Close();
@@ -261,7 +300,7 @@ wxBoxSizer *PreferencesDialog::create_item_region_combobox(wxString title, wxWin
             area = "US";
         else
             area = "Others";*/
-
+        combobox->SetSelection(region_index);
         NetworkAgent* agent = wxGetApp().getAgent();
         AppConfig* config = GUI::wxGetApp().app_config;
         if (agent) {
@@ -283,6 +322,7 @@ wxBoxSizer *PreferencesDialog::create_item_region_combobox(wxString title, wxWin
             config->set("region", region.ToStdString());
         }
 
+        wxGetApp().update_publish_status();
         e.Skip();
     });
 
@@ -318,7 +358,6 @@ wxBoxSizer *PreferencesDialog::create_item_loglevel_combobox(wxString title, wxW
         auto level = Slic3r::get_string_logging_level(e.GetSelection());
         Slic3r::set_logging_level(Slic3r::level_string_to_boost(level));
         app_config->set("severity_level",level);
-        app_config->save();
         e.Skip();
      });
     return m_sizer_combox;
@@ -370,14 +409,12 @@ wxBoxSizer *PreferencesDialog::create_item_multiple_combobox(
     combobox_left->GetDropDown().Bind(wxEVT_COMBOBOX, [this, param, combobox_right](wxCommandEvent &e) {
         auto config = e.GetString() + wxString("/") + combobox_right->GetValue();
         app_config->set(param, std::string(config.mb_str()));
-        app_config->save();
         e.Skip();
     });
 
     combobox_right->GetDropDown().Bind(wxEVT_COMBOBOX, [this, param, combobox_left](wxCommandEvent &e) {
         auto config = combobox_left->GetValue() + wxString("/") + e.GetString();
         app_config->set(param, std::string(config.mb_str()));
-        app_config->save();
         e.Skip();
     });
 
@@ -397,6 +434,8 @@ wxBoxSizer *PreferencesDialog::create_item_input(wxString title, wxString title2
     StateColor input_bg(std::pair<wxColour, int>(wxColour("#F0F0F1"), StateColor::Disabled), std::pair<wxColour, int>(*wxWHITE, StateColor::Enabled));
     input->SetBackgroundColor(input_bg);
     input->GetTextCtrl()->SetValue(app_config->get(param));
+    wxTextValidator validator(wxFILTER_DIGITS);
+    input->GetTextCtrl()->SetValidator(validator);
 
     auto second_title = new wxStaticText(parent, wxID_ANY, title2, wxDefaultPosition, DESIGN_TITLE_SIZE, 0);
     second_title->SetForegroundColour(DESIGN_GRAY900_COLOR);
@@ -421,7 +460,6 @@ wxBoxSizer *PreferencesDialog::create_item_input(wxString title, wxString title2
     input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [this, param, input, onchange](wxFocusEvent &e) {
         auto value = input->GetTextCtrl()->GetValue();
         app_config->set(param, std::string(value.mb_str()));
-        app_config->save();
         onchange(value);
         e.Skip();
     });
@@ -442,6 +480,8 @@ wxBoxSizer *PreferencesDialog::create_item_backup_input(wxString title, wxWindow
     StateColor input_bg(std::pair<wxColour, int>(wxColour("#F0F0F1"), StateColor::Disabled), std::pair<wxColour, int>(*wxWHITE, StateColor::Enabled));
     input->SetBackgroundColor(input_bg);
     input->GetTextCtrl()->SetValue(app_config->get(param));
+    wxTextValidator validator(wxFILTER_DIGITS);
+    input->GetTextCtrl()->SetValidator(validator);
 
 
     auto second_title = new wxStaticText(parent, wxID_ANY, _L("Second"), wxDefaultPosition, DESIGN_TITLE_SIZE, 0);
@@ -462,23 +502,22 @@ wxBoxSizer *PreferencesDialog::create_item_backup_input(wxString title, wxWindow
         e.Skip();
     });
 
-    input->GetTextCtrl()->Bind(wxEVT_TEXT_ENTER, [this, param, input](wxCommandEvent &e) {
+    std::function<void()> backup_interval = [this, param, input]() {
         m_backup_interval_time = input->GetTextCtrl()->GetValue();
         app_config->set("backup_interval", std::string(m_backup_interval_time.mb_str()));
         app_config->save();
         long backup_interval = 0;
         m_backup_interval_time.ToLong(&backup_interval);
         Slic3r::set_backup_interval(backup_interval);
+    };
+
+    input->GetTextCtrl()->Bind(wxEVT_TEXT_ENTER, [backup_interval](wxCommandEvent &e) {
+        backup_interval();
         e.Skip();
     });
 
-     input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [this, param, input](wxFocusEvent &e) {
-        m_backup_interval_time = input->GetTextCtrl()->GetValue();
-        app_config->set("backup_interval", std::string(m_backup_interval_time.mb_str()));
-        app_config->save();
-        long backup_interval = 0;
-        m_backup_interval_time.ToLong(&backup_interval);
-        Slic3r::set_backup_interval(backup_interval);
+     input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [backup_interval](wxFocusEvent &e) {
+        backup_interval();
         e.Skip();
     });
 
@@ -597,7 +636,7 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *pa
     checkbox_title->SetFont(::Label::Body_13);
 
     auto size = checkbox_title->GetTextExtent(title);
-    checkbox_title->SetMinSize(wxSize(size.x + FromDIP(4), -1));
+    checkbox_title->SetMinSize(wxSize(size.x + FromDIP(5), -1));
     checkbox_title->Wrap(-1);
     m_sizer_checkbox->Add(checkbox_title, 0, wxALIGN_CENTER | wxALL, 3);
 
@@ -606,6 +645,11 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *pa
     checkbox->Bind(wxEVT_TOGGLEBUTTON, [this, checkbox, param](wxCommandEvent &e) {
         app_config->set_bool(param, checkbox->GetValue());
         app_config->save();
+
+        // if (param == "staff_pick_switch") {
+        //     bool pbool = app_config->get("staff_pick_switch") == "true";
+        //     wxGetApp().switch_staff_pick(pbool);
+        // }
 
          // backup
         if (param == "backup_switch") {
@@ -619,7 +663,7 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *pa
         if (param == "sync_user_preset") {
             bool sync = app_config->get("sync_user_preset") == "true" ? true : false;
             if (sync) {
-                wxGetApp().start_sync_user_preset(true);
+                wxGetApp().start_sync_user_preset();
             } else {
                 wxGetApp().stop_sync_user_preset();
             }
@@ -653,19 +697,35 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *pa
             }
         }
 
-        if (param == "show_gcode_window") {
-            bool pbool = app_config->get("show_gcode_window") == "true" ? true : false;
-            wxGetApp().set_show_gcode_window(pbool);
+        #endif // __WXMSW__
+
+        if (param == "developer_mode")
+        {
+            m_developer_mode_def = app_config->get("developer_mode");
+            if (m_developer_mode_def == "true") {
+                Slic3r::GUI::wxGetApp().save_mode(comDevelop);
+            } else {
+                Slic3r::GUI::wxGetApp().save_mode(comAdvanced);
+            }
         }
 
-        #endif // __WXMSW__
+        // webview  dump_vedio
+        if (param == "internal_developer_mode") {
+            m_internal_developer_mode_def = app_config->get("internal_developer_mode");
+            if (m_internal_developer_mode_def == "true") {
+                Slic3r::GUI::wxGetApp().update_internal_development();
+                Slic3r::GUI::wxGetApp().mainframe->show_log_window();
+            } else {
+                Slic3r::GUI::wxGetApp().update_internal_development();
+            }
+        }
 
         e.Skip();
     });
 
     //// for debug mode
     if (param == "developer_mode") { m_developer_mode_ckeckbox = checkbox; }
-    if (param == "dump_video") { m_dump_video_ckeckbox = checkbox; }
+    if (param == "internal_developer_mode") { m_internal_developer_mode_ckeckbox = checkbox; }
 
 
     checkbox->SetToolTip(tooltip);
@@ -788,6 +848,19 @@ PreferencesDialog::PreferencesDialog(wxWindow *parent, wxWindowID id, const wxSt
     SetBackgroundColour(*wxWHITE);
     create();
     wxGetApp().UpdateDlgDarkUI(this);
+    Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event) {
+        try {
+            NetworkAgent* agent = GUI::wxGetApp().getAgent();
+            if (agent) {
+                json j;
+                std::string value;
+                value = wxGetApp().app_config->get("auto_calculate");
+                j["auto_flushing"] = value;
+                agent->track_event("preferences_changed", j.dump());
+            }
+        } catch(...) {}
+        event.Skip();
+        });
 }
 
 void PreferencesDialog::create()
@@ -802,7 +875,7 @@ void PreferencesDialog::create()
 
     auto main_sizer = new wxBoxSizer(wxVERTICAL);
 
-    m_scrolledWindow = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+    m_scrolledWindow = new MyscrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
     m_scrolledWindow->SetScrollRate(5, 5);
 
     m_sizer_body = new wxBoxSizer(wxVERTICAL);
@@ -886,6 +959,7 @@ wxWindow* PreferencesDialog::create_general_page()
     wxLanguage supported_languages[]{
         wxLANGUAGE_ENGLISH,
         wxLANGUAGE_CHINESE_SIMPLIFIED,
+        wxLANGUAGE_CHINESE,
         wxLANGUAGE_GERMAN,
         wxLANGUAGE_CZECH,
         wxLANGUAGE_FRENCH,
@@ -894,7 +968,12 @@ wxWindow* PreferencesDialog::create_general_page()
         wxLANGUAGE_DUTCH,
         wxLANGUAGE_HUNGARIAN,
         wxLANGUAGE_JAPANESE,
-        wxLANGUAGE_ITALIAN
+        wxLANGUAGE_ITALIAN,
+        wxLANGUAGE_KOREAN,
+        wxLANGUAGE_RUSSIAN,
+        wxLANGUAGE_UKRAINIAN,
+        wxLANGUAGE_TURKISH
+
     };
 
     auto translations = wxTranslations::Get()->GetAvailableTranslations(SLIC3R_APP_KEY);
@@ -919,14 +998,21 @@ wxWindow* PreferencesDialog::create_general_page()
     std::vector<wxString> Regions         = {_L("Asia-Pacific"), _L("China"), _L("Europe"), _L("North America"), _L("Others")};
     auto                  item_region= create_item_region_combobox(_L("Login Region"), page, _L("Login Region"), Regions);
 
+    auto item_stealth_mode = create_item_checkbox(_L("Stealth Mode"), page, _L("Stealth Mode"), 50, "stealth_mode");
+
     std::vector<wxString> Units         = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};
     auto item_currency = create_item_combobox(_L("Units"), page, _L("Units"), "use_inches", Units);
 
+    std::vector<wxString> DefaultPage = {_L("Home"), _L("Prepare")};
+    auto item_default_page = create_item_combobox(_L("Default Page"), page, _L("Set the page opened on startup."), "default_page", DefaultPage);
+
     auto item_mouse_zoom_settings = create_item_checkbox(_L("Zoom to mouse position"), page, _L("Zoom in towards the mouse pointer's position in the 3D view, rather than the 2D window center."), 50, "zoom_to_mouse");
+    auto item_use_free_camera_settings = create_item_checkbox(_L("Use free camera"), page, _L("If enabled, use free camera. If not enabled, use constrained camera."), 50, "use_free_camera");
 
+    auto item_show_splash_screen = create_item_checkbox(_L("Show splash screen"), page, _L("Show the splash screen during startup."), 50, "show_splash_screen");
     auto item_hints = create_item_checkbox(_L("Show \"Tip of the day\" notification after start"), page, _L("If enabled, useful hints are displayed at startup."), 50, "show_hints");
-    auto item_gcode_window = create_item_checkbox(_L("Show g-code window"), page, _L("If enabled, g-code window will be displayed."), 50, "show_gcode_window");
 
+    auto item_calc_mode = create_item_checkbox(_L("Flushing volumes: Auto-calculate everytime the color changed."), page, _L("If enabled, auto-calculate everytime the color changed."), 50, "auto_calculate");
     auto title_presets = create_item_title(_L("Presets"), page, _L("Presets"));
     auto item_user_sync        = create_item_checkbox(_L("Auto sync user presets(Printer/Filament/Process)"), page, _L("User Sync"), 50, "sync_user_preset");
     auto item_system_sync        = create_item_checkbox(_L("Update built-in Presets automatically."), page, _L("System Sync"), 50, "sync_system_preset");
@@ -946,6 +1032,10 @@ wxWindow* PreferencesDialog::create_general_page()
                                                          _L("If enabled, sets GalaxySlicer as default application to open .step files"), 50, "associate_step");
 #endif // _WIN32
 
+    // auto title_modelmall = create_item_title(_L("Online Models"), page, _L("Online Models"));
+    // auto item_backup = create_item_switch(_L("Backup switch"), page, _L("Backup switch"), "units");
+    // auto item_modelmall = create_item_checkbox(_L("Show online staff-picked models on the home page"), page, _L("Show online staff-picked models on the home page"), 50, "staff_pick_switch");
+
     auto title_project = create_item_title(_L("Project"), page, "");
     auto item_max_recent_count = create_item_input(_L("Maximum recent projects"), "", page, _L("Maximum count of recent projects"), "max_recent_count", [](wxString value) {
         long max = 0;
@@ -956,6 +1046,7 @@ wxWindow* PreferencesDialog::create_general_page()
         wxGetApp().app_config->set("save_project_choise", "");
     });
     // auto item_backup = create_item_switch(_L("Backup switch"), page, _L("Backup switch"), "units");
+    auto item_gcodes_warning = create_item_checkbox(_L("No warnings when loading 3MF with modified G-codes"), page,_L("No warnings when loading 3MF with modified G-codes"), 50, "no_warn_when_modified_gcodes");
     auto item_backup  = create_item_checkbox(_L("Auto-Backup"), page,_L("Backup your project periodically for restoring from the occasional crash."), 50, "backup_switch");
     auto item_backup_interval = create_item_backup_input(_L("every"), page, _L("The peroid of backup in seconds."), "backup_interval");
 
@@ -969,15 +1060,22 @@ wxWindow* PreferencesDialog::create_general_page()
     auto item_darkmode = create_item_darkmode_checkbox(_L("Enable Dark mode"), page,_L("Enable Dark mode"), 50, "dark_color_mode");
 #endif
 
+    auto title_develop_mode = create_item_title(_L("Develop mode"), page, _L("Develop mode"));
+    auto item_develop_mode  = create_item_checkbox(_L("Develop mode"), page, _L("Develop mode"), 50, "developer_mode");
+    auto item_skip_ams_blacklist_check  = create_item_checkbox(_L("Skip AMS blacklist check"), page, _L("Skip AMS blacklist check"), 50, "skip_ams_blacklist_check");
 
     sizer_page->Add(title_general_settings, 0, wxEXPAND, 0);
     sizer_page->Add(item_language, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_region, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_currency, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_default_page, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_mouse_zoom_settings, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_use_free_camera_settings, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_show_splash_screen, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_hints, 0, wxTOP, FromDIP(3));
-    sizer_page->Add(item_gcode_window, 0, wxTOP, FromDIP(3));
     sizer_page->Add(title_presets, 0, wxTOP | wxEXPAND, FromDIP(20));
+    sizer_page->Add(item_stealth_mode, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_calc_mode, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_user_sync, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_system_sync, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_save_presets, 0, wxTOP, FromDIP(3));
@@ -987,9 +1085,22 @@ wxWindow* PreferencesDialog::create_general_page()
     sizer_page->Add(item_associate_stl, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_associate_step, 0, wxTOP, FromDIP(3));
 #endif // _WIN32
+    // auto item_title_modelmall = sizer_page->Add(title_modelmall, 0, wxTOP | wxEXPAND, FromDIP(20));
+    // auto item_item_modelmall = sizer_page->Add(item_modelmall, 0, wxTOP, FromDIP(3));
+    // auto update_modelmall = [this, item_title_modelmall, item_item_modelmall] (wxEvent & e) {
+    //     bool has_model_mall = wxGetApp().has_model_mall();
+    //     item_title_modelmall->Show(has_model_mall);
+    //     item_item_modelmall->Show(has_model_mall);
+    //     Layout();
+    //     Fit();
+    // };
+    // wxCommandEvent eee(wxEVT_COMBOBOX);
+    // update_modelmall(eee);
+    // item_region->GetItem(size_t(2))->GetWindow()->Bind(wxEVT_COMBOBOX, update_modelmall);
     sizer_page->Add(title_project, 0, wxTOP| wxEXPAND, FromDIP(20));
     sizer_page->Add(item_max_recent_count, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_save_choise, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_gcodes_warning, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_backup, 0, wxTOP,FromDIP(3));
     item_backup->Add(item_backup_interval, 0, wxLEFT, 0);
 
@@ -1001,6 +1112,9 @@ wxWindow* PreferencesDialog::create_general_page()
     sizer_page->Add(item_darkmode, 0, wxEXPAND, FromDIP(3));
 #endif
 
+    sizer_page->Add(title_develop_mode, 0, wxTOP | wxEXPAND, FromDIP(20));
+    sizer_page->Add(item_develop_mode, 0, wxTOP, FromDIP(3));
+    sizer_page->Add(item_skip_ams_blacklist_check, 0, wxTOP, FromDIP(3));
 
     page->SetSizer(sizer_page);
     page->Layout();
@@ -1084,16 +1198,16 @@ wxWindow* PreferencesDialog::create_debug_page()
     auto page = new wxWindow(m_scrolledWindow, wxID_ANY);
     page->SetBackgroundColour(*wxWHITE);
 
-    m_developer_mode_def  = app_config->get("developer_mode");
-    m_dump_video_def      = app_config->get("dump_video");
+    m_internal_developer_mode_def = app_config->get("internal_developer_mode");
     m_backup_interval_def = app_config->get("backup_interval");
     m_iot_environment_def = app_config->get("iot_environment");
 
     wxBoxSizer *bSizer = new wxBoxSizer(wxVERTICAL);
 
-    auto title_develop_mode   = create_item_title(_L("Develop mode"), page, _L("Develop mode"));
-    auto item_develop_mode  = create_item_checkbox(_L("Develop mode"), page, _L("Develop mode"), 50, "developer_mode");
-    auto item_dump_video      = create_item_checkbox(_L("Dump video"), page, _L("Dump video"), 50, "dump_video");
+
+    auto enable_ssl_for_mqtt = create_item_checkbox(_L("Enable SSL(MQTT)"), page, _L("Enable SSL(MQTT)"), 50, "enable_ssl_for_mqtt");
+    auto enable_ssl_for_ftp = create_item_checkbox(_L("Enable SSL(FTP)"), page, _L("Enable SSL(MQTT)"), 50, "enable_ssl_for_ftp");
+    auto item_internal_developer = create_item_checkbox(_L("Internal developer mode"), page, _L("Internal developer mode"), 50, "internal_developer_mode");
 
     auto title_log_level = create_item_title(_L("Log Level"), page, _L("Log Level"));
     auto log_level_list  = std::vector<wxString>{_L("fatal"), _L("error"), _L("warning"), _L("info"), _L("debug"), _L("trace")};
@@ -1130,16 +1244,17 @@ wxWindow* PreferencesDialog::create_debug_page()
     debug_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) {
         // success message box
         MessageDialog dialog(this, _L("save debug settings"), _L("DEBUG settings have saved successfully!"), wxNO_DEFAULT | wxYES_NO | wxICON_INFORMATION);
+        dialog.SetSize(400,-1);
         switch (dialog.ShowModal()) {
         case wxID_NO: {
-            if (m_developer_mode_def != app_config->get("developer_mode")) {
-                app_config->set_bool("developer_mode", m_developer_mode_def == "true" ? true : false);
-                m_developer_mode_ckeckbox->SetValue(m_developer_mode_def == "true" ? true : false);
-            }
-            if (m_dump_video_def != app_config->get("dump_video")) {
-                app_config->set_bool("dump_video", m_dump_video_def == "true" ? true : false);
-                m_dump_video_ckeckbox->SetValue(m_dump_video_def == "true" ? true : false);
-            }
+            //if (m_developer_mode_def != app_config->get("developer_mode")) {
+            //    app_config->set_bool("developer_mode", m_developer_mode_def == "true" ? true : false);
+            //    m_developer_mode_ckeckbox->SetValue(m_developer_mode_def == "true" ? true : false);
+            //}
+            //if (m_internal_developer_mode_def != app_config->get("internal_developer_mode")) {
+            //    app_config->set_bool("internal_developer_mode", m_internal_developer_mode_def == "true" ? true : false);
+            //    m_internal_developer_mode_ckeckbox->SetValue(m_internal_developer_mode_def == "true" ? true : false);
+            //}
 
             if (m_backup_interval_def != m_backup_interval_time) { m_backup_interval_textinput->GetTextCtrl()->SetValue(m_backup_interval_def); }
 
@@ -1200,15 +1315,6 @@ wxWindow* PreferencesDialog::create_debug_page()
             app_config->save();
             Slic3r::set_backup_interval(boost::lexical_cast<long>(app_config->get("backup_interval")));
 
-            // bbs  developer mode
-            auto developer_mode = app_config->get("developer_mode");
-            if (developer_mode == "true") {
-                Slic3r::GUI::wxGetApp().save_mode(comDevelop);
-                Slic3r::GUI::wxGetApp().mainframe->show_log_window();
-            } else {
-                Slic3r::GUI::wxGetApp().save_mode(comAdvanced);
-            }
-
             this->Close();
             break;
         }
@@ -1216,9 +1322,9 @@ wxWindow* PreferencesDialog::create_debug_page()
     });
 
 
-    bSizer->Add(title_develop_mode, 0, wxTOP | wxEXPAND, FromDIP(20));
-    bSizer->Add(item_develop_mode, 0, wxTOP,FromDIP(3));
-    bSizer->Add(item_dump_video, 0, wxTOP, FromDIP(3));
+    bSizer->Add(enable_ssl_for_mqtt, 0, wxTOP, FromDIP(3));
+    bSizer->Add(enable_ssl_for_ftp, 0, wxTOP, FromDIP(3));
+    bSizer->Add(item_internal_developer, 0, wxTOP, FromDIP(3));
     bSizer->Add(title_log_level, 0, wxTOP| wxEXPAND, FromDIP(20));
     bSizer->Add(loglevel_combox, 0, wxTOP, FromDIP(3));
     bSizer->Add(title_host, 0, wxTOP| wxEXPAND, FromDIP(20));
@@ -1236,31 +1342,31 @@ wxWindow* PreferencesDialog::create_debug_page()
 
 void PreferencesDialog::on_select_radio(std::string param)
 {
-    RadioSelectorList::Node *node    = m_radio_group.GetFirst();
+    RadioSelectorList::compatibility_iterator it = m_radio_group.GetFirst();
     auto                     groupid = 0;
 
-    while (node) {
-        RadioSelector *rs = node->GetData();
+    while (it) {
+        RadioSelector *rs = it->GetData();
         if (rs->m_param_name == param) groupid = rs->m_groupid;
-        node = node->GetNext();
+        it = it->GetNext();
     }
 
-    node = m_radio_group.GetFirst();
-    while (node) {
-        RadioSelector *rs = node->GetData();
+    it = m_radio_group.GetFirst();
+    while (it) {
+        RadioSelector *rs = it->GetData();
         if (rs->m_groupid == groupid && rs->m_param_name == param) rs->m_radiobox->SetValue(true);
         if (rs->m_groupid == groupid && rs->m_param_name != param) rs->m_radiobox->SetValue(false);
-        node = node->GetNext();
+        it = it->GetNext();
     }
 }
 
 wxString PreferencesDialog::get_select_radio(int groupid)
 {
-    RadioSelectorList::Node *node = m_radio_group.GetFirst();
-    while (node) {
-        RadioSelector *rs = node->GetData();
+    RadioSelectorList::compatibility_iterator it = m_radio_group.GetFirst();
+    while (it) {
+        RadioSelector *rs = it->GetData();
         if (rs->m_groupid == groupid && rs->m_radiobox->GetValue()) { return rs->m_param_name; }
-        node = node->GetNext();
+        it = it->GetNext();
     }
 
     return wxEmptyString;
@@ -1268,21 +1374,21 @@ wxString PreferencesDialog::get_select_radio(int groupid)
 
 void PreferencesDialog::OnSelectRadio(wxMouseEvent &event)
 {
-    RadioSelectorList::Node *node    = m_radio_group.GetFirst();
+    RadioSelectorList::compatibility_iterator it = m_radio_group.GetFirst();
     auto                     groupid = 0;
 
-    while (node) {
-        RadioSelector *rs = node->GetData();
+    while (it) {
+        RadioSelector *rs = it->GetData();
         if (rs->m_radiobox->GetId() == event.GetId()) groupid = rs->m_groupid;
-        node = node->GetNext();
+        it = it->GetNext();
     }
 
-    node = m_radio_group.GetFirst();
-    while (node) {
-        RadioSelector *rs = node->GetData();
+    it = m_radio_group.GetFirst();
+    while (it) {
+        RadioSelector *rs = it->GetData();
         if (rs->m_groupid == groupid && rs->m_radiobox->GetId() == event.GetId()) rs->m_radiobox->SetValue(true);
         if (rs->m_groupid == groupid && rs->m_radiobox->GetId() != event.GetId()) rs->m_radiobox->SetValue(false);
-        node = node->GetNext();
+        it = it->GetNext();
     }
 }
 

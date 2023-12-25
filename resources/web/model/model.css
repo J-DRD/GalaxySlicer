@@ -4,6 +4,7 @@
 	padding: 0px;
 	border: 0px;
 	font-family: "system-ui", "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-sans;
+	user-select: none;
 }
 
 html
@@ -81,7 +82,7 @@ body
 {
 	font-size: 16px;
 	font-weight: 700;
-	color: black;
+	color: black;	
 }
 
 .Text_Value
@@ -103,8 +104,30 @@ body
 .Text_TitleArea div
 {
 	height: 32px;
-	line-height: 32px	
+	line-height: 32px;
 }
+
+#Model_Name_Line
+{
+	width: 800px;
+}
+
+#ModelNameBar
+{
+	width: 100%;
+	display: flex;
+	overflow:hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+#ModelName
+{
+	overflow:hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;	
+}
+
 
 .Block_BKGA
 {
@@ -120,7 +143,7 @@ body
 .swiper
 {
     --swiper-theme-color: #ff6600;/* 设置Swiper风格 */
-    --swiper-navigation-color: #00AE42;/* 单独设置按钮颜色 */
+    --swiper-navigation-color: #693A71;/* 单独设置按钮颜色 */
     --swiper-navigation-size: 30px;/* 设置按钮大小 */
 }
 
@@ -161,12 +184,12 @@ body
 
 .ProcessBarSelected
 {
-	border-left-color:#00AE42;
+	border-left-color:#9C6DA4;
 }
 
 .ProcessBarSelected span
 {
-	color:#00AE42;
+	color:#9C6DA4;
 }
 
 #Info_ProcessBar.ProcessBarSelected img
@@ -243,6 +266,16 @@ body
 }
 
 /*---Document---*/
+#LeftEmptyBlock
+{
+
+}
+
+#Model_Desc img
+{
+	max-width:100%;
+}
+
 #Model_Accessories
 {
 }

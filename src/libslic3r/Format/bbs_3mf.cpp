@@ -1,3 +1,8 @@
+///|/ Copyright (c) Prusa Research 2018 - 2023 Oleksandra Iushchenko @YuSanka, David Kocík @kocikdav, Enrico Turri @enricoturri1966, Lukáš Matěna @lukasmatena, Lukáš Hejl @hejllukas, Filip Sykala @Jony01, Vojtěch Bubník @bubnikv, Tomáš Mészáros @tamasmeszaros
+///|/ Copyright (c) 2020 Henner Zeller
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #include "../libslic3r.h"
 #include "../Exception.hpp"
 #include "../Model.hpp"
@@ -17,6 +22,9 @@
 #include <limits>
 #include <stdexcept>
 #include <iomanip>
+
+#include <boost/assign.hpp>
+#include <boost/bimap.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -43,6 +51,13 @@ namespace pt = boost::property_tree;
 #include <Eigen/Dense>
 #include "miniz_extension.hpp"
 #include "nlohmann/json.hpp"
+
+#include "TextConfiguration.hpp"
+#include "EmbossShape.hpp"
+#include "ExPolygonSerialize.hpp" 
+
+#include "NSVGUtils.hpp"
+
 #include <fast_float/fast_float.h>
 
 // Slightly faster than sprintf("%.9g"), but there is an issue with the karma floating point formatter,
@@ -116,6 +131,7 @@ const std::string BBL_DESIGNER_USER_ID_TAG          = "DesignerUserId";
 const std::string BBL_DESIGNER_COVER_FILE_TAG       = "DesignerCover";
 const std::string BBL_DESCRIPTION_TAG               = "Description";
 const std::string BBL_COPYRIGHT_TAG                 = "CopyRight";
+const std::string BBL_COPYRIGHT_NORMATIVE_TAG       = "Copyright";
 const std::string BBL_LICENSE_TAG                   = "License";
 const std::string BBL_REGION_TAG                    = "Region";
 const std::string BBL_MODIFICATION_TAG              = "ModificationDate";
@@ -142,10 +158,9 @@ const std::string CONTENT_TYPES_FILE = "[Content_Types].xml";
 const std::string RELATIONSHIPS_FILE = "_rels/.rels";
 const std::string THUMBNAIL_FILE = "Metadata/plate_1.png";
 const std::string THUMBNAIL_FOR_PRINTER_FILE = "Metadata/bbl_thumbnail.png";
-const std::string THUMBNAILS_DIR = ".thumbnails";
-const std::string PRINTER_THUMBNAIL_SMALL_FILE = "thumbnail_small.png";
-const std::string PRINTER_THUMBNAIL_MIDDLE_FILE = "thumbnail_middle.png";
-const std::string _3MF_COVER_FILE = "thumbnail_3mf.png";
+const std::string PRINTER_THUMBNAIL_SMALL_FILE = "/Auxiliaries/.thumbnails/thumbnail_small.png";
+const std::string PRINTER_THUMBNAIL_MIDDLE_FILE = "/Auxiliaries/.thumbnails/thumbnail_middle.png";
+const std::string _3MF_COVER_FILE = "/Auxiliaries/.thumbnails/thumbnail_3mf.png";
 //const std::string PRINT_CONFIG_FILE = "Metadata/Slic3r_PE.config";
 //const std::string MODEL_CONFIG_FILE = "Metadata/Slic3r_PE_model.config";
 const std::string BBS_PRINT_CONFIG_FILE = "Metadata/print_profile.config";
@@ -154,8 +169,8 @@ const std::string BBS_MODEL_CONFIG_FILE = "Metadata/model_settings.config";
 const std::string BBS_MODEL_CONFIG_RELS_FILE = "Metadata/_rels/model_settings.config.rels";
 const std::string SLICE_INFO_CONFIG_FILE = "Metadata/slice_info.config";
 const std::string BBS_LAYER_HEIGHTS_PROFILE_FILE = "Metadata/layer_heights_profile.txt";
-/*const std::string LAYER_CONFIG_RANGES_FILE = "Metadata/Prusa_Slicer_layer_config_ranges.xml";
-const std::string SLA_SUPPORT_POINTS_FILE = "Metadata/Slic3r_PE_sla_support_points.txt";
+const std::string LAYER_CONFIG_RANGES_FILE = "Metadata/layer_config_ranges.xml";
+/*const std::string SLA_SUPPORT_POINTS_FILE = "Metadata/Slic3r_PE_sla_support_points.txt";
 const std::string SLA_DRAIN_HOLES_FILE = "Metadata/Slic3r_PE_sla_drain_holes.txt";*/
 const std::string CUSTOM_GCODE_PER_PRINT_Z_FILE = "Metadata/custom_gcode_per_layer.xml";
 const std::string AUXILIARY_DIR = "Auxiliaries/";
@@ -206,7 +221,7 @@ static constexpr const char* ASSEMBLE_ITEM_TAG = "assemble_item";
 static constexpr const char* SLICE_HEADER_TAG = "header";
 static constexpr const char* SLICE_HEADER_ITEM_TAG = "header_item";
 
-// text_info
+// Deprecated: text_info
 static constexpr const char* TEXT_INFO_TAG        = "text_info";
 static constexpr const char* TEXT_ATTR            = "text";
 static constexpr const char* FONT_NAME_ATTR       = "font_name";
@@ -227,10 +242,14 @@ static constexpr const char* HIT_NORMAL_ATTR      = "hit_normal";
 // BBS: encrypt
 static constexpr const char* RELATIONSHIP_TAG = "Relationship";
 static constexpr const char* PID_ATTR = "pid";
-static constexpr const char* PUUID_ATTR = "p:uuid";
+static constexpr const char* PUUID_ATTR = "p:UUID";
+static constexpr const char* PUUID_LOWER_ATTR = "p:uuid";
 static constexpr const char* PPATH_ATTR = "p:path";
-static constexpr const char* OBJECT_UUID_SUFFIX = "-41cb-4c03-9d28-80fed5dfa1dc";
-static constexpr const char* BUILD_UUID = "d8eb061-b1ec-4553-aec9-835e5b724bb4";
+static constexpr const char *OBJECT_UUID_SUFFIX = "-61cb-4c03-9d28-80fed5dfa1dc";
+static constexpr const char *OBJECT_UUID_SUFFIX2 = "-71cb-4c03-9d28-80fed5dfa1dc";
+static constexpr const char *SUB_OBJECT_UUID_SUFFIX = "-81cb-4c03-9d28-80fed5dfa1dc";
+static constexpr const char *COMPONENT_UUID_SUFFIX = "-b206-40ff-9872-83e8017abed1";
+static constexpr const char* BUILD_UUID = "2c7c17d8-22b5-4d84-8835-1976022ea369";
 static constexpr const char* BUILD_UUID_SUFFIX = "-b1ec-4553-aec9-835e5b724bb4";
 static constexpr const char* TARGET_ATTR = "Target";
 static constexpr const char* RELS_TYPE_ATTR = "Type";
@@ -266,6 +285,8 @@ static constexpr const char* SUBTYPE_ATTR = "subtype";
 static constexpr const char* LOCK_ATTR = "locked";
 static constexpr const char* BED_TYPE_ATTR = "bed_type";
 static constexpr const char* PRINT_SEQUENCE_ATTR = "print_sequence";
+static constexpr const char* FIRST_LAYER_PRINT_SEQUENCE_ATTR = "first_layer_print_sequence";
+static constexpr const char* SPIRAL_VASE_MODE = "spiral_mode";
 static constexpr const char* GCODE_FILE_ATTR = "gcode_file";
 static constexpr const char* THUMBNAIL_FILE_ATTR = "thumbnail_file";
 static constexpr const char* TOP_FILE_ATTR = "top_file";
@@ -278,11 +299,16 @@ static constexpr const char* IDENTIFYID_ATTR = "identify_id";
 static constexpr const char* PLATERID_ATTR = "plater_id";
 static constexpr const char* PLATER_NAME_ATTR = "plater_name";
 static constexpr const char* PLATE_IDX_ATTR = "index";
+static constexpr const char* PRINTER_MODEL_ID_ATTR = "printer_model_id";
+static constexpr const char* NOZZLE_DIAMETERS_ATTR = "nozzle_diameters";
 static constexpr const char* SLICE_PREDICTION_ATTR = "prediction";
 static constexpr const char* SLICE_WEIGHT_ATTR = "weight";
+static constexpr const char* TIMELAPSE_TYPE_ATTR = "timelapse_type";
+static constexpr const char* TIMELAPSE_ERROR_CODE_ATTR = "timelapse_error_code";
 static constexpr const char* OUTSIDE_ATTR = "outside";
 static constexpr const char* SUPPORT_USED_ATTR = "support_used";
-
+static constexpr const char* LABEL_OBJECT_ENABLED_ATTR = "label_object_enabled";
+static constexpr const char* SKIPPED_ATTR = "skipped";
 
 static constexpr const char* OBJECT_TYPE = "object";
 static constexpr const char* VOLUME_TYPE = "volume";
@@ -308,6 +334,42 @@ static constexpr const char* MESH_STAT_DEGENERATED_FACETS   = "degenerate_facets
 static constexpr const char* MESH_STAT_FACETS_REMOVED       = "facets_removed";
 static constexpr const char* MESH_STAT_FACETS_RESERVED      = "facets_reversed";
 static constexpr const char* MESH_STAT_BACKWARDS_EDGES      = "backwards_edges";
+
+// Store / load of TextConfiguration
+static constexpr const char *TEXT_TAG = "slic3rpe:text";
+static constexpr const char *TEXT_DATA_ATTR = "text";
+// TextConfiguration::EmbossStyle
+static constexpr const char *STYLE_NAME_ATTR      = "style_name";
+static constexpr const char *FONT_DESCRIPTOR_ATTR = "font_descriptor";
+static constexpr const char *FONT_DESCRIPTOR_TYPE_ATTR = "font_descriptor_type";
+
+// TextConfiguration::FontProperty
+static constexpr const char *CHAR_GAP_ATTR    = "char_gap";
+static constexpr const char *LINE_GAP_ATTR    = "line_gap";
+static constexpr const char *LINE_HEIGHT_ATTR = "line_height";
+static constexpr const char *BOLDNESS_ATTR    = "boldness";
+static constexpr const char *SKEW_ATTR        = "skew";
+static constexpr const char *PER_GLYPH_ATTR   = "per_glyph";
+static constexpr const char *HORIZONTAL_ALIGN_ATTR  = "horizontal";
+static constexpr const char *VERTICAL_ALIGN_ATTR    = "vertical";
+static constexpr const char *COLLECTION_NUMBER_ATTR = "collection";
+
+static constexpr const char *FONT_FAMILY_ATTR    = "family";
+static constexpr const char *FONT_FACE_NAME_ATTR = "face_name";
+static constexpr const char *FONT_STYLE_ATTR     = "style";
+static constexpr const char *FONT_WEIGHT_ATTR    = "weight";
+
+// Store / load of EmbossShape
+static constexpr const char *SHAPE_TAG = "slic3rpe:shape";
+static constexpr const char *SHAPE_SCALE_ATTR   = "scale";
+static constexpr const char *UNHEALED_ATTR = "unhealed";
+static constexpr const char *SVG_FILE_PATH_ATTR = "filepath";
+static constexpr const char *SVG_FILE_PATH_IN_3MF_ATTR = "filepath3mf";
+
+// EmbossProjection
+static constexpr const char *DEPTH_ATTR       = "depth";
+static constexpr const char *USE_SURFACE_ATTR = "use_surface";
+// static constexpr const char *FIX_TRANSFORMATION_ATTR = "transform";
 
 
 const unsigned int BBS_VALID_OBJECT_TYPES_COUNT = 2;
@@ -702,8 +764,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 MetadataList metadata;
                 RepairedMeshErrors mesh_stats;
                 ModelVolumeType part_type;
-                TextInfo text_info;
-
+                std::optional<TextConfiguration> text_configuration;
+                std::optional<EmbossShape> shape_configuration;
                 VolumeMetadata(unsigned int first_triangle_id, unsigned int last_triangle_id, ModelVolumeType type = ModelVolumeType::MODEL_PART)
                     : first_triangle_id(first_triangle_id)
                     , last_triangle_id(last_triangle_id)
@@ -748,12 +810,13 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         //typedef std::map<Id, ComponentsList> IdToAliasesMap;
         typedef std::vector<Instance> InstancesList;
         typedef std::map<int, ObjectMetadata> IdToMetadataMap;
-        typedef std::map<int, CutObjectInfo>  IdToCutObjectInfoMap;
         //typedef std::map<Id, Geometry> IdToGeometryMap;
         typedef std::map<int, std::vector<coordf_t>> IdToLayerHeightsProfileMap;
-        /*typedef std::map<int, t_layer_config_ranges> IdToLayerConfigRangesMap;
-        typedef std::map<int, std::vector<sla::SupportPoint>> IdToSlaSupportPointsMap;
+        typedef std::map<int, t_layer_config_ranges> IdToLayerConfigRangesMap;
+        typedef std::map<int, CutObjectInfo>         IdToCutObjectInfoMap;
+        /*typedef std::map<int, std::vector<sla::SupportPoint>> IdToSlaSupportPointsMap;
         typedef std::map<int, std::vector<sla::DrainHole>> IdToSlaDrainHolesMap;*/
+        using PathToEmbossShapeFileMap = std::map<std::string, std::shared_ptr<std::string>>;
 
         struct ObjectImporter
         {
@@ -898,11 +961,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         // Version of the 3mf file
         unsigned int m_version;
-        bool m_check_version;
-        bool m_load_aux;
-        bool m_load_config;
+        bool m_check_version = false;
+        bool m_load_model = false;
+        bool m_load_aux = false;
+        bool m_load_config = false;
         // backup & restore
-        bool m_load_restore;
+        bool m_load_restore = false;
         std::string m_backup_path;
         std::string m_origin_file;
         // Semantic version of GalaxySlicer, that generated this 3MF.
@@ -940,11 +1004,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         //IdToGeometryMap m_orig_geometries; // backup & restore
         CurrentConfig m_curr_config;
         IdToMetadataMap m_objects_metadata;
-        IdToCutObjectInfoMap       m_cut_object_infos;
+        IdToCutObjectInfoMap m_cut_object_infos;
         IdToLayerHeightsProfileMap m_layer_heights_profiles;
-        /*IdToLayerConfigRangesMap m_layer_config_ranges;
-        IdToSlaSupportPointsMap m_sla_support_points;
+        IdToLayerConfigRangesMap m_layer_config_ranges;
+        /*IdToSlaSupportPointsMap m_sla_support_points;
         IdToSlaDrainHolesMap    m_sla_drain_holes;*/
+        PathToEmbossShapeFileMap m_path_to_emboss_shape_files;
         std::string m_curr_metadata_name;
         std::string m_curr_characters;
         std::string m_name;
@@ -952,6 +1017,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         std::string m_start_part_path;
         std::string m_thumbnail_path;
+        std::string m_thumbnail_middle;
+        std::string m_thumbnail_small;
         std::vector<std::string> m_sub_model_paths;
         std::vector<ObjectImporter*> m_object_importers;
 
@@ -976,6 +1043,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         bool load_model_from_file(const std::string& filename, Model& model, PlateDataPtrs& plate_data_list, std::vector<Preset*>& project_presets, DynamicPrintConfig& config,
             ConfigSubstitutionContext& config_substitutions, LoadStrategy strategy, bool& is_bbl_3mf, Semver& file_version, Import3mfProgressFn proFn = nullptr, BBLProject *project = nullptr, int plate_id = 0);
         bool get_thumbnail(const std::string &filename, std::string &data);
+        bool load_gcode_3mf_from_stream(std::istream & data, Model& model, PlateDataPtrs& plate_data_list, DynamicPrintConfig& config, Semver& file_version);
         unsigned int version() const { return m_version; }
 
     private:
@@ -995,11 +1063,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         // add backup & restore logic
         bool _load_model_from_file(std::string filename, Model& model, PlateDataPtrs& plate_data_list, std::vector<Preset*>& project_presets, DynamicPrintConfig& config, ConfigSubstitutionContext& config_substitutions, Import3mfProgressFn proFn = nullptr,
             BBLProject* project = nullptr, int plate_id = 0);
+        bool _is_svg_shape_file(const std::string &filename) const;
         bool _extract_from_archive(mz_zip_archive& archive, std::string const & path, std::function<bool (mz_zip_archive& archive, const mz_zip_archive_file_stat& stat)>, bool restore = false);
         bool _extract_xml_from_archive(mz_zip_archive& archive, std::string const & path, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler);
         bool _extract_xml_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler);
         bool _extract_model_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat);
-        void _extract_cut_information_from_archive(mz_zip_archive &archive, const mz_zip_archive_file_stat &stat, ConfigSubstitutionContext &config_substitutions);
+        void _extract_cut_information_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat, ConfigSubstitutionContext& config_substitutions);
         void _extract_layer_heights_profile_config_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat);
         void _extract_layer_config_ranges_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat, ConfigSubstitutionContext& config_substitutions);
         void _extract_sla_support_points_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat);
@@ -1015,6 +1084,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         void _extract_auxiliary_file_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat, Model& model);
         void _extract_file_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat);
+        void _extract_embossed_svg_shape_file(const std::string &filename, mz_zip_archive &archive, const mz_zip_archive_file_stat &stat);
 
         // handlers to parse the .model file
         void _handle_start_model_xml_element(const char* name, const char** attributes);
@@ -1070,6 +1140,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         bool _handle_start_metadata(const char** attributes, unsigned int num_attributes);
         bool _handle_end_metadata();
 
+        bool _handle_start_text_configuration(const char** attributes, unsigned int num_attributes);
+        bool _handle_start_shape_configuration(const char **attributes, unsigned int num_attributes);
+
         bool _create_object_instance(std::string const & path, int object_id, const Transform3d& transform, const bool printable, unsigned int recur_counter);
 
         void _apply_transform(ModelInstance& instance, const Transform3d& transform);
@@ -1121,7 +1194,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         void _generate_current_object_list(std::vector<Component> &sub_objects, Id object_id, IdToCurrentObjectMap& current_objects);
         bool _generate_volumes_new(ModelObject& object, const std::vector<Component> &sub_objects, const ObjectMetadata::VolumeMetadataList& volumes, ConfigSubstitutionContext& config_substitutions);
-        bool _generate_volumes(ModelObject& object, const Geometry& geometry, const ObjectMetadata::VolumeMetadataList& volumes, ConfigSubstitutionContext& config_substitutions);
+        //bool _generate_volumes(ModelObject& object, const Geometry& geometry, const ObjectMetadata::VolumeMetadataList& volumes, ConfigSubstitutionContext& config_substitutions);
 
         // callbacks to parse the .model file
         static void XMLCALL _handle_start_model_xml_element(void* userData, const char* name, const char** attributes);
@@ -1183,6 +1256,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         m_mm_painting_version = 0;
         m_check_version = strategy & LoadStrategy::CheckVersion;
         //BBS: auxiliary data
+        m_load_model  = strategy & LoadStrategy::LoadModel;
         m_load_aux = strategy & LoadStrategy::LoadAuxiliary;
         m_load_restore = strategy & LoadStrategy::Restore;
         m_load_config = strategy & LoadStrategy::LoadConfig;
@@ -1199,7 +1273,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         m_curr_config.volume_id = -1;
         m_objects_metadata.clear();
         m_layer_heights_profiles.clear();
-        //m_layer_config_ranges.clear();
+        m_layer_config_ranges.clear();
         //m_sla_support_points.clear();
         m_curr_metadata_name.clear();
         m_curr_characters.clear();
@@ -1264,8 +1338,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         // BBS: load relationships
         if (!_extract_xml_from_archive(archive, RELATIONSHIPS_FILE, _handle_start_relationships_element, _handle_end_relationships_element))
             return false;
-        if (!m_thumbnail_path.empty()) {
-            return _extract_from_archive(archive, m_thumbnail_path, [&data](auto &archive, auto const &stat) -> bool {
+        if (m_thumbnail_middle.empty()) m_thumbnail_middle = m_thumbnail_path;
+        if (!m_thumbnail_middle.empty()) {
+            return _extract_from_archive(archive, m_thumbnail_middle, [&data](auto &archive, auto const &stat) -> bool {
                 data.resize(stat.m_uncomp_size);
                 return mz_zip_reader_extract_to_mem(&archive, stat.m_file_index, data.data(), data.size(), 0);
             });
@@ -1274,6 +1349,169 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             data.resize(stat.m_uncomp_size);
             return mz_zip_reader_extract_to_mem(&archive, stat.m_file_index, data.data(), data.size(), 0);
         });
+    }
+
+    static size_t mz_zip_read_istream(void *pOpaque, mz_uint64 file_ofs, void *pBuf, size_t n)
+    {
+        auto & is = *reinterpret_cast<std::istream*>(pOpaque);
+        is.seekg(file_ofs, std::istream::beg);
+        if (!is)
+            return 0;
+        is.read((char *)pBuf, n);
+        return is.gcount();
+    }
+
+    bool _BBS_3MF_Importer::load_gcode_3mf_from_stream(std::istream &data, Model &model, PlateDataPtrs &plate_data_list, DynamicPrintConfig &config, Semver &file_version)
+    {
+        mz_zip_archive archive;
+        mz_zip_zero_struct(&archive);
+        archive.m_pRead = mz_zip_read_istream;
+        archive.m_pIO_opaque = &data;
+
+        data.seekg(0, std::istream::end);
+        mz_uint64 size = data.tellg();
+        data.seekg(0, std::istream::beg);
+        if (!mz_zip_reader_init(&archive, size, 0))
+            return false;
+
+        struct close_lock
+        {
+            mz_zip_archive *archive;
+            void            close()
+            {
+                if (archive) {
+                    mz_zip_reader_end(archive);
+                    archive = nullptr;
+                }
+            }
+            ~close_lock() { close(); }
+        } lock{&archive};
+
+        // BBS: load relationships
+        if (!_extract_xml_from_archive(archive, RELATIONSHIPS_FILE, _handle_start_relationships_element, _handle_end_relationships_element))
+            return false;
+        if (m_start_part_path.empty())
+            return false;
+
+        //extract model files
+        m_model = &model;
+        if (!_extract_from_archive(archive, m_start_part_path, [this] (mz_zip_archive& archive, const mz_zip_archive_file_stat& stat) {
+                    return _extract_model_from_archive(archive, stat);
+            })) {
+            add_error("Archive does not contain a valid model");
+            return false;
+        }
+
+        if (!m_designer.empty()) {
+            m_model->design_info                 = std::make_shared<ModelDesignInfo>();
+            m_model->design_info->DesignerUserId = m_designer_user_id;
+            m_model->design_info->Designer       = m_designer;
+        }
+
+        m_model->profile_info                     = std::make_shared<ModelProfileInfo>();
+        m_model->profile_info->ProfileTile        = m_profile_title;
+        m_model->profile_info->ProfileCover       = m_profile_cover;
+        m_model->profile_info->ProfileDescription = m_Profile_description;
+        m_model->profile_info->ProfileUserId      = m_profile_user_id;
+        m_model->profile_info->ProfileUserName    = m_profile_user_name;
+
+        m_model->model_info = std::make_shared<ModelInfo>();
+        m_model->model_info->load(model_info);
+
+        if (m_thumbnail_middle.empty()) m_thumbnail_middle = m_thumbnail_path;
+        if (m_thumbnail_small.empty()) m_thumbnail_small = m_thumbnail_path;
+        if (!m_thumbnail_small.empty() && m_thumbnail_small.front() == '/')
+            m_thumbnail_small.erase(m_thumbnail_small.begin());
+        if (!m_thumbnail_middle.empty() && m_thumbnail_middle.front() == '/')
+            m_thumbnail_middle.erase(m_thumbnail_middle.begin());
+        m_model->model_info->metadata_items.emplace("Thumbnail", m_thumbnail_middle);
+        m_model->model_info->metadata_items.emplace("Poster", m_thumbnail_middle);
+
+        // we then loop again the entries to read other files stored in the archive
+        mz_uint num_entries = mz_zip_reader_get_num_files(&archive);
+        mz_zip_archive_file_stat stat;
+        for (mz_uint i = 0; i < num_entries; ++i) {
+            if (mz_zip_reader_file_stat(&archive, i, &stat)) {
+                std::string name(stat.m_filename);
+                std::replace(name.begin(), name.end(), '\\', '/');
+
+                BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << boost::format("extract %1%th file %2%, total=%3%\n")%(i+1)%name%num_entries;
+
+                if (boost::algorithm::iequals(name, BBS_PROJECT_CONFIG_FILE)) {
+                    // extract slic3r print config file
+                    ConfigSubstitutionContext config_substitutions(ForwardCompatibilitySubstitutionRule::Disable);
+                    _extract_project_config_from_archive(archive, stat, config, config_substitutions, model);
+                }
+                else if (boost::algorithm::iequals(name, BBS_MODEL_CONFIG_FILE)) {
+                    // extract slic3r model config file
+                    if (!_extract_xml_from_archive(archive, stat, _handle_start_config_xml_element, _handle_end_config_xml_element)) {
+                        add_error("Archive does not contain a valid model config");
+                        return false;
+                    }
+                }
+                else if (boost::algorithm::iequals(name, SLICE_INFO_CONFIG_FILE)) {
+                    m_parsing_slice_info = true;
+                    //extract slice info from archive
+                    _extract_xml_from_archive(archive, stat, _handle_start_config_xml_element, _handle_end_config_xml_element);
+                    m_parsing_slice_info = false;
+                }
+            }
+        }
+
+        //BBS: load the plate info into plate_data_list
+        std::map<int, PlateData*>::iterator it = m_plater_data.begin();
+        plate_data_list.clear();
+        plate_data_list.reserve(m_plater_data.size());
+        for (unsigned int i = 0; i < m_plater_data.size(); i++)
+        {
+            PlateData* plate = new PlateData();
+            plate_data_list.push_back(plate);
+        }
+        while (it != m_plater_data.end())
+        {
+            if (it->first > m_plater_data.size())
+            {
+                add_error("invalid plate index");
+                return false;
+            }
+            PlateData * plate = plate_data_list[it->first-1];
+            plate->locked = it->second->locked;
+            plate->plate_index = it->second->plate_index-1;
+            plate->obj_inst_map = it->second->obj_inst_map;
+            plate->gcode_file = it->second->gcode_file;
+            plate->gcode_prediction = it->second->gcode_prediction;
+            plate->gcode_weight = it->second->gcode_weight;
+            plate->toolpath_outside = it->second->toolpath_outside;
+            plate->is_support_used = it->second->is_support_used;
+            plate->is_label_object_enabled = it->second->is_label_object_enabled;
+            plate->skipped_objects = it->second->skipped_objects;
+            plate->slice_filaments_info = it->second->slice_filaments_info;
+            plate->warnings = it->second->warnings;
+            plate->thumbnail_file = it->second->thumbnail_file;
+            if (plate->thumbnail_file.empty()) {
+                plate->thumbnail_file = plate->gcode_file;
+                boost::algorithm::replace_all(plate->thumbnail_file, ".gcode", ".png");
+            }
+            //plate->pattern_file = it->second->pattern_file;
+            plate->top_file = it->second->top_file;
+            plate->pick_file = it->second->pick_file.empty();
+            plate->pattern_bbox_file = it->second->pattern_bbox_file.empty();
+            plate->config = it->second->config;
+
+            if (!plate->thumbnail_file.empty())
+                _extract_from_archive(archive, plate->thumbnail_file, [&pixels = plate_data_list[it->first - 1]->plate_thumbnail.pixels](auto &archive, auto const &stat) -> bool {
+                    pixels.resize(stat.m_uncomp_size);
+                    return mz_zip_reader_extract_to_mem(&archive, stat.m_file_index, pixels.data(), pixels.size(), 0);
+                });
+
+            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << boost::format(", plate %1%, thumbnail_file=%2%")%it->first %plate->thumbnail_file;
+            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << boost::format(", top_thumbnail_file=%1%, pick_thumbnail_file=%2%")%plate->top_file %plate->pick_file;
+            it++;
+        }
+
+        lock.close();
+
+        return true;
     }
 
     void _BBS_3MF_Importer::_destroy_xml_parser()
@@ -1411,6 +1649,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(0, m_object_importers.size()),
                 [this, &mutex, &object_load_result](const tbb::blocked_range<size_t>& importer_range) {
+                    CNumericLocalesSetter locales_setter;
                     for (size_t object_index = importer_range.begin(); object_index < importer_range.end(); ++ object_index) {
                         bool result = m_object_importers[object_index]->extract_object_model();
                         {
@@ -1469,6 +1708,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         m_model->model_info = std::make_shared<ModelInfo>();
         m_model->model_info->load(model_info);
+        if (!m_thumbnail_small.empty()) m_model->model_info->metadata_items.emplace("Thumbnail_Small", m_thumbnail_small);
+        if (!m_thumbnail_middle.empty()) m_model->model_info->metadata_items.emplace("Thumbnail_Middle", m_thumbnail_middle);
 
         //got project id
         if (project) {
@@ -1479,7 +1720,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         //BBS: version check
         bool dont_load_config = !m_load_config;
         if (m_bambuslicer_generator_version) {
-            Semver app_version = *(Semver::parse(SLIC3R_VERSION));
+            Semver app_version = *(Semver::parse(GalaxySlicer_VERSION));
             Semver file_version = *m_bambuslicer_generator_version;
             if (file_version.maj() != app_version.maj())
                 dont_load_config = true;
@@ -1503,17 +1744,22 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 std::string name(stat.m_filename);
                 std::replace(name.begin(), name.end(), '\\', '/');
 
-                BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << boost::format("extract %1%th file %2%, total=%3%\n")%(i+1)%name%num_entries;
+                BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << boost::format("extract %1%th file %2%, total=%3%")%(i+1)%name%num_entries;
+
+                if (name.find("/../") != std::string::npos) {
+                    BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(", find file path including /../, not valid, skip it\n");
+                    continue;
+                }
 
                 if (boost::algorithm::iequals(name, BBS_LAYER_HEIGHTS_PROFILE_FILE)) {
                     // extract slic3r layer heights profile file
                     _extract_layer_heights_profile_config_from_archive(archive, stat);
                 }
                 else
-                /*if (boost::algorithm::iequals(name, LAYER_CONFIG_RANGES_FILE)) {
+                if (boost::algorithm::iequals(name, LAYER_CONFIG_RANGES_FILE)) {
                     // extract slic3r layer config ranges file
                     _extract_layer_config_ranges_from_archive(archive, stat, config_substitutions);
-                }*/
+                }
                 //BBS: disable SLA related files currently
                 /*else if (boost::algorithm::iequals(name, SLA_SUPPORT_POINTS_FILE)) {
                     // extract sla support points file
@@ -1564,6 +1810,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                         return false;
                     }
                 }
+                else if (_is_svg_shape_file(name)) {
+                    _extract_embossed_svg_shape_file(name, archive, stat);
+                }
                 else if (!dont_load_config && boost::algorithm::iequals(name, SLICE_INFO_CONFIG_FILE)) {
                     m_parsing_slice_info = true;
                     //extract slice info from archive
@@ -1586,6 +1835,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 else if (!dont_load_config && boost::algorithm::istarts_with(name, METADATA_DIR) && boost::algorithm::iends_with(name, CALIBRATION_INFO_EXTENSION)) {
                     //BBS parsing pattern config files
                     _extract_file_from_archive(archive, stat);
+                }
+                else {
+                    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << boost::format(", %1% skipped, already parsed or a directory or not supported\n")%name;
                 }
             }
         }
@@ -1687,12 +1939,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 model_object->layer_height_profile.set(std::move(obj_layer_heights_profile->second));
 
             // m_layer_config_ranges are indexed by a 1 based model object index.
-            /*IdToLayerConfigRangesMap::iterator obj_layer_config_ranges = m_layer_config_ranges.find(object.second + 1);
+            IdToLayerConfigRangesMap::iterator obj_layer_config_ranges = m_layer_config_ranges.find(object.second + 1);
             if (obj_layer_config_ranges != m_layer_config_ranges.end())
                 model_object->layer_config_ranges = std::move(obj_layer_config_ranges->second);
 
             // m_sla_support_points are indexed by a 1 based model object index.
-            IdToSlaSupportPointsMap::iterator obj_sla_support_points = m_sla_support_points.find(object.second + 1);
+            /*IdToSlaSupportPointsMap::iterator obj_sla_support_points = m_sla_support_points.find(object.second + 1);
             if (obj_sla_support_points != m_sla_support_points.end() && !obj_sla_support_points->second.empty()) {
                 model_object->sla_support_points = std::move(obj_sla_support_points->second);
                 model_object->sla_points_status = sla::PointsStatus::UserModified;
@@ -1765,10 +2017,13 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             IdToCutObjectInfoMap::iterator cut_object_info = m_cut_object_infos.find(object.second + 1);
             if (cut_object_info != m_cut_object_infos.end()) {
                 model_object->cut_id = cut_object_info->second.id;
-
+                int vol_cnt = int(model_object->volumes.size());
                 for (auto connector : cut_object_info->second.connectors) {
-                    assert(0 <= connector.volume_id && connector.volume_id <= int(model_object->volumes.size()));
-                    model_object->volumes[connector.volume_id]->cut_info =
+                    if (connector.volume_id < 0 || connector.volume_id >= vol_cnt) {
+                        add_error("Invalid connector is found");
+                        continue;
+                    }
+                    model_object->volumes[connector.volume_id]->cut_info = 
                         ModelVolume::CutInfo(CutConnectorType(connector.type), connector.r_tolerance, connector.h_tolerance, true);
                 }
             }
@@ -1877,7 +2132,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             plate_data_list[it->first-1]->gcode_weight = it->second->gcode_weight;
             plate_data_list[it->first-1]->toolpath_outside = it->second->toolpath_outside;
             plate_data_list[it->first-1]->is_support_used = it->second->is_support_used;
+            plate_data_list[it->first-1]->is_label_object_enabled = it->second->is_label_object_enabled;
             plate_data_list[it->first-1]->slice_filaments_info = it->second->slice_filaments_info;
+            plate_data_list[it->first-1]->skipped_objects = it->second->skipped_objects;
             plate_data_list[it->first-1]->warnings = it->second->warnings;
             plate_data_list[it->first-1]->thumbnail_file = (m_load_restore || it->second->thumbnail_file.empty()) ? it->second->thumbnail_file : m_backup_path + "/" + it->second->thumbnail_file;
             //plate_data_list[it->first-1]->pattern_file = (m_load_restore || it->second->pattern_file.empty()) ? it->second->pattern_file : m_backup_path + "/" + it->second->pattern_file;
@@ -1955,6 +2212,10 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         return true;
     }
 
+    bool _BBS_3MF_Importer::_is_svg_shape_file(const std::string &name) const { 
+        return boost::starts_with(name, MODEL_FOLDER) && boost::ends_with(name, ".svg");
+    }
+
     bool _BBS_3MF_Importer::_extract_from_archive(mz_zip_archive& archive, std::string const & path, std::function<bool (mz_zip_archive& archive, const mz_zip_archive_file_stat& stat)> extract, bool restore)
     {
         mz_uint num_entries = mz_zip_reader_get_num_files(&archive);
@@ -1997,7 +2258,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 }
             }
             char error_buf[1024];
-            ::sprintf(error_buf, "File %s not found from archive", path.c_str());
+            ::snprintf(error_buf, 1024, "File %s not found from archive", path.c_str());
             add_error(error_buf);
             return false;
         }
@@ -2056,7 +2317,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         if (!XML_ParseBuffer(m_xml_parser, (int)stat.m_uncomp_size, 1)) {
             char error_buf[1024];
-            ::sprintf(error_buf, "Error (%s) while parsing xml file at line %d", XML_ErrorString(XML_GetErrorCode(m_xml_parser)), (int)XML_GetCurrentLineNumber(m_xml_parser));
+            ::snprintf(error_buf, 1024, "Error (%s) while parsing xml file at line %d", XML_ErrorString(XML_GetErrorCode(m_xml_parser)), (int)XML_GetCurrentLineNumber(m_xml_parser));
             add_error(error_buf);
             return false;
         }
@@ -2102,7 +2363,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 CallbackData* data = (CallbackData*)pOpaque;
                 if (!XML_Parse(data->parser, (const char*)pBuf, (int)n, (file_ofs + n == data->stat.m_uncomp_size) ? 1 : 0) || data->importer.parse_error()) {
                     char error_buf[1024];
-                    ::sprintf(error_buf, "Error (%s) while parsing '%s' at line %d", data->importer.parse_error_message(), data->stat.m_filename, (int)XML_GetCurrentLineNumber(data->parser));
+                    ::snprintf(error_buf, 1024, "Error (%s) while parsing '%s' at line %d", data->importer.parse_error_message(), data->stat.m_filename, (int)XML_GetCurrentLineNumber(data->parser));
                     throw Slic3r::FileIOError(error_buf);
                 }
                 return n;
@@ -2132,7 +2393,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     void _BBS_3MF_Importer::_extract_cut_information_from_archive(mz_zip_archive &archive, const mz_zip_archive_file_stat &stat, ConfigSubstitutionContext &config_substitutions)
     {
         if (stat.m_uncomp_size > 0) {
-            std::string buffer((size_t) stat.m_uncomp_size, 0);
+            std::string buffer((size_t)stat.m_uncomp_size, 0);
             mz_bool res = mz_zip_reader_extract_file_to_mem(&archive, stat.m_filename, (void *) buffer.data(), (size_t) stat.m_uncomp_size, 0);
             if (res == 0) {
                 add_error("Error while reading cut information data to buffer");
@@ -2140,12 +2401,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             }
 
             std::istringstream iss(buffer); // wrap returned xml to istringstream
-            pt::ptree          objects_tree;
+            pt::ptree objects_tree;
             pt::read_xml(iss, objects_tree);
 
-            for (const auto &object : objects_tree.get_child("objects")) {
+            for (const auto& object : objects_tree.get_child("objects")) {
                 pt::ptree object_tree = object.second;
-                int       obj_idx     = object_tree.get<int>("<xmlattr>.id", -1);
+                int obj_idx = object_tree.get<int>("<xmlattr>.id", -1);
                 if (obj_idx <= 0) {
                     add_error("Found invalid object id");
                     continue;
@@ -2157,29 +2418,33 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                     continue;
                 }
 
-                CutObjectBase                         cut_id;
-                std::vector<CutObjectInfo::Connector> connectors;
+                CutObjectBase cut_id;
+                std::vector<CutObjectInfo::Connector>  connectors;
 
-                for (const auto &obj_cut_info : object_tree) {
+                for (const auto& obj_cut_info : object_tree) {
                     if (obj_cut_info.first == "cut_id") {
                         pt::ptree cut_id_tree = obj_cut_info.second;
-                        cut_id                = CutObjectBase(ObjectID(cut_id_tree.get<size_t>("<xmlattr>.id")), cut_id_tree.get<size_t>("<xmlattr>.check_sum"),
-                                               cut_id_tree.get<size_t>("<xmlattr>.connectors_cnt"));
+                        cut_id = CutObjectBase(ObjectID( cut_id_tree.get<size_t>("<xmlattr>.id")),
+                                                         cut_id_tree.get<size_t>("<xmlattr>.check_sum"),
+                                                         cut_id_tree.get<size_t>("<xmlattr>.connectors_cnt"));
                     }
                     if (obj_cut_info.first == "connectors") {
                         pt::ptree cut_connectors_tree = obj_cut_info.second;
-                        for (const auto &cut_connector : cut_connectors_tree) {
-                            if (cut_connector.first != "connector") continue;
-                            pt::ptree                connector_tree = cut_connector.second;
-                            CutObjectInfo::Connector connector      = {connector_tree.get<int>("<xmlattr>.volume_id"), connector_tree.get<int>("<xmlattr>.type"),
-                                                                  connector_tree.get<float>("<xmlattr>.r_tolerance"), connector_tree.get<float>("<xmlattr>.h_tolerance")};
+                        for (const auto& cut_connector : cut_connectors_tree) {
+                            if (cut_connector.first != "connector")
+                                continue;
+                            pt::ptree connector_tree = cut_connector.second;
+                            CutObjectInfo::Connector connector = {connector_tree.get<int>("<xmlattr>.volume_id"),
+                                                                  connector_tree.get<int>("<xmlattr>.type"),
+                                                                  connector_tree.get<float>("<xmlattr>.r_tolerance"),
+                                                                  connector_tree.get<float>("<xmlattr>.h_tolerance")};
                             connectors.emplace_back(connector);
                         }
                     }
                 }
 
-                CutObjectInfo cut_info{cut_id, connectors};
-                m_cut_object_infos.insert({obj_idx, cut_info});
+                CutObjectInfo cut_info {cut_id, connectors};
+                m_cut_object_infos.insert({ obj_idx, cut_info });
             }
         }
     }
@@ -2322,6 +2587,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
     void _BBS_3MF_Importer::_extract_auxiliary_file_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat, Model& model)
     {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(", stat.m_uncomp_size is %1%")%stat.m_uncomp_size;
         if (stat.m_uncomp_size > 0) {
             std::string dest_file;
             if (stat.m_is_utf8) {
@@ -2339,6 +2605,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 dest_file = dest_file.substr(found + AUXILIARY_STR_LEN);
             else
                 return;
+
             if (dest_file.find('/') != std::string::npos) {
                 boost::filesystem::path src_path = boost::filesystem::path(dest_file);
                 boost::filesystem::path parent_path = src_path.parent_path();
@@ -2437,7 +2704,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             }
         }
     }
-    /*
+    
     void _BBS_3MF_Importer::_extract_layer_config_ranges_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat, ConfigSubstitutionContext& config_substitutions)
     {
         if (stat.m_uncomp_size > 0) {
@@ -2495,7 +2762,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             }
         }
     }
-
+    /*
     void _BBS_3MF_Importer::_extract_sla_support_points_from_archive(mz_zip_archive& archive, const mz_zip_archive_file_stat& stat)
     {
         if (stat.m_uncomp_size > 0) {
@@ -2662,6 +2929,32 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             }
         }
     }*/
+
+    void _BBS_3MF_Importer::_extract_embossed_svg_shape_file(const std::string &filename, mz_zip_archive &archive, const mz_zip_archive_file_stat &stat){
+        assert(m_path_to_emboss_shape_files.find(filename) == m_path_to_emboss_shape_files.end());
+        auto file = std::make_unique<std::string>(stat.m_uncomp_size, '\0');
+        mz_bool res  = mz_zip_reader_extract_to_mem(&archive, stat.m_file_index, (void *) file->data(), stat.m_uncomp_size, 0);
+        if (res == 0) {
+            add_error("Error while reading svg shape for emboss");
+            return;
+        }
+        
+        // store for case svg is loaded before volume
+        m_path_to_emboss_shape_files[filename] = std::move(file);
+        
+        // find embossed volume, for case svg is loaded after volume
+        for (const ModelObject* object : m_model->objects)
+        for (ModelVolume *volume : object->volumes) {
+            std::optional<EmbossShape> &es = volume->emboss_shape;
+            if (!es.has_value())
+                continue;
+            std::optional<EmbossShape::SvgFile> &svg = es->svg_file;
+            if (!svg.has_value())
+                continue;
+            if (filename.compare(svg->path_in_3mf) == 0)
+                svg->file_data = m_path_to_emboss_shape_files[filename];
+        }
+    }
 
     void _BBS_3MF_Importer::_extract_custom_gcode_per_print_z_from_archive(::mz_zip_archive &archive, const mz_zip_archive_file_stat &stat)
     {
@@ -2859,6 +3152,10 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             res = _handle_start_config_volume_mesh(attributes, num_attributes);
         else if (::strcmp(METADATA_TAG, name) == 0)
             res = _handle_start_config_metadata(attributes, num_attributes);
+        else if (::strcmp(SHAPE_TAG, name) == 0)
+            res = _handle_start_shape_configuration(attributes, num_attributes);
+        else if (::strcmp(TEXT_TAG, name) == 0)
+            res = _handle_start_text_configuration(attributes, num_attributes);
         else if (::strcmp(PLATE_TAG, name) == 0)
             res = _handle_start_config_plater(attributes, num_attributes);
         else if (::strcmp(INSTANCE_TAG, name) == 0)
@@ -2996,6 +3293,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             m_curr_object->name = bbs_get_attribute_value_string(attributes, num_attributes, NAME_ATTR);
 
             m_curr_object->uuid = bbs_get_attribute_value_string(attributes, num_attributes, PUUID_ATTR);
+            if (m_curr_object->uuid.empty()) {
+                m_curr_object->uuid = bbs_get_attribute_value_string(attributes, num_attributes, PUUID_LOWER_ATTR);
+            }
             m_curr_object->pid = bbs_get_attribute_value_int(attributes, num_attributes, PID_ATTR);
         }
 
@@ -3004,12 +3304,18 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
     bool _BBS_3MF_Importer::_handle_end_object()
     {
+        if (!m_load_model) {
+            delete m_curr_object;
+            m_curr_object = nullptr;
+            return true;
+        }
         if (!m_curr_object || (m_curr_object->id == -1)) {
             add_error("Found invalid object");
             return false;
         }
         else {
             if (m_is_bbl_3mf && boost::ends_with(m_curr_object->uuid, OBJECT_UUID_SUFFIX) && m_load_restore) {
+                // Adjust backup object/volume id
                 std::istringstream iss(m_curr_object->uuid);
                 int backup_id;
                 bool need_replace = false;
@@ -3017,25 +3323,22 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                     need_replace = (m_curr_object->id != backup_id);
                     m_curr_object->id = backup_id;
                 }
-                //if (need_replace)
+                if (!m_curr_object->components.empty())
                 {
+                    Id first_id = m_curr_object->components.front().object_id;
+                    first_id.second = 0;
+                    IdToCurrentObjectMap::iterator current_object = m_current_objects.lower_bound(first_id);
+                    IdToCurrentObjectMap new_map;
                     for (int index = 0; index < m_curr_object->components.size(); index++)
                     {
-                        int temp_id = (index + 1) << 16 | backup_id;
                         Component& component = m_curr_object->components[index];
-                        std::string new_path = component.object_id.first;
-                        Id new_id = std::make_pair(new_path, temp_id);
-                        IdToCurrentObjectMap::iterator current_object = m_current_objects.find(component.object_id);
-                        if (current_object != m_current_objects.end()) {
-                            CurrentObject new_object;
-                            new_object.geometry = std::move(current_object->second.geometry);
-                            new_object.id = temp_id;
-                            new_object.model_object_idx = current_object->second.model_object_idx;
-                            new_object.name = current_object->second.name;
-                            new_object.uuid = current_object->second.uuid;
-
-                            m_current_objects.erase(current_object);
-                            m_current_objects.insert({ new_id, std::move(new_object) });
+                        Id new_id = component.object_id;
+                        new_id.second = (index + 1) << 16 | backup_id;
+                        if (current_object != m_current_objects.end()
+                                && (new_id.first.empty() || new_id.first == current_object->first.first)) {
+                            current_object->second.id   = new_id.second;
+                            new_map.insert({new_id, std::move(current_object->second)});
+                            current_object = m_current_objects.erase(current_object);
                         }
                         else {
                             add_error("can not find object for component, id=" + std::to_string(component.object_id.second));
@@ -3043,11 +3346,13 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                             m_curr_object = nullptr;
                             return false;
                         }
-
-                        component.object_id.second = temp_id;
+                        component.object_id.second = new_id.second;
                     }
+                    for (auto & obj : new_map)
+                        m_current_objects.insert({obj.first, std::move(obj.second)});
                 }
             }
+
             Id id = std::make_pair(m_sub_model_path, m_curr_object->id);
             if (m_current_objects.find(id) == m_current_objects.end()) {
                 m_current_objects.insert({ id, std::move(*m_curr_object) });
@@ -3239,7 +3544,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
     bool _BBS_3MF_Importer::_handle_start_component(const char** attributes, unsigned int num_attributes)
     {
-        std::string path      = bbs_get_attribute_value_string(attributes, num_attributes, PPATH_ATTR);
+        std::string path      = xml_unescape(bbs_get_attribute_value_string(attributes, num_attributes, PPATH_ATTR));
         int         object_id = bbs_get_attribute_value_int(attributes, num_attributes, OBJECTID_ATTR);
         Transform3d transform = bbs_get_transform_from_3mf_specs_string(bbs_get_attribute_value_string(attributes, num_attributes, TRANSFORM_ATTR));
 
@@ -3293,7 +3598,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         Transform3d transform = bbs_get_transform_from_3mf_specs_string(bbs_get_attribute_value_string(attributes, num_attributes, TRANSFORM_ATTR));
         int printable = bbs_get_attribute_value_bool(attributes, num_attributes, PRINTABLE_ATTR);
 
-        return _create_object_instance(path, object_id, transform, printable, 1);
+        return !m_load_model || _create_object_instance(path, object_id, transform, printable, 1);
     }
 
     bool _BBS_3MF_Importer::_handle_end_item()
@@ -3333,7 +3638,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             }*/
         } else if (m_curr_metadata_name == BBL_APPLICATION_TAG) {
             // Generator application of the 3MF.
-            // SLIC3R_APP_KEY - SLIC3R_VERSION
+            // SLIC3R_APP_KEY - GalaxySlicer_VERSION
             if (boost::starts_with(m_curr_characters, "BambuStudio-")) {
                 m_is_bbl_3mf = true;
                 m_bambuslicer_generator_version = Semver::parse(m_curr_characters.substr(12));
@@ -3379,7 +3684,10 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             BOOST_LOG_TRIVIAL(trace) << "design_info, load_3mf found license = " << m_curr_characters;
             model_info.license = xml_unescape(m_curr_characters);
         } else if (m_curr_metadata_name == BBL_COPYRIGHT_TAG) {
-            BOOST_LOG_TRIVIAL(trace) << "design_info, load_3mf found copyright = " << m_curr_characters;
+            BOOST_LOG_TRIVIAL(trace) << "design_info, load_3mf found CopyRight = " << m_curr_characters;
+            model_info.copyright = xml_unescape(m_curr_characters);
+        } else if (m_curr_metadata_name == BBL_COPYRIGHT_NORMATIVE_TAG) {
+            BOOST_LOG_TRIVIAL(trace) << "design_info, load_3mf found Copyright = " << m_curr_characters;
             model_info.copyright = xml_unescape(m_curr_characters);
         } else if (m_curr_metadata_name == BBL_REGION_TAG) {
             BOOST_LOG_TRIVIAL(trace) << "design_info, load_3mf found region = " << m_curr_characters;
@@ -3411,6 +3719,104 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             model_info.metadata_items[m_curr_metadata_name] = xml_unescape(m_curr_characters);
         }
 
+        return true;
+    }
+
+    struct TextConfigurationSerialization
+    {
+    public:
+        TextConfigurationSerialization() = delete;
+                
+        using TypeToName = boost::bimap<EmbossStyle::Type, std::string_view>;
+        static const TypeToName type_to_name;
+
+        using HorizontalAlignToName = boost::bimap<FontProp::HorizontalAlign, std::string_view>;
+        static const HorizontalAlignToName horizontal_align_to_name;
+
+        using VerticalAlignToName = boost::bimap<FontProp::VerticalAlign, std::string_view>;
+        static const VerticalAlignToName vertical_align_to_name;
+        
+        static EmbossStyle::Type get_type(std::string_view type) {
+            const auto& to_type = TextConfigurationSerialization::type_to_name.right;
+            auto type_item = to_type.find(type);
+            assert(type_item != to_type.end());
+            if (type_item == to_type.end()) return EmbossStyle::Type::undefined;
+            return type_item->second;        
+        }
+
+        static std::string_view get_name(EmbossStyle::Type type) {
+            const auto& to_name = TextConfigurationSerialization::type_to_name.left;
+            auto type_name = to_name.find(type);
+            assert(type_name != to_name.end());
+            if (type_name == to_name.end()) return "unknown type";
+            return type_name->second;
+        }
+
+        static void to_xml(std::stringstream &stream, const TextConfiguration &tc);
+        static std::optional<TextConfiguration> read(const char **attributes, unsigned int num_attributes);
+        static EmbossShape read_old(const char **attributes, unsigned int num_attributes);
+    };
+
+    bool _BBS_3MF_Importer::_handle_start_text_configuration(const char **attributes, unsigned int num_attributes)
+    {
+        IdToMetadataMap::iterator object = m_objects_metadata.find(m_curr_config.object_id);
+        if (object == m_objects_metadata.end()) {
+            add_error("Can not assign volume mesh to a valid object");
+            return false;
+        }
+        if (object->second.volumes.empty()) {
+            add_error("Can not assign mesh to a valid volume");
+            return false;
+        }
+        ObjectMetadata::VolumeMetadata& volume = object->second.volumes.back();
+        volume.text_configuration = TextConfigurationSerialization::read(attributes, num_attributes);
+        if (!volume.text_configuration.has_value())
+            return false;
+
+        // Is 3mf version with shapes?
+        if (volume.shape_configuration.has_value())
+            return true;
+
+        // Back compatibility for 3mf version without shapes
+        volume.shape_configuration = TextConfigurationSerialization::read_old(attributes, num_attributes);
+        return true;
+    }
+
+    // Definition of read/write method for EmbossShape
+    static void to_xml(std::stringstream &stream, const EmbossShape &es, const ModelVolume &volume, mz_zip_archive &archive);
+    static std::optional<EmbossShape> read_emboss_shape(const char **attributes, unsigned int num_attributes);
+
+    bool _BBS_3MF_Importer::_handle_start_shape_configuration(const char **attributes, unsigned int num_attributes)
+    {
+        IdToMetadataMap::iterator object = m_objects_metadata.find(m_curr_config.object_id);
+        if (object == m_objects_metadata.end()) {
+            add_error("Can not assign volume mesh to a valid object");
+            return false;
+        }
+        auto &volumes = object->second.volumes;
+        if (volumes.empty()) {
+            add_error("Can not assign mesh to a valid volume");
+            return false;
+        }
+        ObjectMetadata::VolumeMetadata &volume = volumes.back();
+        volume.shape_configuration = read_emboss_shape(attributes, num_attributes);
+        if (!volume.shape_configuration.has_value())
+            return false;
+
+        // Fill svg file content into shape_configuration
+        std::optional<EmbossShape::SvgFile> &svg = volume.shape_configuration->svg_file;
+        if (!svg.has_value())
+            return true; // do not contain svg file
+
+        const std::string &path = svg->path_in_3mf;
+        if (path.empty()) 
+            return true; // do not contain svg file
+
+        auto it = m_path_to_emboss_shape_files.find(path);
+        if (it == m_path_to_emboss_shape_files.end())
+            return true; // svg file is not loaded yet
+
+        svg->file_data = it->second;
         return true;
     }
 
@@ -3541,6 +3947,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
     bool _BBS_3MF_Importer::_handle_start_config_object(const char** attributes, unsigned int num_attributes)
     {
+        if (m_parsing_slice_info)
+            return true;
         int object_id = bbs_get_attribute_value_int(attributes, num_attributes, ID_ATTR);
         IdToMetadataMap::iterator object_item = m_objects_metadata.find(object_id);
         if (object_item != m_objects_metadata.end()) {
@@ -3652,9 +4060,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             {
                 m_curr_plater->plate_index = atoi(value.c_str());
             }
-            else if(key == PLATER_NAME_ATTR)
-            {
-                m_curr_plater->plate_name = value;
+            else if (key == PLATER_NAME_ATTR) {
+                m_curr_plater->plate_name = xml_unescape(value.c_str());
             }
             else if (key == LOCK_ATTR)
             {
@@ -3671,6 +4078,23 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 PrintSequence print_sequence = PrintSequence::ByLayer;
                 ConfigOptionEnum<PrintSequence>::from_string(value, print_sequence);
                 m_curr_plater->config.set_key_value("print_sequence", new ConfigOptionEnum<PrintSequence>(print_sequence));
+            }
+            else if (key == FIRST_LAYER_PRINT_SEQUENCE_ATTR) {
+                auto get_vector_from_string = [](const std::string &str) -> std::vector<int> {
+                    std::stringstream stream(str);
+                    int value;
+                    std::vector<int>  results;
+                    while (stream >> value) {
+                        results.push_back(value);
+                    }
+                    return results;
+                };
+                m_curr_plater->config.set_key_value("first_layer_print_sequence", new ConfigOptionInts(get_vector_from_string(value)));
+            }
+            else if (key == SPIRAL_VASE_MODE) {
+                bool spiral_mode = false;
+                std::istringstream(value) >> std::boolalpha >> spiral_mode;
+                m_curr_plater->config.set_key_value("spiral_mode", new ConfigOptionBool(spiral_mode));
             }
             else if (key == GCODE_FILE_ATTR)
             {
@@ -3751,6 +4175,11 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 if (m_curr_plater)
                     std::istringstream(value) >> std::boolalpha >> m_curr_plater->is_support_used;
             }
+            else if (key == LABEL_OBJECT_ENABLED_ATTR)
+            {
+                if (m_curr_plater)
+                    std::istringstream(value) >> std::boolalpha >> m_curr_plater->is_label_object_enabled;
+            }
         }
 
         return true;
@@ -3825,7 +4254,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     {
         if (!m_curr_plater)
         {
-            add_error("don't find plater created before");
+            add_error("_handle_end_config_plater: don't find plate created before");
             return false;
         }
         m_plater_data.emplace(m_curr_plater->plate_index, m_curr_plater);
@@ -3837,7 +4266,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     {
         if (!m_curr_plater)
         {
-            add_error("don't find plater created before");
+            add_error("_handle_start_config_plater_instance: don't find plate created before");
             return false;
         }
 
@@ -3849,7 +4278,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     {
         if (!m_curr_plater)
         {
-            add_error("don't find plater created before");
+            add_error("_handle_end_config_plater_instance: don't find plate created before");
             return false;
         }
         if ((m_curr_instance.object_id == -1) || (m_curr_instance.instance_id == -1))
@@ -3880,6 +4309,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
     bool _BBS_3MF_Importer::_handle_start_assemble_item(const char** attributes, unsigned int num_attributes)
     {
+        if (!m_load_model) return true;
+
         int object_id = bbs_get_attribute_value_int(attributes, num_attributes, OBJECT_ID_ATTR);
         int instance_id = bbs_get_attribute_value_int(attributes, num_attributes, INSTANCEID_ATTR);
 
@@ -3926,8 +4357,15 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         ObjectMetadata::VolumeMetadata &volume = object->second.volumes[m_curr_config.volume_id];
 
+        if (volume.text_configuration.has_value()) {
+            add_error("Both text_info and text_configuration found, ignore legacy text_info");
+            return true;
+        }
+
+        // TODO: Galaxy: support legacy text info
+        /*
         TextInfo text_info;
-        text_info.m_text         = bbs_get_attribute_value_string(attributes, num_attributes, TEXT_ATTR);
+        text_info.m_text      = xml_unescape(bbs_get_attribute_value_string(attributes, num_attributes, TEXT_ATTR));
         text_info.m_font_name = bbs_get_attribute_value_string(attributes, num_attributes, FONT_NAME_ATTR);
 
         text_info.m_curr_font_idx = bbs_get_attribute_value_int(attributes, num_attributes, FONT_INDEX_ATTR);
@@ -3953,7 +4391,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         if (!hit_normal.empty())
             text_info.m_rr.normal = get_vec3_from_string(hit_normal);
 
-        volume.text_info = text_info;
+        volume.text_info = text_info;*/
         return true;
     }
 
@@ -4011,7 +4449,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             if (m_start_part_path.empty()) m_start_part_path = path;
             else m_sub_model_paths.push_back(path);
         } else if (boost::starts_with(type, "http://schemas.openxmlformats.org/") && boost::ends_with(type, "thumbnail")) {
-            m_thumbnail_path = path;
+            if (boost::algorithm::ends_with(path, ".png"))
+                m_thumbnail_path = path;
+        } else if (boost::starts_with(type, "http://schemas.bambulab.com/") && boost::ends_with(type, "cover-thumbnail-middle")) {
+            m_thumbnail_middle = path;
+        } else if (boost::starts_with(type, "http://schemas.bambulab.com/") && boost::ends_with(type, "cover-thumbnail-small")) {
+            m_thumbnail_small = path;
         }
         return true;
     }
@@ -4067,7 +4510,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
             const ObjectMetadata::VolumeMetadata* volume_data = nullptr;
             ObjectMetadata::VolumeMetadata default_volume_data(sub_object->id);
-            for (const ObjectMetadata::VolumeMetadata& volume_iter : volumes) {
+            if (index < volumes.size() && volumes[index].subobject_id == sub_object->id)
+                volume_data = &volumes[index];
+            else for (const ObjectMetadata::VolumeMetadata& volume_iter : volumes) {
                 if (volume_iter.subobject_id == sub_object->id) {
                     volume_data = &volume_iter;
                     break;
@@ -4076,7 +4521,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
             Transform3d volume_matrix_to_object = Transform3d::Identity();
             bool        has_transform 		    = false;
-            int         shared_mesh_id = -1;
+            int         shared_mesh_id          = object_id.second;
             if (volume_data)
             {
                 int found_count = 0;
@@ -4105,11 +4550,20 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
             ModelVolume* volume = nullptr;
             ModelVolume *shared_volume = nullptr;
+            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": line %1%, subobject_id %2%, shared_mesh_id %3%")%__LINE__ %sub_object->id %shared_mesh_id;
             if (shared_mesh_id != -1) {
                 std::map<int, ModelVolume*>::iterator iter = m_shared_meshes.find(shared_mesh_id);
                 if (iter != m_shared_meshes.end()) {
                     shared_volume = iter->second;
                     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": line %1%, found shared mesh, id %2%, mesh %3%")%__LINE__%shared_mesh_id%shared_volume;
+                }
+            }
+            else {
+                //for some cases, object point to this shared mesh already loaded, treat that one as the root
+                std::map<int, ModelVolume*>::iterator iter = m_shared_meshes.find(sub_object->id);
+                if (iter != m_shared_meshes.end()) {
+                    shared_volume = iter->second;
+                    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": line %1%, already loaded copy-share mesh before, id %2%, mesh %3%")%__LINE__%sub_object->id%shared_volume;
                 }
             }
 
@@ -4210,12 +4664,15 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 volume->supported_facets.shrink_to_fit();
                 volume->seam_facets.shrink_to_fit();
                 volume->mmu_segmentation_facets.shrink_to_fit();
+                volume->mmu_segmentation_facets.touch();
             }
 
             volume->set_type(volume_data->part_type);
-
-            if (!volume_data->text_info.m_text.empty())
-                volume->set_text_info(volume_data->text_info);
+            
+            if (auto &es = volume_data->shape_configuration; es.has_value())
+                volume->emboss_shape = std::move(es);            
+            if (auto &tc = volume_data->text_configuration; tc.has_value())
+                volume->text_configuration = std::move(tc);
 
             // apply the remaining volume's metadata
             for (const Metadata& metadata : volume_data->metadata) {
@@ -4259,7 +4716,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         return true;
     }
-
+    /*
     bool _BBS_3MF_Importer::_generate_volumes(ModelObject& object, const Geometry& geometry, const ObjectMetadata::VolumeMetadataList& volumes, ConfigSubstitutionContext& config_substitutions)
     {
         if (!object.volumes.empty()) {
@@ -4407,7 +4864,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         return true;
     }
-
+    */
     void XMLCALL _BBS_3MF_Importer::_handle_start_model_xml_element(void* userData, const char* name, const char** attributes)
     {
         _BBS_3MF_Importer* importer = (_BBS_3MF_Importer*)userData;
@@ -4489,6 +4946,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             current_object->name = bbs_get_attribute_value_string(attributes, num_attributes, NAME_ATTR);
 
             current_object->uuid = bbs_get_attribute_value_string(attributes, num_attributes, PUUID_ATTR);
+            if (current_object->uuid.empty()) {
+                current_object->uuid = bbs_get_attribute_value_string(attributes, num_attributes, PUUID_LOWER_ATTR);
+            }
             current_object->pid = bbs_get_attribute_value_int(attributes, num_attributes, PID_ATTR);
         }
 
@@ -4876,7 +5336,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 CallbackData* data = (CallbackData*)pOpaque;
                 if (!XML_Parse(data->parser, (const char*)pBuf, (int)n, (file_ofs + n == data->stat.m_uncomp_size) ? 1 : 0) || data->importer.object_parse_error()) {
                     char error_buf[1024];
-                    ::sprintf(error_buf, "Error (%s) while parsing '%s' at line %d", data->importer.object_parse_error_message(), data->stat.m_filename, (int)XML_GetCurrentLineNumber(data->parser));
+                    ::snprintf(error_buf, 1024, "Error (%s) while parsing '%s' at line %d", data->importer.object_parse_error_message(), data->stat.m_filename, (int)XML_GetCurrentLineNumber(data->parser));
                     throw Slic3r::FileIOError(error_buf);
                 }
                 return n;
@@ -4946,11 +5406,14 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         {
             ModelObject const * object;
             int backup_id;
+            int object_id = 0;
+            std::string sub_path;
+            bool share_mesh = false;
             VolumeToObjectIDMap volumes_objectID;
         };
 
         typedef std::vector<BuildItem> BuildItemsList;
-        typedef std::map<int, ObjectData> IdToObjectDataMap;
+        typedef std::map<ModelObject const *, ObjectData> ObjectToObjectDataMap;
 
         bool m_fullpath_sources{ true };
         bool m_zip64 { true };
@@ -4962,7 +5425,11 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         bool m_skip_model { false };        // skip model when exporting .gcode.3mf
         bool m_skip_auxiliary { false };    // skip normal axuiliary files
         bool m_use_loaded_id { false };        // whether to use loaded id for identify_id
-
+        bool m_share_mesh { false };        // whether to share mesh between objects
+        std::string m_thumbnail_middle = PRINTER_THUMBNAIL_MIDDLE_FILE;
+        std::string m_thumbnail_small  = PRINTER_THUMBNAIL_SMALL_FILE;
+        std::map<void const *, std::pair<ObjectData*, ModelVolume const *>> m_shared_meshes;
+        std::map<ModelVolume const *, std::pair<std::string, int>> m_volume_paths;
     public:
         //BBS: add plate data related logic
 
@@ -4972,6 +5439,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         bool save_model_to_file(StoreParams& store_params);
         // add backup logic
         bool save_object_mesh(const std::string& temp_path, ModelObject const & object, int obj_id);
+        static void add_transformation(std::stringstream &stream, const Transform3d &tr);
 
     private:
         //BBS: add plate data related logic
@@ -4992,7 +5460,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         bool _add_content_types_file_to_archive(mz_zip_archive& archive);
 
-        bool _add_thumbnail_file_to_archive(mz_zip_archive& archive, const ThumbnailData& thumbnail_data, const char* local_path, int index);
+        bool _add_thumbnail_file_to_archive(mz_zip_archive& archive, const ThumbnailData& thumbnail_data, const char* local_path, int index, bool generate_small_thumbnail = false);
         bool _add_calibration_file_to_archive(mz_zip_archive& archive, const ThumbnailData& thumbnail_data, int index);
         bool _add_bbox_file_to_archive(mz_zip_archive& archive, const PlateBBoxData& id_bboxes, int index);
         bool _add_relationships_file_to_archive(mz_zip_archive &                archive,
@@ -5001,11 +5469,13 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                                                 std::vector<std::string> const &types   = {},
                                                 PackingTemporaryData            data    = PackingTemporaryData(),
                                                 int export_plate_idx = -1) const;
-        bool _add_model_file_to_archive(const std::string& filename, mz_zip_archive& archive, const Model& model, IdToObjectDataMap& objects_data, Export3mfProgressFn proFn = nullptr, BBLProject* project = nullptr) const;
-        bool _add_object_to_model_stream(mz_zip_writer_staged_context &context, unsigned int object_id, ModelObject const & object, unsigned int backup_id, VolumeToObjectIDMap& volumes_objectID) const;
+        bool _add_model_file_to_archive(const std::string& filename, mz_zip_archive& archive, const Model& model, ObjectToObjectDataMap& objects_data, Export3mfProgressFn proFn = nullptr, BBLProject* project = nullptr) const;
+        bool _add_object_to_model_stream(mz_zip_writer_staged_context &context, ObjectData const &object_data) const;
+        void _add_object_components_to_stream(std::stringstream &stream, ObjectData const &object_data) const;
         //BBS: change volume to seperate objects
-        bool _add_mesh_to_object_stream(std::function<bool(std::string&, bool)> const& flush, ModelObject const & object, unsigned int backup_id, VolumeToObjectIDMap& volumes_objectID, unsigned int& obj_idx) const;
+        bool _add_mesh_to_object_stream(std::function<bool(std::string &, bool)> const &flush, ObjectData const &object_data) const;
         bool _add_build_to_model_stream(std::stringstream& stream, const BuildItemsList& build_items) const;
+        bool _add_cut_information_file_to_archive(mz_zip_archive& archive, Model& model);
         bool _add_layer_height_profile_file_to_archive(mz_zip_archive& archive, Model& model);
         bool _add_layer_config_ranges_file_to_archive(mz_zip_archive& archive, Model& model);
         bool _add_sla_support_points_file_to_archive(mz_zip_archive& archive, Model& model);
@@ -5015,9 +5485,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         bool _add_project_config_file_to_archive(mz_zip_archive& archive, const DynamicPrintConfig &config, Model& model);
         //BBS: add project embedded preset files
         bool _add_project_embedded_presets_to_archive(mz_zip_archive& archive, Model& model, std::vector<Preset*> project_presets);
-        bool _add_model_config_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list, const IdToObjectDataMap &objects_data, int export_plate_idx = -1, bool save_gcode = true, bool use_loaded_id = false);
-        bool _add_cut_information_file_to_archive(mz_zip_archive &archive, Model &model);
-        bool _add_slice_info_config_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list);
+        bool _add_model_config_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list, const ObjectToObjectDataMap &objects_data, int export_plate_idx = -1, bool save_gcode = true, bool use_loaded_id = false);
+        bool _add_slice_info_config_file_to_archive(mz_zip_archive &archive, const Model &model, PlateDataPtrs &plate_data_list, const ObjectToObjectDataMap &objects_data, const DynamicPrintConfig& config);
         bool _add_gcode_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list, Export3mfProgressFn proFn = nullptr);
         bool _add_custom_gcode_per_print_z_file_to_archive(mz_zip_archive& archive, Model& model, const DynamicPrintConfig* config);
         bool _add_auxiliary_dir_to_archive(mz_zip_archive &archive, const std::string &aux_dir, PackingTemporaryData &data);
@@ -5049,9 +5518,17 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         m_save_gcode = store_params.strategy & SaveStrategy::WithGcode;
         m_skip_model  = store_params.strategy & SaveStrategy::SkipModel;
         m_skip_auxiliary = store_params.strategy & SaveStrategy::SkipAuxiliary;
+        m_share_mesh       = store_params.strategy & SaveStrategy::ShareMesh;
+        m_from_backup_save = store_params.strategy & SaveStrategy::Backup;
 
         m_use_loaded_id = store_params.strategy & SaveStrategy::UseLoadedId;
 
+        if (auto info = store_params.model->model_info) {
+            if (auto iter = info->metadata_items.find("Thumbnail_Small"); iter != info->metadata_items.end())
+                m_thumbnail_small = iter->second;
+            if (auto iter = info->metadata_items.find("Thumbnail_Middle"); iter != info->metadata_items.end())
+                m_thumbnail_middle = iter->second;
+        }
         boost::system::error_code ec;
         std::string filename = std::string(store_params.path);
         boost::filesystem::remove(filename + ".tmp", ec);
@@ -5104,13 +5581,20 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             ~close_lock() {
                 if (filename) {
                     close_zip_writer(&archive);
-                    boost::filesystem::remove(*filename);
+                    boost::system::error_code ec;
+                    boost::filesystem::remove(*filename, ec);
                 }
             }
         } lock{archive, &filepath_tmp};
 
-        IdToObjectDataMap objects_data;
-        objects_data.insert({obj_id, {&object, obj_id}});
+        ObjectToObjectDataMap objects_data;
+        auto & volumes_objectID = objects_data.insert({&object, {&object, obj_id}}).first->second.volumes_objectID;
+        unsigned int volume_count = 0;
+        for (ModelVolume *volume : object.volumes) {
+            if (volume == nullptr) continue;
+            volumes_objectID.insert({volume, (++volume_count << 16 | obj_id)});
+        }
+
         _add_model_file_to_archive(filename.str(), archive, model, objects_data);
 
         mz_zip_writer_finalize_archive(&archive);
@@ -5162,8 +5646,10 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             std::string const * filename;
             ~close_lock() {
                 close_zip_writer(&archive);
-                if (filename)
-                boost::filesystem::remove(*filename);
+                if (filename) {
+                    boost::system::error_code ec;
+                    boost::filesystem::remove(*filename, ec);
+                }
             }
         } lock{ archive, &filename};
 
@@ -5222,9 +5708,10 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             {
                 if (thumbnail_data[index]->is_valid())
                 {
-                    if (!_add_thumbnail_file_to_archive(archive, *thumbnail_data[index], "Metadata/plate", index)) {
+                    if (!_add_thumbnail_file_to_archive(archive, *thumbnail_data[index], "Metadata/plate", index, true)) {
                         return false;
                     }
+
                     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" <<__LINE__ << boost::format(",add thumbnail %1%'s data into 3mf")%(index+1);
                     thumbnail_status[index] = true;
                 }
@@ -5310,7 +5797,6 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 {
                     if (!_add_calibration_file_to_archive(archive, *calibration_data[index], index)) {
                         close_zip_writer(&archive);
-                        boost::filesystem::remove(filename);
                         return false;
                     }
                 }
@@ -5326,7 +5812,6 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 if (id_bboxes[index]->is_valid()) {
                     if (!_add_bbox_file_to_archive(archive, *id_bboxes[index], index)) {
                         close_zip_writer(&archive);
-                        boost::filesystem::remove(filename);
                         return false;
                     }
                 }
@@ -5343,7 +5828,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         // Adds model file ("3D/3dmodel.model").
         // This is the one and only file that contains all the geometry (vertices and triangles) of all ModelVolumes.
-        IdToObjectDataMap objects_data;
+        ObjectToObjectDataMap objects_data;
         //if (!m_skip_model)
         {
             if (!_add_model_file_to_archive(filename, archive, model, objects_data, proFn, project)) { return false; }
@@ -5353,7 +5838,6 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             // The index differes from the index of an object ID of an object instance of a 3MF file!
             if (!_add_layer_height_profile_file_to_archive(archive, model)) {
                 close_zip_writer(&archive);
-                boost::filesystem::remove(filename);
                 return false;
             }
 
@@ -5363,14 +5847,15 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 proFn(EXPORT_STAGE_ADD_LAYER_RANGE, 0, 1, cb_cancel);
                 if (cb_cancel)
                     return false;
-            }
+            }*/
 
             // Adds layer config ranges file ("Metadata/Slic3r_PE_layer_config_ranges.txt").
             // All layer height profiles of all ModelObjects are stored here, indexed by 1 based index of the ModelObject in Model.
             // The index differes from the index of an object ID of an object instance of a 3MF file!
             if (!_add_layer_config_ranges_file_to_archive(archive, model)) {
+                close_zip_writer(&archive);
                 return false;
-            }*/
+            }
 
             // BBS progress point
             /*BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" <<__LINE__ << boost::format("export 3mf EXPORT_STAGE_ADD_SUPPORT\n");
@@ -5502,7 +5987,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         // Adds sliced info of plate file ("Metadata/slice_info.config")
         // This file contains all sliced info of all plates
-        if (!_add_slice_info_config_file_to_archive(archive, model, plate_data_list)) {
+        if (!_add_slice_info_config_file_to_archive(archive, model, plate_data_list, objects_data, *config)) {
             BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", _add_slice_info_config_file_to_archive failed\n");
             return false;
         }
@@ -5599,7 +6084,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         return true;
     }
 
-    bool _BBS_3MF_Exporter::_add_thumbnail_file_to_archive(mz_zip_archive& archive, const ThumbnailData& thumbnail_data, const char* local_path, int index)
+    bool _BBS_3MF_Exporter::_add_thumbnail_file_to_archive(mz_zip_archive& archive, const ThumbnailData& thumbnail_data, const char* local_path, int index, bool generate_small_thumbnail)
     {
         bool res = false;
 
@@ -5614,6 +6099,52 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         if (!res) {
             add_error("Unable to add thumbnail file to archive");
             BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", Unable to add thumbnail file to archive\n");
+        }
+
+        if (generate_small_thumbnail && thumbnail_data.is_valid()) {
+            //generate small size of thumbnail
+            std::vector<unsigned char> small_pixels;
+            small_pixels.resize(PLATE_THUMBNAIL_SMALL_WIDTH * PLATE_THUMBNAIL_SMALL_HEIGHT * 4);
+            /* step width and step height */
+            int sw = thumbnail_data.width / PLATE_THUMBNAIL_SMALL_WIDTH;
+            int sh = thumbnail_data.height / PLATE_THUMBNAIL_SMALL_HEIGHT;
+            int clampped_width = sw * PLATE_THUMBNAIL_SMALL_WIDTH;
+            int clampped_height = sh * PLATE_THUMBNAIL_SMALL_HEIGHT;
+
+            for (int i = 0; i < clampped_height; i += sh) {
+                for (int j = 0; j < clampped_width; j += sw) {
+                    int r = 0, g = 0, b = 0, a = 0;
+                    for (int m = 0; m < sh; m++) {
+                        for (int n = 0; n < sw; n++) {
+                            r += (int)thumbnail_data.pixels[4 * ((i + m) * thumbnail_data.width + j + n) + 0];
+                            g += (int)thumbnail_data.pixels[4 * ((i + m) * thumbnail_data.width + j + n) + 1];
+                            b += (int)thumbnail_data.pixels[4 * ((i + m) * thumbnail_data.width + j + n) + 2];
+                            a += (int)thumbnail_data.pixels[4 * ((i + m) * thumbnail_data.width + j + n) + 3];
+                        }
+                    }
+                    r = std::clamp(0, r / sw / sh, 255);
+                    g = std::clamp(0, g / sw / sh, 255);
+                    b = std::clamp(0, b / sw / sh, 255);
+                    a = std::clamp(0, a / sw / sh, 255);
+                    small_pixels[4 * (i / sw * PLATE_THUMBNAIL_SMALL_WIDTH + j / sh) + 0] = (unsigned char)r;
+                    small_pixels[4 * (i / sw * PLATE_THUMBNAIL_SMALL_WIDTH + j / sh) + 1] = (unsigned char)g;
+                    small_pixels[4 * (i / sw * PLATE_THUMBNAIL_SMALL_WIDTH + j / sh) + 2] = (unsigned char)b;
+                    small_pixels[4 * (i / sw * PLATE_THUMBNAIL_SMALL_WIDTH + j / sh) + 3] = (unsigned char)a;
+                    //memcpy((void*)&small_pixels[4*(i / sw * PLATE_THUMBNAIL_SMALL_WIDTH + j / sh)], thumbnail_data.pixels.data() + 4*(i * thumbnail_data.width + j), 4);
+                }
+            }
+            size_t small_png_size = 0;
+            void* small_png_data = tdefl_write_image_to_png_file_in_memory_ex((const void*)small_pixels.data(), PLATE_THUMBNAIL_SMALL_WIDTH, PLATE_THUMBNAIL_SMALL_HEIGHT, 4, &small_png_size, MZ_DEFAULT_COMPRESSION, 1);
+            if (png_data != nullptr) {
+                std::string thumbnail_name = (boost::format("%1%_%2%_small.png") % local_path % (index + 1)).str();
+                res = mz_zip_writer_add_mem(&archive, thumbnail_name.c_str(), (const void*)small_png_data, small_png_size, MZ_NO_COMPRESSION);
+                mz_free(small_png_data);
+            }
+
+            if (!res) {
+                add_error("Unable to add small thumbnail file to archive");
+                BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", Unable to add small thumbnail file to archive\n");
+            }
         }
 
         return res;
@@ -5665,27 +6196,46 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         if (from.empty()) {
             stream << " <Relationship Target=\"/" << MODEL_FILE << "\" Id=\"rel-1\" Type=\"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel\"/>\n";
 
-            if (data._3mf_thumbnail.empty()) {
-                if (export_plate_idx < 0) {
-                    stream << " <Relationship Target=\"/" << THUMBNAIL_FILE
-                           << "\" Id=\"rel-2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail\"/>\n";
+            if (export_plate_idx < 0) {
+                //use cover image if have
+                if (data._3mf_thumbnail.empty()) {
+                    stream << " <Relationship Target=\"/Metadata/plate_1.png"
+                               << "\" Id=\"rel-2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail\"/>\n";
                 } else {
-                    std::string thumbnail_file_str = (boost::format("Metadata/plate_%1%.png") % (export_plate_idx + 1)).str();
-                    stream << " <Relationship Target=\"/" << thumbnail_file_str
-                        << "\" Id=\"rel-2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail\"/>\n";
+                    stream << " <Relationship Target=\"/" << xml_escape(data._3mf_thumbnail)
+                           << "\" Id=\"rel-2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail\"/>\n";
                 }
-            } else {
-                stream << " <Relationship Target=\"/" << data._3mf_thumbnail
-                       << "\" Id=\"rel-2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail\"/>\n";
-            }
 
-            if (!data._3mf_printer_thumbnail_middle.empty()) {
-                stream << " <Relationship Target=\"/" << data._3mf_printer_thumbnail_middle
-                       << "\" Id=\"rel-4\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\"/>\n";
+                if (data._3mf_printer_thumbnail_middle.empty()) {
+                    stream << " <Relationship Target=\"/Metadata/plate_1.png"
+                           << "\" Id=\"rel-4\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\"/>\n";
+                } else {
+                    stream << " <Relationship Target=\"/" << xml_escape(data._3mf_printer_thumbnail_middle)
+                           << "\" Id=\"rel-4\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\"/>\n";
+                }
+
+                if (data._3mf_printer_thumbnail_small.empty()) {
+                    stream << "<Relationship Target=\"/Metadata/plate_1_small.png"
+                           << "\" Id=\"rel-5\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\"/>\n";
+                } else {
+                    stream << " <Relationship Target=\"/" << xml_escape(data._3mf_printer_thumbnail_small)
+                           << "\" Id=\"rel-5\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\"/>\n";
+                }
             }
-            if (!data._3mf_printer_thumbnail_small.empty())
-                stream << " <Relationship Target=\"/" << data._3mf_printer_thumbnail_small
-                       << "\" Id=\"rel-5\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\"/>\n";
+            else {
+                //always use plate thumbnails
+                std::string thumbnail_file_str = (boost::format("Metadata/plate_%1%.png") % (export_plate_idx + 1)).str();
+                stream << " <Relationship Target=\"/" << xml_escape(thumbnail_file_str)
+                    << "\" Id=\"rel-2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail\"/>\n";
+
+                thumbnail_file_str = (boost::format("Metadata/plate_%1%.png") % (export_plate_idx + 1)).str();
+                stream << " <Relationship Target=\"/" << xml_escape(thumbnail_file_str)
+                   << "\" Id=\"rel-4\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\"/>\n";
+
+                thumbnail_file_str = (boost::format("Metadata/plate_%1%_small.png") % (export_plate_idx + 1)).str();
+                stream << " <Relationship Target=\"/" << xml_escape(thumbnail_file_str)
+                   << "\" Id=\"rel-5\" Type=\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\"/>\n";
+            }
         }
         else if (targets.empty()) {
             return false;
@@ -5727,7 +6277,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     *   save sub model if objects_data is not empty
     *   not collect build items in sub model
     */
-    bool _BBS_3MF_Exporter::_add_model_file_to_archive(const std::string& filename, mz_zip_archive& archive, const Model& model, IdToObjectDataMap& objects_data, Export3mfProgressFn proFn, BBLProject* project) const
+    bool _BBS_3MF_Exporter::_add_model_file_to_archive(const std::string& filename, mz_zip_archive& archive, const Model& model, ObjectToObjectDataMap& objects_data, Export3mfProgressFn proFn, BBLProject* project) const
     {
         bool sub_model = !objects_data.empty();
         bool write_object = sub_model || !m_split_model;
@@ -5815,7 +6365,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 metadata_item_map[BBL_DESIGNER_USER_ID_TAG]     = user_id;
                 metadata_item_map[BBL_DESIGNER_COVER_FILE_TAG]  = xml_escape(design_cover);
                 metadata_item_map[BBL_DESCRIPTION_TAG]          = xml_escape(description);
-                metadata_item_map[BBL_COPYRIGHT_TAG]            = xml_escape(copyright);
+                metadata_item_map[BBL_COPYRIGHT_NORMATIVE_TAG]  = xml_escape(copyright);
                 metadata_item_map[BBL_LICENSE_TAG]              = xml_escape(license);
 
                 /* save model info */
@@ -5829,8 +6379,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 date = date.substr(0, 10);
                 metadata_item_map[BBL_CREATION_DATE_TAG] = date;
                 metadata_item_map[BBL_MODIFICATION_TAG]  = date;
-                //SoftFever (OrcaSlicer): write BambuStudio tag to keep it compatible 
-                metadata_item_map[BBL_APPLICATION_TAG] = (boost::format("%1%-%2%") % "BambuStudio" % SLIC3R_VERSION).str();
+                //SoftFever: write BambuStudio tag to keep it compatible 
+                metadata_item_map[BBL_APPLICATION_TAG] = (boost::format("%1%-%2%") % "BambuStudio" % GalaxySlicer_VERSION).str();
             }
             metadata_item_map[BBS_3MF_VERSION] = std::to_string(VERSION_BBS_3MF);
 
@@ -5857,39 +6407,80 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         // all the object instances of all ModelObjects are stored and indexed in a 1 based linear fashion.
         // Therefore the list of object_ids here may not be continuous.
         unsigned int object_id = 1;
+        unsigned int object_index = 0;
 
         bool cb_cancel = false;
-        int obj_idx = 0;
-        std::vector<unsigned int> object_ids;
         std::vector<std::string> object_paths;
-        if (!m_skip_model) {
+        // if (!m_skip_model) {
             for (ModelObject* obj : model.objects) {
                 if (sub_model && obj != objects_data.begin()->second.object) continue;
 
                 if (proFn) {
-                    proFn(EXPORT_STAGE_ADD_MODELS, obj_idx, model.objects.size(), cb_cancel);
+                    proFn(EXPORT_STAGE_ADD_MODELS, object_index++, model.objects.size(), cb_cancel);
                     if (cb_cancel)
                         return false;
-                    obj_idx++;
                 }
 
                 if (obj == nullptr)
                     continue;
 
                 // Index of an object in the 3MF file corresponding to the 1st instance of a ModelObject.
-                IdToObjectDataMap::iterator object_it = objects_data.begin();
+                ObjectToObjectDataMap::iterator object_it = objects_data.begin();
+
                 if (!sub_model) {
                     // For backup, use backup id as object id
                     int backup_id = const_cast<Model&>(model).get_object_backup_id(*obj);
-                    if (m_skip_static) object_id = backup_id;
-                    object_it = objects_data.insert({ (int) object_id, {obj, backup_id} }).first;
+                    if (m_from_backup_save) object_id = backup_id;
+                    object_it = objects_data.insert({obj, {obj, backup_id} }).first;
+                    auto & object_data = object_it->second;
+
+                    if (m_split_model) {
+                        auto filename = boost::format("3D/Objects/%s_%d.model") % obj->name % backup_id;
+                        object_data.sub_path = "/" + filename.str();
+                        object_paths.push_back(filename.str());
+                    }
+
+                    auto &volumes_objectID = object_data.volumes_objectID;
+                    unsigned int volume_id = object_id, volume_count = 0;
+                    for (ModelVolume *volume : obj->volumes) {
+                        if (volume == nullptr)
+                            continue;
+                        volume_count++;
+                        if (m_share_mesh) {
+                            auto iter = m_shared_meshes.find(volume->mesh_ptr().get());
+                            if (iter != m_shared_meshes.end())
+                            {
+                                const ModelVolume* shared_volume = iter->second.second;
+                                if ((shared_volume->supported_facets.equals(volume->supported_facets))
+                                    && (shared_volume->seam_facets.equals(volume->seam_facets))
+                                    && (shared_volume->mmu_segmentation_facets.equals(volume->mmu_segmentation_facets)))
+                                {
+                                    auto data = iter->second.first;
+                                    const_cast<_BBS_3MF_Exporter *>(this)->m_volume_paths.insert({volume, {data->sub_path, data->volumes_objectID.find(iter->second.second)->second}});
+                                    volumes_objectID.insert({volume, 0});
+                                    object_data.share_mesh = true;
+                                    continue;
+                                }
+                            }
+                            const_cast<_BBS_3MF_Exporter *>(this)->m_shared_meshes.insert({volume->mesh_ptr().get(), {&object_data, volume}});
+                        }
+                        if (m_from_backup_save)
+                            volume_id = (volume_count << 16 | backup_id);
+                        volumes_objectID.insert({volume, volume_id});
+                        volume_id++;
+                    }
+
+                    if (!m_from_backup_save) object_id = volume_id;
+                    object_data.object_id = object_id;
                 }
+
+                if (m_skip_model) continue;
 
                 if (write_object) {
                     // Store geometry of all ModelVolumes contained in a single ModelObject into a single 3MF indexed triangle set object.
                     // object_it->second.volumes_objectID will contain the offsets of the ModelVolumes in that single indexed triangle set.
                     // object_id will be increased to point to the 1st instance of the next ModelObject.
-                    if (!_add_object_to_model_stream(context, object_it->first, *obj, object_it->second.backup_id, object_it->second.volumes_objectID)) {
+                    if (!_add_object_to_model_stream(context, object_it->second)) {
                         add_error("Unable to add object to archive");
                         BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", Unable to add object to archive\n");
                         return false;
@@ -5898,32 +6489,30 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
                 if (sub_model) break;
 
-                object_ids.push_back(object_id);
-                unsigned int curr_id;
-                if (m_skip_static)
-                    curr_id =  object_id;
-                else
-                    curr_id =  object_id + obj->volumes.size();
-
-                object_id = object_id + obj->volumes.size() + 1;
-
                 unsigned int count = 0;
                 for (const ModelInstance* instance : obj->instances) {
                     Transform3d t = instance->get_matrix();
                     // instance_id is just a 1 indexed index in build_items.
                     //assert(m_skip_static || curr_id == build_items.size() + 1);
-                    auto filename = boost::format("3D/Objects/%s_%d.model") % obj->name % object_it->second.backup_id;
-                    if (count == 0)
-                        object_paths.push_back(filename.str());
-                    build_items.emplace_back(m_split_model ? "/" + filename.str() : "", curr_id, t, instance->printable);
+                    build_items.emplace_back("", object_it->second.object_id, t, instance->printable);
                     count++;
                 }
+
+                if (!m_from_backup_save) object_id++;
             }
-        }
+        // }
 
         {
             std::stringstream stream;
             reset_stream(stream);
+
+            if (!m_skip_model && !sub_model) {
+                for (auto object : model.objects) {
+                    auto &data = objects_data[object];
+                    _add_object_components_to_stream(stream, data);
+                }
+            }
+
             stream << " </" << RESOURCES_TAG << ">\n";
 
             // Store the transformations of all the ModelInstances of all ModelObjects, indexed in a linear fashion.
@@ -5950,36 +6539,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         // write model rels
         _add_relationships_file_to_archive(archive, MODEL_RELS_FILE, object_paths, {"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"});
 
-        if (m_skip_static) {
-            for (ModelObject* obj : model.objects) {
-                if (obj == nullptr)
-                    continue;
-                int object_id = obj->get_backup_id();
-                auto & volumes_objectID = objects_data.find(object_id)->second.volumes_objectID;
-                //unsigned int vertices_count = 0;
-                //unsigned int triangles_count = 0;
-                unsigned int volume_count = 0;
-                for (ModelVolume* volume : obj->volumes) {
-                    if (volume == nullptr)
-                        continue;
-                    VolumeToObjectIDMap::iterator volume_it = volumes_objectID.insert({ volume, (object_id | ((volume_count+1)<<16)) }).first;
-                    volume_count++;
-                    //const indexed_triangle_set &its = volume->mesh().its;
-                    //vertices_count += (int)its.vertices.size();
-                    //volume_it->second.first_triangle_id = triangles_count;
-                    //triangles_count += (int)its.indices.size();
-                    //volume_it->second.last_triangle_id = triangles_count - 1;
-                }
-            }
-            return true;
-        }
-
-        {
+        if (!m_from_backup_save) {
             boost::mutex mutex;
-            tbb::parallel_for(tbb::blocked_range<size_t>(0, objects_data.size(), 1), [this, &mutex, &model, &object_ids, &objects_data, &object_paths, main = &archive, project](const tbb::blocked_range<size_t>& range) {
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, objects_data.size(), 1), [this, &mutex, &model, objects = model.objects, &objects_data, &object_paths, main = &archive, project](const tbb::blocked_range<size_t>& range) {
                 for (size_t i = range.begin(); i < range.end(); ++i) {
-                    auto iter = objects_data.find(object_ids[i]);
-                    IdToObjectDataMap objects_data2;
+                    auto iter = objects_data.find(objects[i]);
+                    ObjectToObjectDataMap objects_data2;
                     objects_data2.insert(*iter);
                     auto & object = *iter->second.object;
                     mz_zip_archive archive;
@@ -6005,99 +6570,75 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         return true;
     }
 
-    bool _BBS_3MF_Exporter::_add_object_to_model_stream(mz_zip_writer_staged_context &context, unsigned int object_id, ModelObject const & object, unsigned int backup_id, VolumeToObjectIDMap& volumes_objectID) const
+    bool _BBS_3MF_Exporter::_add_object_to_model_stream(mz_zip_writer_staged_context &context, ObjectData const &object_data) const
     {
-        std::stringstream stream;
-        reset_stream(stream);
-        unsigned int id = 0;
-        unsigned int volume_start_id = object_id;
-        for (const ModelInstance* instance : object.instances) {
-			assert(instance != nullptr);
-            if (instance == nullptr)
-                continue;
-
-            //stream << "  <" << OBJECT_TAG << " id=\"" << instance_id;
-            //if (m_production_ext)
-            //    stream << "\" " << PUUID_ATTR << "=\"" << hex_wrap<boost::uint32_t>{(boost::uint32_t)backup_id} << OBJECT_UUID_SUFFIX;
-            //stream << "\" type=\"model\">\n";
-
-            if (id == 0) {
-                std::string buf = stream.str();
-                reset_stream(stream);
-                // backup: make _add_mesh_to_object_stream() reusable
-                auto flush = [this, &context](std::string & buf, bool force = false) {
-                    if ((force && !buf.empty()) || buf.size() >= 65536 * 16) {
-                        if (!mz_zip_writer_add_staged_data(&context, buf.data(), buf.size())) {
-                            add_error("Error during writing or compression");
-                            BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", Error during writing or compression\n");
-                            return false;
-                        }
-                        buf.clear();
-                    }
-                    return true;
-                };
-                if ((! buf.empty() && ! mz_zip_writer_add_staged_data(&context, buf.data(), buf.size())) ||
-                    ! _add_mesh_to_object_stream(flush, object, backup_id, volumes_objectID, volume_start_id)) {
-                    add_error("Unable to add mesh to archive");
-                    BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", Unable to add mesh to archive\n");
+        // backup: make _add_mesh_to_object_stream() reusable
+        auto flush = [this, &context](std::string & buf, bool force = false) {
+            if ((force && !buf.empty()) || buf.size() >= 65536 * 16) {
+                if (!mz_zip_writer_add_staged_data(&context, buf.data(), buf.size())) {
+                    add_error("Error during writing or compression");
+                    BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", Error during writing or compression\n");
                     return false;
                 }
+                buf.clear();
             }
-
-            stream << "  <" << OBJECT_TAG << " id=\"" << volume_start_id+id;
-            if ((id == 0) && m_production_ext)
-                stream << "\" " << PUUID_ATTR << "=\"" << hex_wrap<boost::uint32_t>{(boost::uint32_t)backup_id} << OBJECT_UUID_SUFFIX;
-            stream << "\" type=\"model\">\n";
-            stream << "   <" << COMPONENTS_TAG << ">\n";
-            if (id == 0) {
-                if (m_from_backup_save) {
-                    for (unsigned int index = 1; index <= object.volumes.size(); index ++) {
-                        unsigned int ref_id = object_id | (index << 16);
-                        stream << "    <" << COMPONENT_TAG << " objectid=\"" << ref_id; // << "\"/>\n";
-                        //add the transform of the volume
-                        ModelVolume* volume = object.volumes[index - 1];
-                        const Transform3d& transf = volume->get_matrix();
-                        stream << "\" " << TRANSFORM_ATTR << "=\"";
-                        for (unsigned c = 0; c < 4; ++c) {
-                            for (unsigned r = 0; r < 3; ++r) {
-                                stream << transf(r, c);
-                                if (r != 2 || c != 3)
-                                    stream << " ";
-                            }
-                        }
-                        stream << "\"/>\n";
-                    }
-                }
-                else {
-                    for (unsigned int index = object_id; index < volume_start_id; index ++) {
-                        stream << "    <" << COMPONENT_TAG << " objectid=\"" << index; // << "\"/>\n";
-                        //add the transform of the volume
-                        ModelVolume* volume = object.volumes[index - object_id];
-                        const Transform3d& transf = volume->get_matrix();
-                        stream << "\" " << TRANSFORM_ATTR << "=\"";
-                        for (unsigned c = 0; c < 4; ++c) {
-                            for (unsigned r = 0; r < 3; ++r) {
-                                stream << transf(r, c);
-                                if (r != 2 || c != 3)
-                                    stream << " ";
-                            }
-                        }
-                        stream << "\"/>\n";
-                    }
-                }
-            }
-            else {
-                stream << "    <" << COMPONENT_TAG << " objectid=\"" << volume_start_id << "\"/>\n";
-            }
-            stream << "   </" << COMPONENTS_TAG << ">\n";
-
-            stream << "  </" << OBJECT_TAG << ">\n";
-
-            ++id;
+            return true;
+        };
+        if (!_add_mesh_to_object_stream(flush, object_data)) {
+            add_error("Unable to add mesh to archive");
+            BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", Unable to add mesh to archive\n");
+            return false;
         }
 
-        std::string buf = stream.str();
-        return buf.empty() || mz_zip_writer_add_staged_data(&context, buf.data(), buf.size());
+        // Move all components to main model
+        //_add_object_components_to_stream(stream, object_data);
+
+        return true;
+    }
+
+    void _BBS_3MF_Exporter::_add_object_components_to_stream(std::stringstream &stream, ObjectData const &object_data) const
+    {
+        auto &       object = *object_data.object;
+
+        stream << "  <" << OBJECT_TAG << " id=\"" << object_data.object_id;
+        if (m_production_ext)
+            stream << "\" " << PUUID_ATTR << "=\"" << hex_wrap<boost::uint32_t>{(boost::uint32_t)object_data.backup_id}
+                    << (object_data.share_mesh ? OBJECT_UUID_SUFFIX2 : OBJECT_UUID_SUFFIX);
+        stream << "\" type=\"model\">\n";
+
+        stream << "   <" << COMPONENTS_TAG << ">\n";
+
+        for (unsigned int index = 0; index < object.volumes.size(); index ++) {
+            ModelVolume *volume    = object.volumes[index];
+            unsigned int volume_id = object_data.volumes_objectID.find(volume)->second;
+            auto * ppath = &object_data.sub_path;
+            auto iter = m_volume_paths.find(volume);
+            if (iter != m_volume_paths.end()) {
+                ppath = &iter->second.first;
+                volume_id = iter->second.second;
+            }
+            //add the transform of the volume
+            if (ppath->empty())
+                stream << "    <" << COMPONENT_TAG << " objectid=\"" << volume_id;
+            else
+                stream << "    <" << COMPONENT_TAG << " p:path=\"" << xml_escape(*ppath) << "\" objectid=\"" << volume_id; // << "\"/>\n";
+            if (m_production_ext)
+                stream << "\" " << PUUID_ATTR << "=\"" << hex_wrap<boost::uint32_t>{(boost::uint32_t) (index + (object_data.backup_id << 16))} << COMPONENT_UUID_SUFFIX;
+            const Transform3d &transf = volume->get_matrix();
+            stream << "\" " << TRANSFORM_ATTR << "=\"";
+            for (unsigned c = 0; c < 4; ++c) {
+                for (unsigned r = 0; r < 3; ++r) {
+                    stream << transf(r, c);
+                    if (r != 2 || c != 3)
+                        stream << " ";
+                }
+            }
+            stream << "\"/>\n";
+        }
+
+        stream << "   </" << COMPONENTS_TAG << ">\n";
+
+        stream << "  </" << OBJECT_TAG << ">\n";
     }
 
 #if EXPORT_3MF_USE_SPIRIT_KARMA_FP
@@ -6121,7 +6662,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 #endif // EXPORT_3MF_USE_SPIRIT_KARMA_FP
 
     //BBS: change volume to seperate objects
-    bool _BBS_3MF_Exporter::_add_mesh_to_object_stream(std::function<bool(std::string &,bool)> const & flush, ModelObject const & object, unsigned int backup_id, VolumeToObjectIDMap& volumes_objectID, unsigned int& obj_idx) const
+    bool _BBS_3MF_Exporter::_add_mesh_to_object_stream(std::function<bool(std::string &, bool)> const &flush, ObjectData const &object_data) const
     {
         std::string output_buffer;
 
@@ -6175,25 +6716,22 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 #endif
         };
 
+        auto const & object = *object_data.object;
+
         char buf[256];
         unsigned int vertices_count = 0;
         //unsigned int triangles_count = 0;
-        unsigned int volume_idx, volume_count = 0;
-        for (ModelVolume* volume : object.volumes) {
+        for (unsigned int index = 0; index < object.volumes.size(); index++) {
+            ModelVolume *volume = object.volumes[index];
             if (volume == nullptr)
+                continue;
+
+            int volume_id = object_data.volumes_objectID.find(volume)->second;
+            if (m_share_mesh && volume_id == 0)
                 continue;
 
 			//if (!volume->mesh().stats().repaired())
 			//	throw Slic3r::FileIOError("store_3mf() requires repair()");
-			unsigned int first_vertex_id = 0;
-            volume_count++;
-            if (m_from_backup_save)
-                volume_idx = (volume_count<<16 | obj_idx);
-            else {
-                volume_idx = obj_idx;
-                obj_idx++;
-            }
-            volumes_objectID.insert({ volume, volume_idx });
 
             const indexed_triangle_set &its = volume->mesh().its;
             if (its.vertices.empty()) {
@@ -6207,18 +6745,18 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             output_buffer += "  <";
             output_buffer += OBJECT_TAG;
             output_buffer += " id=\"";
-            output_buffer += std::to_string(volume_idx);
-            /*if (m_production_ext) {
+            output_buffer += std::to_string(volume_id);
+            if (m_production_ext) {
                 std::stringstream stream;
                 reset_stream(stream);
-                stream << "\" " << PUUID_ATTR << "=\"" << hex_wrap<boost::uint32_t>{(boost::uint32_t)backup_id} << OBJECT_UUID_SUFFIX;
+                stream << "\" " << PUUID_ATTR << "=\"" << hex_wrap<boost::uint32_t>{(boost::uint32_t) (index + (object_data.backup_id << 16))} << SUB_OBJECT_UUID_SUFFIX;
                 //output_buffer += "\" ";
                 //output_buffer += PUUID_ATTR;
                 //output_buffer += "=\"";
                 //output_buffer += std::to_string(hex_wrap<boost::uint32_t>{(boost::uint32_t)backup_id});
                 //output_buffer += OBJECT_UUID_SUFFIX;
                 output_buffer += stream.str();
-            }*/
+            }
             output_buffer += "\" type=\"";
             output_buffer += type;
             output_buffer += "\">\n";
@@ -6229,8 +6767,6 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             output_buffer += ">\n";
 
             vertices_count += (int)its.vertices.size();
-
-            const Transform3d& matrix = volume->get_matrix();
 
             for (size_t i = 0; i < its.vertices.size(); ++i) {
                 //don't save the volume's matrix into vertex data
@@ -6284,9 +6820,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                         " v1=\"" << boost::spirit::int_ <<
                         "\" v2=\"" << boost::spirit::int_ <<
                         "\" v3=\"" << boost::spirit::int_ << "\"",
-                        idx[is_left_handed ? 2 : 0] + first_vertex_id,
-                        idx[1] + first_vertex_id,
-                        idx[is_left_handed ? 0 : 2] + first_vertex_id);
+                        idx[is_left_handed ? 2 : 0],
+                        idx[1],
+                        idx[is_left_handed ? 0 : 2]);
                     *ptr = '\0';
                     output_buffer += buf;
                 }
@@ -6349,10 +6885,21 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         return flush(output_buffer, true);
     }
 
+    void _BBS_3MF_Exporter::add_transformation(std::stringstream &stream, const Transform3d &tr)
+    {
+        for (unsigned c = 0; c < 4; ++c) {
+            for (unsigned r = 0; r < 3; ++r) {
+                stream << tr(r, c);
+                if (r != 2 || c != 3) stream << " ";
+            }
+        }
+    }
+
     bool _BBS_3MF_Exporter::_add_build_to_model_stream(std::stringstream& stream, const BuildItemsList& build_items) const
     {
         // This happens for empty projects
         if (build_items.size() == 0) {
+            stream << " <" << BUILD_TAG << "/>\n";
             return true;
         }
 
@@ -6368,17 +6915,74 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             if (!item.path.empty())
                 stream << "\" " << PPATH_ATTR << "=\"" << xml_escape(item.path);
             stream << "\" " << TRANSFORM_ATTR << "=\"";
-            for (unsigned c = 0; c < 4; ++c) {
-                for (unsigned r = 0; r < 3; ++r) {
-                    stream << item.transform(r, c);
-                    if (r != 2 || c != 3)
-                        stream << " ";
-                }
-            }
+            add_transformation(stream, item.transform);
             stream << "\" " << PRINTABLE_ATTR << "=\"" << item.printable << "\"/>\n";
         }
 
         stream << " </" << BUILD_TAG << ">\n";
+
+        return true;
+    }
+
+    bool _BBS_3MF_Exporter::_add_cut_information_file_to_archive(mz_zip_archive &archive, Model &model)
+    {
+        std::string out = "";
+        pt::ptree tree;
+
+        unsigned int object_cnt = 0;
+        for (const ModelObject* object : model.objects) {
+            object_cnt++;
+            if (!object->is_cut())
+                continue;
+            pt::ptree& obj_tree = tree.add("objects.object", "");
+
+            obj_tree.put("<xmlattr>.id", object_cnt);
+
+            // Store info for cut_id
+            pt::ptree& cut_id_tree = obj_tree.add("cut_id", "");
+
+            // store cut_id atributes
+            cut_id_tree.put("<xmlattr>.id",             object->cut_id.id().id);
+            cut_id_tree.put("<xmlattr>.check_sum",      object->cut_id.check_sum());
+            cut_id_tree.put("<xmlattr>.connectors_cnt", object->cut_id.connectors_cnt());
+
+            int volume_idx = -1;
+            for (const ModelVolume* volume : object->volumes) {
+                ++volume_idx;
+                if (volume->is_cut_connector()) {
+                    pt::ptree& connectors_tree = obj_tree.add("connectors.connector", "");
+                    connectors_tree.put("<xmlattr>.volume_id",   volume_idx);
+                    connectors_tree.put("<xmlattr>.type",        int(volume->cut_info.connector_type));
+                    connectors_tree.put("<xmlattr>.r_tolerance", volume->cut_info.radius_tolerance);
+                    connectors_tree.put("<xmlattr>.h_tolerance", volume->cut_info.height_tolerance);
+                }
+            }
+        }
+
+        if (!tree.empty()) {
+            std::ostringstream oss;
+            pt::write_xml(oss, tree);
+            out = oss.str();
+
+            // Post processing("beautification") of the output string for a better preview
+            boost::replace_all(out, "><object", ">\n <object");
+            boost::replace_all(out, "><cut_id", ">\n  <cut_id");
+            boost::replace_all(out, "></cut_id>", ">\n  </cut_id>");
+            boost::replace_all(out, "><connectors", ">\n  <connectors");
+            boost::replace_all(out, "></connectors>", ">\n  </connectors>");
+            boost::replace_all(out, "><connector", ">\n   <connector");
+            boost::replace_all(out, "></connector>", ">\n   </connector>");
+            boost::replace_all(out, "></object>", ">\n </object>");
+            // OR just 
+            boost::replace_all(out, "><", ">\n<");
+        }
+
+        if (!out.empty()) {
+            if (!mz_zip_writer_add_mem(&archive, CUT_INFORMATION_FILE.c_str(), (const void*)out.data(), out.length(), MZ_DEFAULT_COMPRESSION)) {
+                add_error("Unable to add cut information file to archive");
+                return false;
+            }
+        }
 
         return true;
     }
@@ -6394,12 +6998,12 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             ++count;
             const std::vector<double>& layer_height_profile = object->layer_height_profile.get();
             if (layer_height_profile.size() >= 4 && layer_height_profile.size() % 2 == 0) {
-                sprintf(buffer, "object_id=%d|", count);
+                snprintf(buffer, 1024, "object_id=%d|", count);
                 out += buffer;
 
                 // Store the layer height profile as a single semicolon separated list.
                 for (size_t i = 0; i < layer_height_profile.size(); ++i) {
-                    sprintf(buffer, (i == 0) ? "%f" : ";%f", layer_height_profile[i]);
+                    snprintf(buffer, 1024, (i == 0) ? "%f" : ";%f", layer_height_profile[i]);
                     out += buffer;
                 }
 
@@ -6417,7 +7021,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         return true;
     }
-    /*
+
     bool _BBS_3MF_Exporter::_add_layer_config_ranges_file_to_archive(mz_zip_archive& archive, Model& model)
     {
         std::string out = "";
@@ -6477,6 +7081,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         return true;
     }
 
+    /*
     bool _BBS_3MF_Exporter::_add_sla_support_points_file_to_archive(mz_zip_archive& archive, Model& model)
     {
         assert(is_decimal_separator_point());
@@ -6569,7 +7174,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     {
         assert(is_decimal_separator_point());
         char buffer[1024];
-        sprintf(buffer, "; %s\n\n", header_slic3r_generated().c_str());
+        snprintf(buffer, 1024, "; %s\n\n", header_slic3r_generated().c_str());
         std::string out = buffer;
 
         for (const std::string &key : config.keys())
@@ -6592,7 +7197,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     {
         const std::string& temp_path = model.get_backup_path();
         std::string temp_file = temp_path + std::string("/") + "_temp_1.config";
-        config.save_to_json(temp_file, std::string("project_settings"), std::string("project"), std::string(SLIC3R_VERSION));
+        config.save_to_json(temp_file, std::string("project_settings"), std::string("project"), std::string(GalaxySlicer_VERSION));
         return _add_file_to_archive(archive, BBS_PROJECT_CONFIG_FILE, temp_file);
     }
 
@@ -6600,7 +7205,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     bool _BBS_3MF_Exporter::_add_project_embedded_presets_to_archive(mz_zip_archive& archive, Model& model, std::vector<Preset*> project_presets)
     {
         char buffer[1024];
-        sprintf(buffer, "; %s\n\n", header_slic3r_generated().c_str());
+        snprintf(buffer, 1024, "; %s\n\n", header_slic3r_generated().c_str());
         std::string out = buffer;
         int print_count = 0, filament_count = 0, printer_count = 0;
         const std::string& temp_path = model.get_backup_path();
@@ -6638,57 +7243,23 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         return true;
     }
 
-    void _add_text_info_to_archive(std::stringstream& stream, const TextInfo& text_info) {
-        stream << "      <" << TEXT_INFO_TAG << " ";
-
-        stream << TEXT_ATTR << "=\"" << text_info.m_text << "\" ";
-        stream << FONT_NAME_ATTR << "=\"" << text_info.m_font_name << "\" ";
-
-        stream << FONT_INDEX_ATTR << "=\"" << text_info.m_curr_font_idx << "\" ";
-
-        stream << FONT_SIZE_ATTR << "=\"" << text_info.m_font_size << "\" ";
-        stream << THICKNESS_ATTR << "=\"" << text_info.m_thickness << "\" ";
-        stream << EMBEDED_DEPTH_ATTR << "=\"" << text_info.m_embeded_depth << "\" ";
-        stream << ROTATE_ANGLE_ATTR << "=\"" << text_info.m_rotate_angle << "\" ";
-        stream << TEXT_GAP_ATTR << "=\"" << text_info.m_text_gap << "\" ";
-
-        stream << BOLD_ATTR << "=\"" << (text_info.m_bold ? 1 : 0) << "\" ";
-        stream << ITALIC_ATTR << "=\"" << (text_info.m_italic ? 1 : 0) << "\" ";
-        stream << SURFACE_TEXT_ATTR << "=\"" << (text_info.m_is_surface_text ? 1 : 0) << "\" ";
-        stream << KEEP_HORIZONTAL_ATTR << "=\"" << (text_info.m_keep_horizontal ? 1 : 0) << "\" ";
-
-        stream << HIT_MESH_ATTR << "=\"" << text_info.m_rr.mesh_id << "\" ";
-
-        stream << HIT_POSITION_ATTR << "=\"";
-        add_vec3(stream, text_info.m_rr.hit);
-        stream << "\" ";
-
-        stream << HIT_NORMAL_ATTR << "=\"";
-        add_vec3(stream, text_info.m_rr.normal);
-        stream << "\" ";
-
-        stream << "/>\n";
-    }
-
-    bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list, const IdToObjectDataMap &objects_data, int export_plate_idx, bool save_gcode, bool use_loaded_id)
+    bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list, const ObjectToObjectDataMap &objects_data, int export_plate_idx, bool save_gcode, bool use_loaded_id)
     {
         std::stringstream stream;
-        std::map<const TriangleMesh*, int> shared_meshes;
         // Store mesh transformation in full precision, as the volumes are stored transformed and they need to be transformed back
         // when loaded as accurately as possible.
 		stream << std::setprecision(std::numeric_limits<double>::max_digits10);
         stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         stream << "<" << CONFIG_TAG << ">\n";
 
-        for (const IdToObjectDataMap::value_type& obj_metadata : objects_data) {
-            const ModelObject* obj = obj_metadata.second.object;
+        if (!m_skip_model)
+        for (const ObjectToObjectDataMap::value_type& obj_metadata : objects_data) {
+            auto object_data = obj_metadata.second;
+            const ModelObject *obj = object_data.object;
             if (obj != nullptr) {
                 // Output of instances count added because of github #3435, currently not used by PrusaSlicer
                 //stream << "  <"  << OBJECT_TAG << " " << ID_ATTR << "=\"" << obj_metadata.first << "\" " << INSTANCESCOUNT_ATTR << "=\"" << obj->instances.size() << "\">\n";
-                if (m_skip_static)
-                    stream << "  <"  << OBJECT_TAG << " " << ID_ATTR << "=\"" << obj_metadata.first << "\">\n";
-                else
-                    stream << "  <"  << OBJECT_TAG << " " << ID_ATTR << "=\"" << obj_metadata.first + obj->volumes.size() << "\">\n";
+                stream << "  <" << OBJECT_TAG << " " << ID_ATTR << "=\"" << object_data.object_id << "\">\n";
 
                 // stores object's name
                 if (!obj->name.empty())
@@ -6712,7 +7283,10 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                             stream << "    <" << PART_TAG << " ";
                             //stream << FIRST_TRIANGLE_ID_ATTR << "=\"" << it->second.first_triangle_id << "\" ";
                             //stream << LAST_TRIANGLE_ID_ATTR << "=\"" << it->second.last_triangle_id << "\" ";
-                            stream << ID_ATTR << "=\"" << it->second << "\" ";
+                            int volume_id = it->second;
+                            if (m_share_mesh && volume_id == 0)
+                                volume_id = m_volume_paths.find(volume)->second.second;
+                            stream << ID_ATTR << "=\"" << volume_id << "\" ";
 
                             stream << SUBTYPE_ATTR << "=\"" << ModelVolume::type_to_string(volume->type()) << "\">\n";
                             //stream << "    <" << PART_TAG << " " << ID_ATTR << "=\"" << it->second << "\" " << SUBTYPE_ATTR << "=\"" << ModelVolume::type_to_string(volume->type()) << "\">\n";
@@ -6766,20 +7340,13 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                                 stream << "      <" << METADATA_TAG << " "<< KEY_ATTR << "=\"" << key << "\" " << VALUE_ATTR << "=\"" << volume->config.opt_serialize(key) << "\"/>\n";
                             }
 
-                            const TextInfo &text_info = volume->get_text_info();
-                            if (!text_info.m_text.empty())
-                                _add_text_info_to_archive(stream, text_info);
-
-                            //add the shared mesh logic
-                            const TriangleMesh* current_mesh = volume->mesh_ptr();
-                            std::map<const TriangleMesh*,int>::iterator mesh_iter;
-                            mesh_iter = shared_meshes.find(current_mesh);
-                            if (mesh_iter != shared_meshes.end()) {
-                                stream << "      <" << METADATA_TAG << " "<< KEY_ATTR << "=\"" << MESH_SHARED_KEY << "\" " << VALUE_ATTR << "=\"" << mesh_iter->second << "\"/>\n";
-                            }
-                            else {
-                                shared_meshes[current_mesh] = it->second;
-                            }
+                            if (const std::optional<EmbossShape> &es = volume->emboss_shape;
+                                es.has_value())
+                                to_xml(stream, *es, *volume, archive);
+                    
+                            if (const std::optional<TextConfiguration> &tc = volume->text_configuration;
+                                tc.has_value())
+                                TextConfigurationSerialization::to_xml(stream, *tc);
 
                             // stores mesh's statistics
                             const RepairedMeshErrors& stats = volume->mesh().stats().repaired_errors;
@@ -6810,7 +7377,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 stream << "  <" << PLATE_TAG << ">\n";
                 //plate index
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PLATERID_ATTR << "\" " << VALUE_ATTR << "=\"" << plate_data->plate_index + 1 << "\"/>\n";
-                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PLATER_NAME_ATTR << "\" " << VALUE_ATTR << "=\"" << xml_escape(plate_data->plate_name) << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PLATER_NAME_ATTR << "\" " << VALUE_ATTR << "=\"" <<  xml_escape(plate_data->plate_name.c_str()) << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << LOCK_ATTR << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->locked<< "\"/>\n";
                 ConfigOption* bed_type_opt = plate_data->config.option("curr_bed_type");
                 t_config_enum_names bed_type_names = ConfigOptionEnum<BedType>::get_enum_names();
@@ -6821,6 +7388,22 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 t_config_enum_names print_sequence_names = ConfigOptionEnum<PrintSequence>::get_enum_names();
                 if (print_sequence_opt != nullptr && print_sequence_names.size() > print_sequence_opt->getInt())
                     stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PRINT_SEQUENCE_ATTR << "\" " << VALUE_ATTR << "=\"" << print_sequence_names[print_sequence_opt->getInt()] << "\"/>\n";
+
+                ConfigOptionInts *first_layer_print_sequence_opt = plate_data->config.option<ConfigOptionInts>("first_layer_print_sequence");
+                if (first_layer_print_sequence_opt != nullptr) {
+                    stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << FIRST_LAYER_PRINT_SEQUENCE_ATTR << "\" " << VALUE_ATTR << "=\"";
+                    const std::vector<int>& values = first_layer_print_sequence_opt->values;
+                    for (int i = 0; i < values.size(); ++i) {
+                        stream << values[i];
+                        if (i != (values.size() - 1))
+                            stream << " ";
+                    }
+                    stream << "\"/>\n";
+                }
+
+                ConfigOption* spiral_mode_opt = plate_data->config.option("spiral_mode");
+                if (spiral_mode_opt)
+                    stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SPIRAL_VASE_MODE << "\" " << VALUE_ATTR << "=\"" << spiral_mode_opt->getBool() << "\"/>\n";
 
                 if (save_gcode)
                     stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << GCODE_FILE_ATTR << "\" " << VALUE_ATTR << "=\"" << std::boolalpha << xml_escape(plate_data->gcode_file) << "\"/>\n";
@@ -6855,7 +7438,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                     stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PATTERN_BBOX_FILE_ATTR << "\" " << VALUE_ATTR << "=\"" << std::boolalpha << pattern_bbox_file_in_3mf << "\"/>\n";
                 }
 
-                if (instance_size > 0)
+                if (!m_skip_model && instance_size > 0)
                 {
                     for (unsigned int j = 0; j < instance_size; ++j)
                     {
@@ -6881,12 +7464,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                             else
                                 identify_id = inst->id().id;
                         }
-                        if (m_skip_static && obj) {
-                            obj_id = obj->get_backup_id();
-                        } else {
-                            //inst_id = convert_instance_id_to_resource_id(model, obj_id, inst_id);
-                            obj_id = convert_instance_id_to_resource_id(model, obj_id, 0);
-                        }
+                        obj_id = objects_data.find(obj)->second.object_id;
 
                         stream << "      <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << OBJECT_ID_ATTR << "\" " << VALUE_ATTR << "=\"" << obj_id << "\"/>\n";
                         stream << "      <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << INSTANCEID_ATTR << "\" " << VALUE_ATTR << "=\"" << inst_id << "\"/>\n";
@@ -6902,17 +7480,16 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         if (save_gcode)
             _add_relationships_file_to_archive(archive, BBS_MODEL_CONFIG_RELS_FILE, gcode_paths, {"http://schemas.bambulab.com/package/2021/gcode"}, Slic3r::PackingTemporaryData(), export_plate_idx);
 
+        if (!m_skip_model) {
         //BBS: store assemble related info
         stream << "  <" << ASSEMBLE_TAG << ">\n";
-        for (const IdToObjectDataMap::value_type& obj_metadata : objects_data) {
-            const ModelObject* obj = obj_metadata.second.object;
+        for (const ObjectToObjectDataMap::value_type& obj_metadata : objects_data) {
+            auto object_data = obj_metadata.second;
+            const ModelObject* obj = object_data.object;
             if (obj != nullptr) {
                 for (int instance_idx = 0; instance_idx < obj->instances.size(); ++instance_idx) {
                     if (obj->instances[instance_idx]->is_assemble_initialized()) {
-                        if (m_skip_static)
-                            stream << "   <" << ASSEMBLE_ITEM_TAG << " " << OBJECT_ID_ATTR << "=\"" << obj_metadata.first << "\" ";
-                        else
-                            stream << "   <" << ASSEMBLE_ITEM_TAG << " " << OBJECT_ID_ATTR << "=\"" << obj_metadata.first  + obj->volumes.size() << "\" ";
+                        stream << "   <" << ASSEMBLE_ITEM_TAG << " " << OBJECT_ID_ATTR << "=\"" << object_data.object_id << "\" ";
                         stream << INSTANCEID_ATTR << "=\"" << instance_idx << "\" " << TRANSFORM_ATTR << "=\"";
                             for (unsigned c = 0; c < 4; ++c) {
                                 for (unsigned r = 0; r < 3; ++r) {
@@ -6934,6 +7511,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             }
         }
         stream << "  </" << ASSEMBLE_TAG << ">\n";
+        }
 
         stream << "</" << CONFIG_TAG << ">\n";
 
@@ -6947,68 +7525,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         return true;
     }
 
-    bool _BBS_3MF_Exporter::_add_cut_information_file_to_archive(mz_zip_archive &archive, Model &model)
-    {
-        std::string out = "";
-        pt::ptree   tree;
-
-        unsigned int object_cnt = 0;
-        for (const ModelObject *object : model.objects) {
-            object_cnt++;
-            pt::ptree &obj_tree = tree.add("objects.object", "");
-
-            obj_tree.put("<xmlattr>.id", object_cnt);
-
-            // Store info for cut_id
-            pt::ptree &cut_id_tree = obj_tree.add("cut_id", "");
-
-            // store cut_id atributes
-            cut_id_tree.put("<xmlattr>.id", object->cut_id.id().id);
-            cut_id_tree.put("<xmlattr>.check_sum", object->cut_id.check_sum());
-            cut_id_tree.put("<xmlattr>.connectors_cnt", object->cut_id.connectors_cnt());
-
-            int volume_idx = -1;
-            for (const ModelVolume *volume : object->volumes) {
-                ++volume_idx;
-                if (volume->is_cut_connector()) {
-                    pt::ptree &connectors_tree = obj_tree.add("connectors.connector", "");
-                    connectors_tree.put("<xmlattr>.volume_id", volume_idx);
-                    connectors_tree.put("<xmlattr>.type", int(volume->cut_info.connector_type));
-                    connectors_tree.put("<xmlattr>.r_tolerance", volume->cut_info.radius_tolerance);
-                    connectors_tree.put("<xmlattr>.h_tolerance", volume->cut_info.height_tolerance);
-                }
-            }
-        }
-
-        if (!tree.empty()) {
-            std::ostringstream oss;
-            pt::write_xml(oss, tree);
-            out = oss.str();
-
-            // Post processing("beautification") of the output string for a better preview
-            boost::replace_all(out, "><object", ">\n <object");
-            boost::replace_all(out, "><cut_id", ">\n  <cut_id");
-            boost::replace_all(out, "></cut_id>", ">\n  </cut_id>");
-            boost::replace_all(out, "><connectors", ">\n  <connectors");
-            boost::replace_all(out, "></connectors>", ">\n  </connectors>");
-            boost::replace_all(out, "><connector", ">\n   <connector");
-            boost::replace_all(out, "></connector>", ">\n   </connector>");
-            boost::replace_all(out, "></object>", ">\n </object>");
-            // OR just
-            boost::replace_all(out, "><", ">\n<");
-        }
-
-        if (!out.empty()) {
-            if (!mz_zip_writer_add_mem(&archive, CUT_INFORMATION_FILE.c_str(), (const void *) out.data(), out.length(), MZ_DEFAULT_COMPRESSION)) {
-                add_error("Unable to add cut information file to archive");
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool _BBS_3MF_Exporter::_add_slice_info_config_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list)
+    bool _BBS_3MF_Exporter::_add_slice_info_config_file_to_archive(mz_zip_archive& archive, const Model& model, PlateDataPtrs& plate_data_list, const ObjectToObjectDataMap &objects_data, const DynamicPrintConfig& config)
     {
         std::stringstream stream;
         // Store mesh transformation in full precision, as the volumes are stored transformed and they need to be transformed back
@@ -7021,7 +7538,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         // save slice header for debug
         stream << "  <" << SLICE_HEADER_TAG << ">\n";
         stream << "    <" << SLICE_HEADER_ITEM_TAG << " " << KEY_ATTR << "=\"" << "X-BBL-Client-Type"    << "\" " << VALUE_ATTR << "=\"" << "slicer" << "\"/>\n";
-        stream << "    <" << SLICE_HEADER_ITEM_TAG << " " << KEY_ATTR << "=\"" << "X-BBL-Client-Version" << "\" " << VALUE_ATTR << "=\"" << convert_to_full_version(SLIC3R_VERSION) << "\"/>\n";
+        stream << "    <" << SLICE_HEADER_ITEM_TAG << " " << KEY_ATTR << "=\"" << "X-BBL-Client-Version" << "\" " << VALUE_ATTR << "=\"" << convert_to_full_version(GalaxySlicer_VERSION) << "\"/>\n";
         stream << "  </" << SLICE_HEADER_TAG << ">\n";
 
         for (unsigned int i = 0; i < (unsigned int)plate_data_list.size(); ++i)
@@ -7033,10 +7550,52 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 stream << "  <" << PLATE_TAG << ">\n";
                 //plate index
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PLATE_IDX_ATTR        << "\" " << VALUE_ATTR << "=\"" << plate_data->plate_index + 1 << "\"/>\n";
+
+                int timelapse_type = int(config.opt_enum<TimelapseType>("timelapse_type"));
+                for (auto it = plate_data->warnings.begin(); it != plate_data->warnings.end(); it++) {
+                    if (it->msg == NOT_GENERATE_TIMELAPSE) {
+                        timelapse_type = -1;
+                        break;
+                    }
+                }
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PRINTER_MODEL_ID_ATTR       << "\" " << VALUE_ATTR << "=\"" << plate_data->printer_model_id << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << NOZZLE_DIAMETERS_ATTR       << "\" " << VALUE_ATTR << "=\"" << plate_data->nozzle_diameters << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << TIMELAPSE_TYPE_ATTR << "\" " << VALUE_ATTR << "=\"" << timelapse_type << "\"/>\n";
+                //stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << TIMELAPSE_ERROR_CODE_ATTR << "\" " << VALUE_ATTR << "=\"" << plate_data->timelapse_warning_code << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_PREDICTION_ATTR << "\" " << VALUE_ATTR << "=\"" << plate_data->get_gcode_prediction_str() << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_WEIGHT_ATTR      << "\" " << VALUE_ATTR << "=\"" <<  plate_data->get_gcode_weight_str() << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << OUTSIDE_ATTR      << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->toolpath_outside << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SUPPORT_USED_ATTR << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->is_support_used << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << LABEL_OBJECT_ENABLED_ATTR << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->is_label_object_enabled << "\"/>\n";
+
+                for (auto it = plate_data->objects_and_instances.begin(); it != plate_data->objects_and_instances.end(); it++)
+                {
+                        int obj_id = it->first;
+                        int inst_id = it->second;
+                        int identify_id = 0;
+                        ModelObject* obj = NULL;
+                        ModelInstance* inst = NULL;
+                        if (obj_id >= model.objects.size()) {
+                            BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << ":" << __LINE__ << boost::format("invalid object id %1%\n")%obj_id;
+                            continue;
+                        }
+                        obj =  model.objects[obj_id];
+
+                        if (obj && (inst_id >= obj->instances.size())) {
+                            BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << ":" << __LINE__ << boost::format("invalid instance id %1%\n")%inst_id;
+                            continue;
+                        }
+                        inst =  obj->instances[inst_id];
+                        if (m_use_loaded_id && (inst->loaded_id > 0))
+                            identify_id = inst->loaded_id;
+                        else
+                            identify_id = inst->id().id;
+                        bool skipped = std::find(plate_data->skipped_objects.begin(), plate_data->skipped_objects.end(), identify_id) !=
+                                       plate_data->skipped_objects.end();
+                        stream << "    <" << OBJECT_TAG << " " << IDENTIFYID_ATTR << "=\"" << std::to_string(identify_id) << "\" " << NAME_ATTR << "=\"" << xml_escape(obj->name)
+                               << "\" " << SKIPPED_ATTR << "=\"" << (skipped ? "true" : "false")
+                               << "\" />\n";
+                }
 
                 for (auto it = plate_data->slice_filaments_info.begin(); it != plate_data->slice_filaments_info.end(); it++)
                 {
@@ -7215,32 +7774,7 @@ bool _BBS_3MF_Exporter::_add_auxiliary_dir_to_archive(mz_zip_archive &archive, c
             std::string dst_in_3mf;
             if (boost::filesystem::is_directory(dir_entry.path()))
             {
-                if (dir_entry.path().filename() == THUMBNAILS_DIR) {
-                    boost::filesystem::directory_iterator iterator(dir_entry.path());
-                    for (auto &file_entry : iterator) {
-                        if (boost::filesystem::is_regular_file(file_entry.path())) {
-                            // BBS generate thumbnails
-                            // copy to /Metadata folder
-                            src_file = file_entry.path().string();
-                            /* save to .thumbnails */
-                            dst_in_3mf = file_entry.path().string();
-                            dst_in_3mf.replace(0, root_dir_len, AUXILIARY_DIR);
-                            std::replace(dst_in_3mf.begin(), dst_in_3mf.end(), '\\', '/');
-                            if (file_entry.path().filename() == _3MF_COVER_FILE) {
-                                data._3mf_thumbnail = dst_in_3mf;
-                            } else if (file_entry.path().filename() == PRINTER_THUMBNAIL_SMALL_FILE) {
-                                data._3mf_printer_thumbnail_small = dst_in_3mf;
-                            } else if (file_entry.path().filename() == PRINTER_THUMBNAIL_MIDDLE_FILE) {
-                                data._3mf_printer_thumbnail_middle = dst_in_3mf;
-                            }
-
-                            result &= _add_file_to_archive(archive, dst_in_3mf, src_file);
-                        }
-                    }
-                }
-                else {
-                    directories.push_back(dir_entry.path());
-                }
+                directories.push_back(dir_entry.path());
                 continue;
             }
             if (boost::filesystem::is_regular_file(dir_entry.path()) && !m_skip_auxiliary)
@@ -7249,6 +7783,14 @@ bool _BBS_3MF_Exporter::_add_auxiliary_dir_to_archive(mz_zip_archive &archive, c
                 dst_in_3mf = dir_entry.path().string();
                 dst_in_3mf.replace(0, root_dir_len, AUXILIARY_DIR);
                 std::replace(dst_in_3mf.begin(), dst_in_3mf.end(), '\\', '/');
+                if (_3MF_COVER_FILE.compare(1, _3MF_COVER_FILE.length() - 1, dst_in_3mf) == 0) {
+                    data._3mf_thumbnail = dst_in_3mf;
+                } else if (m_thumbnail_small.compare(1, m_thumbnail_small.length() - 1, dst_in_3mf) == 0) {
+                    data._3mf_printer_thumbnail_small = dst_in_3mf;
+                    if (m_thumbnail_middle == m_thumbnail_small) data._3mf_printer_thumbnail_middle = dst_in_3mf;
+                } else if (m_thumbnail_middle.compare(1, m_thumbnail_middle.length() - 1, dst_in_3mf) == 0) {
+                    data._3mf_printer_thumbnail_middle = dst_in_3mf;
+                }
                 result &= _add_file_to_archive(archive, dst_in_3mf, src_file);
             }
         }
@@ -7361,10 +7903,12 @@ public:
 
     void set_interval(long n) {
         boost::lock_guard lock(m_mutex);
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " entry, and last interval is: " << m_interval;
         m_next_backup -= boost::posix_time::seconds(m_interval);
         m_interval = n;
         m_next_backup += boost::posix_time::seconds(m_interval);
         m_cond.notify_all();
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " exit, and new interval is: " << m_interval;
     }
 
     void put_other_changes()
@@ -7442,6 +7986,7 @@ private:
     };
 private:
     _BBS_Backup_Manager() {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " inital and interval = " << m_interval;
         m_next_backup = boost::get_system_time() + boost::posix_time::seconds(m_interval);
         boost::unique_lock lock(m_mutex);
         m_thread = std::move(boost::thread(boost::ref(*this)));
@@ -7470,7 +8015,7 @@ private:
     }
 
     void process_ui_task(Task& t, bool canceled = false) {
-        BOOST_LOG_TRIVIAL(info) << "process_ui_task" << t.to_string();
+        BOOST_LOG_TRIVIAL(info) << "process_ui_task" << t.to_string() << " and interval = " << m_interval;
         switch (t.type) {
             case Backup: {
                 if (canceled)
@@ -7514,7 +8059,7 @@ private:
     }
 
     void process_task(Task& t) {
-        BOOST_LOG_TRIVIAL(info) << "process_task" << t.to_string();
+        BOOST_LOG_TRIVIAL(info) << "process_task" << t.to_string() << " and interval = " << m_interval;
         switch (t.type) {
             case Backup:
                 // do it in response
@@ -7529,13 +8074,15 @@ private:
                 break;
             }
             case RemoveObject: {
-                boost::filesystem::remove(t.path + "/mesh_" + boost::lexical_cast<std::string>(t.id) + ".xml");
+                boost::system::error_code ec;
+                boost::filesystem::remove(t.path + "/mesh_" + boost::lexical_cast<std::string>(t.id) + ".xml", ec);
                 t.type = None;
                 break;
             }
             case RemoveBackup: {
                 try {
-                    boost::filesystem::remove(t.path + "/.3mf");
+                    boost::system::error_code ec;
+                    boost::filesystem::remove(t.path + "/.3mf", ec);
                     // We Saved with SplitModel now, so we can safe delete these sub models.
                     boost::filesystem::remove_all(t.path + "/3D/Objects");
                     boost::filesystem::create_directory(t.path + "/3D/Objects");
@@ -7650,6 +8197,15 @@ std::string bbs_3mf_get_thumbnail(const char *path)
     bool res = importer.get_thumbnail(path, data);
     if (!res) importer.log_errors();
     return data;
+}
+
+bool load_gcode_3mf_from_stream(std::istream &data, DynamicPrintConfig *config, Model *model, PlateDataPtrs *plate_data_list, Semver *file_version)
+{
+    CNumericLocalesSetter locales_setter;
+    _BBS_3MF_Importer     importer;
+    bool res = importer.load_gcode_3mf_from_stream(data, *model, *plate_data_list, *config, *file_version);
+    importer.log_errors();
+    return res;
 }
 
 bool store_bbs_3mf(StoreParams& store_params)
@@ -7780,5 +8336,336 @@ SaveObjectGaurd::~SaveObjectGaurd()
 {
     _BBS_Backup_Manager::get().pop_object_gaurd();
 }
+
+namespace{
+
+// Conversion with bidirectional map
+// F .. first, S .. second
+template<typename F, typename S>
+F bimap_cvt(const boost::bimap<F, S> &bmap, S s, const F & def_value) {
+    const auto &map = bmap.right;
+    auto found_item = map.find(s);
+
+    // only for back and forward compatibility
+    assert(found_item != map.end()); 
+    if (found_item == map.end())
+        return def_value;
+
+    return found_item->second;
+}
+
+template<typename F, typename S> 
+S bimap_cvt(const boost::bimap<F, S> &bmap, F f, const S &def_value)
+{
+    const auto &map = bmap.left;
+    auto found_item = map.find(f);
+
+    // only for back and forward compatibility
+    assert(found_item != map.end());
+    if (found_item == map.end())
+        return def_value;
+
+    return found_item->second;
+}
+
+} // namespace
+
+/// <summary>
+/// TextConfiguration serialization
+/// </summary>
+const TextConfigurationSerialization::TypeToName TextConfigurationSerialization::type_to_name =
+    boost::assign::list_of<TypeToName::relation>
+    (EmbossStyle::Type::file_path, "file_name")
+    (EmbossStyle::Type::wx_win_font_descr, "wxFontDescriptor_Windows")
+    (EmbossStyle::Type::wx_lin_font_descr, "wxFontDescriptor_Linux")
+    (EmbossStyle::Type::wx_mac_font_descr, "wxFontDescriptor_MacOsX");
+
+const TextConfigurationSerialization::HorizontalAlignToName TextConfigurationSerialization::horizontal_align_to_name =
+    boost::assign::list_of<HorizontalAlignToName::relation>
+    (FontProp::HorizontalAlign::left, "left")
+    (FontProp::HorizontalAlign::center, "center")
+    (FontProp::HorizontalAlign::right, "right");
+
+const TextConfigurationSerialization::VerticalAlignToName TextConfigurationSerialization::vertical_align_to_name =
+    boost::assign::list_of<VerticalAlignToName::relation>
+    (FontProp::VerticalAlign::top, "top")
+    (FontProp::VerticalAlign::center, "middle")
+    (FontProp::VerticalAlign::bottom, "bottom");
+
+
+void TextConfigurationSerialization::to_xml(std::stringstream &stream, const TextConfiguration &tc)
+{
+    stream << "   <" << TEXT_TAG << " ";
+
+    stream << TEXT_DATA_ATTR << "=\"" << xml_escape_double_quotes_attribute_value(tc.text) << "\" ";
+    // font item
+    const EmbossStyle &style = tc.style;
+    stream << STYLE_NAME_ATTR <<  "=\"" << xml_escape_double_quotes_attribute_value(style.name) << "\" ";
+    stream << FONT_DESCRIPTOR_ATTR << "=\"" << xml_escape_double_quotes_attribute_value(style.path) << "\" ";
+    constexpr std::string_view dafault_type{"undefined"};
+    std::string_view style_type = bimap_cvt(type_to_name, style.type, dafault_type);
+    stream << FONT_DESCRIPTOR_TYPE_ATTR << "=\"" << style_type << "\" ";
+
+    // font property
+    const FontProp &fp = tc.style.prop;
+    if (fp.char_gap.has_value())
+        stream << CHAR_GAP_ATTR << "=\"" << *fp.char_gap << "\" ";
+    if (fp.line_gap.has_value())
+        stream << LINE_GAP_ATTR << "=\"" << *fp.line_gap << "\" ";
+
+    stream << LINE_HEIGHT_ATTR << "=\"" << fp.size_in_mm << "\" ";
+    if (fp.boldness.has_value())
+        stream << BOLDNESS_ATTR << "=\"" << *fp.boldness << "\" ";
+    if (fp.skew.has_value())
+        stream << SKEW_ATTR << "=\"" << *fp.skew << "\" ";
+    if (fp.per_glyph)
+        stream << PER_GLYPH_ATTR << "=\"" << 1 << "\" ";
+    stream << HORIZONTAL_ALIGN_ATTR << "=\"" << bimap_cvt(horizontal_align_to_name, fp.align.first, dafault_type) << "\" ";
+    stream << VERTICAL_ALIGN_ATTR   << "=\"" << bimap_cvt(vertical_align_to_name,  fp.align.second, dafault_type) << "\" ";
+    if (fp.collection_number.has_value())
+        stream << COLLECTION_NUMBER_ATTR << "=\"" << *fp.collection_number << "\" ";
+    // font descriptor
+    if (fp.family.has_value())
+        stream << FONT_FAMILY_ATTR << "=\"" << *fp.family << "\" ";
+    if (fp.face_name.has_value())
+        stream << FONT_FACE_NAME_ATTR << "=\"" << *fp.face_name << "\" ";
+    if (fp.style.has_value())
+        stream << FONT_STYLE_ATTR << "=\"" << *fp.style << "\" ";
+    if (fp.weight.has_value())
+        stream << FONT_WEIGHT_ATTR << "=\"" << *fp.weight << "\" ";
+
+    stream << "/>\n"; // end TEXT_TAG
+}
+namespace {
+
+FontProp::HorizontalAlign read_horizontal_align(const char **attributes, unsigned int num_attributes, const TextConfigurationSerialization::HorizontalAlignToName& horizontal_align_to_name){
+    std::string horizontal_align_str = bbs_get_attribute_value_string(attributes, num_attributes, HORIZONTAL_ALIGN_ATTR);
+
+    // Back compatibility
+    // PS 2.6.0 do not have align
+    if (horizontal_align_str.empty())
+        return FontProp::HorizontalAlign::center;
+
+    // Back compatibility
+    // PS 2.6.1 store indices(0|1|2) instead of text for align
+    if (horizontal_align_str.length() == 1) {
+        int horizontal_align_int = 0;
+        if(boost::spirit::qi::parse(horizontal_align_str.c_str(), horizontal_align_str.c_str() + 1, boost::spirit::qi::int_, horizontal_align_int))
+            return static_cast<FontProp::HorizontalAlign>(horizontal_align_int);
+    }
+
+    return bimap_cvt(horizontal_align_to_name, std::string_view(horizontal_align_str), FontProp::HorizontalAlign::center);    
+}
+
+
+FontProp::VerticalAlign read_vertical_align(const char **attributes, unsigned int num_attributes, const TextConfigurationSerialization::VerticalAlignToName& vertical_align_to_name){
+    std::string vertical_align_str = bbs_get_attribute_value_string(attributes, num_attributes, VERTICAL_ALIGN_ATTR);
+
+    // Back compatibility
+    // PS 2.6.0 do not have align
+    if (vertical_align_str.empty())
+        return FontProp::VerticalAlign::center;
+
+    // Back compatibility
+    // PS 2.6.1 store indices(0|1|2) instead of text for align
+    if (vertical_align_str.length() == 1) {
+        int vertical_align_int = 0;
+        if(boost::spirit::qi::parse(vertical_align_str.c_str(), vertical_align_str.c_str() + 1, boost::spirit::qi::int_, vertical_align_int))
+            return static_cast<FontProp::VerticalAlign>(vertical_align_int);
+    }
+
+    return bimap_cvt(vertical_align_to_name, std::string_view(vertical_align_str), FontProp::VerticalAlign::center);
+}
+
+} // namespace
+
+std::optional<TextConfiguration> TextConfigurationSerialization::read(const char **attributes, unsigned int num_attributes)
+{
+    FontProp fp;
+    int char_gap = bbs_get_attribute_value_int(attributes, num_attributes, CHAR_GAP_ATTR);
+    if (char_gap != 0) fp.char_gap = char_gap;
+    int line_gap = bbs_get_attribute_value_int(attributes, num_attributes, LINE_GAP_ATTR); 
+    if (line_gap != 0) fp.line_gap = line_gap;
+    float boldness = bbs_get_attribute_value_float(attributes, num_attributes, BOLDNESS_ATTR);
+    if (std::fabs(boldness) > std::numeric_limits<float>::epsilon())
+        fp.boldness = boldness;
+    float skew = bbs_get_attribute_value_float(attributes, num_attributes, SKEW_ATTR);
+    if (std::fabs(skew) > std::numeric_limits<float>::epsilon())
+        fp.skew = skew;
+    int per_glyph = bbs_get_attribute_value_int(attributes, num_attributes, PER_GLYPH_ATTR);
+    if (per_glyph == 1) fp.per_glyph = true;
+
+    fp.align = FontProp::Align(
+        read_horizontal_align(attributes, num_attributes, horizontal_align_to_name),
+        read_vertical_align(attributes, num_attributes, vertical_align_to_name));
+
+    int collection_number = bbs_get_attribute_value_int(attributes, num_attributes, COLLECTION_NUMBER_ATTR);
+    if (collection_number > 0) fp.collection_number = static_cast<unsigned int>(collection_number);
+
+    fp.size_in_mm = bbs_get_attribute_value_float(attributes, num_attributes, LINE_HEIGHT_ATTR);
+
+    std::string family = bbs_get_attribute_value_string(attributes, num_attributes, FONT_FAMILY_ATTR);
+    if (!family.empty()) fp.family = family;
+    std::string face_name = bbs_get_attribute_value_string(attributes, num_attributes, FONT_FACE_NAME_ATTR);
+    if (!face_name.empty()) fp.face_name = face_name;
+    std::string style = bbs_get_attribute_value_string(attributes, num_attributes, FONT_STYLE_ATTR);
+    if (!style.empty()) fp.style = style;
+    std::string weight = bbs_get_attribute_value_string(attributes, num_attributes, FONT_WEIGHT_ATTR);
+    if (!weight.empty()) fp.weight = weight;
+
+    std::string style_name = bbs_get_attribute_value_string(attributes, num_attributes, STYLE_NAME_ATTR);
+    std::string font_descriptor = bbs_get_attribute_value_string(attributes, num_attributes, FONT_DESCRIPTOR_ATTR);
+    std::string type_str = bbs_get_attribute_value_string(attributes, num_attributes, FONT_DESCRIPTOR_TYPE_ATTR);
+    EmbossStyle::Type type = bimap_cvt(type_to_name, std::string_view{type_str}, EmbossStyle::Type::undefined);
+
+    std::string text = bbs_get_attribute_value_string(attributes, num_attributes, TEXT_DATA_ATTR);
+    EmbossStyle es{style_name, std::move(font_descriptor), type, std::move(fp)};
+    return TextConfiguration{std::move(es), std::move(text)};
+}
+
+EmbossShape TextConfigurationSerialization::read_old(const char **attributes, unsigned int num_attributes)
+{
+    EmbossShape es;
+    std::string fix_tr_mat_str = bbs_get_attribute_value_string(attributes, num_attributes, TRANSFORM_ATTR);
+    if (!fix_tr_mat_str.empty())
+        es.fix_3mf_tr = bbs_get_transform_from_3mf_specs_string(fix_tr_mat_str);
+
+
+    if (bbs_get_attribute_value_int(attributes, num_attributes, USE_SURFACE_ATTR) == 1)
+        es.projection.use_surface = true;
+
+    es.projection.depth = bbs_get_attribute_value_float(attributes, num_attributes, DEPTH_ATTR);
+
+    int use_surface = bbs_get_attribute_value_int(attributes, num_attributes, USE_SURFACE_ATTR);
+    if (use_surface == 1)
+        es.projection.use_surface = true;
+
+    return es;
+}
+
+namespace {
+Transform3d create_fix(const std::optional<Transform3d> &prev, const ModelVolume &volume)
+{
+    // IMPROVE: check if volume was modified (translated, rotated OR scaled)
+    // when no change do not calculate transformation only store original fix matrix
+
+    // Create transformation used after load actual stored volume
+    // Galaxy: do not bake volume transformation into meshes
+    // const Transform3d &actual_trmat = volume.get_matrix();
+    const Transform3d& actual_trmat = Transform3d::Identity();
+
+    const auto &vertices = volume.mesh().its.vertices;
+    Vec3d       min      = actual_trmat * vertices.front().cast<double>();
+    Vec3d       max      = min;
+    for (const Vec3f &v : vertices) {
+        Vec3d vd = actual_trmat * v.cast<double>();
+        for (size_t i = 0; i < 3; ++i) {
+            if (min[i] > vd[i])
+                min[i] = vd[i];
+            if (max[i] < vd[i])
+                max[i] = vd[i];
+        }
+    }
+    Vec3d       center     = (max + min) / 2;
+    Transform3d post_trmat = Transform3d::Identity();
+    post_trmat.translate(center);
+
+    Transform3d fix_trmat = actual_trmat.inverse() * post_trmat;
+    if (!prev.has_value())
+        return fix_trmat;
+
+    // check whether fix somehow differ previous
+    if (fix_trmat.isApprox(Transform3d::Identity(), 1e-5))
+        return *prev;
+
+    return *prev * fix_trmat;
+}
+
+bool to_xml(std::stringstream &stream, const EmbossShape::SvgFile &svg, const ModelVolume &volume, mz_zip_archive &archive){
+    if (svg.path_in_3mf.empty())
+        return true; // EmbossedText OR unwanted store .svg file into .3mf (protection of copyRight)
+
+    if (!svg.path.empty())
+        stream << SVG_FILE_PATH_ATTR << "=\"" << xml_escape_double_quotes_attribute_value(svg.path) << "\" ";
+    stream << SVG_FILE_PATH_IN_3MF_ATTR << "=\"" << xml_escape_double_quotes_attribute_value(svg.path_in_3mf) << "\" ";
+
+    std::shared_ptr<std::string> file_data = svg.file_data;
+    assert(file_data != nullptr); 
+    if (file_data == nullptr && !svg.path.empty())
+        file_data = read_from_disk(svg.path);
+    if (file_data == nullptr) {
+        BOOST_LOG_TRIVIAL(warning) << "Can't write svg file no filedata";
+        return false;
+    }
+    const std::string &file_data_str = *file_data; 
+
+    return mz_zip_writer_add_mem(&archive, svg.path_in_3mf.c_str(), 
+        (const void *) file_data_str.c_str(), file_data_str.size(), MZ_DEFAULT_COMPRESSION);
+}
+
+} // namespace
+
+void to_xml(std::stringstream &stream, const EmbossShape &es, const ModelVolume &volume, mz_zip_archive &archive)
+{
+    stream << "   <" << SHAPE_TAG << " ";
+    if (es.svg_file.has_value())
+        if(!to_xml(stream, *es.svg_file, volume, archive))
+            BOOST_LOG_TRIVIAL(warning) << "Can't write svg file defiden embossed shape into 3mf";
+    
+    stream << SHAPE_SCALE_ATTR << "=\"" << es.scale << "\" ";
+
+    if (!es.final_shape.is_healed)
+        stream << UNHEALED_ATTR << "=\"" << 1 << "\" ";
+
+    // projection
+    const EmbossProjection &p = es.projection;
+    stream << DEPTH_ATTR << "=\"" << p.depth << "\" ";
+    if (p.use_surface)
+        stream << USE_SURFACE_ATTR << "=\"" << 1 << "\" ";
+    
+    // FIX of baked transformation
+    Transform3d fix = create_fix(es.fix_3mf_tr, volume);
+    stream << TRANSFORM_ATTR << "=\"";
+    _BBS_3MF_Exporter::add_transformation(stream, fix);
+    stream << "\" ";
+
+    stream << "/>\n"; // end SHAPE_TAG    
+}
+
+std::optional<EmbossShape> read_emboss_shape(const char **attributes, unsigned int num_attributes) {    
+    double scale = bbs_get_attribute_value_float(attributes, num_attributes, SHAPE_SCALE_ATTR);
+    int unhealed = bbs_get_attribute_value_int(attributes, num_attributes, UNHEALED_ATTR);
+    bool is_healed = unhealed != 1;
+
+    EmbossProjection projection;
+    projection.depth = bbs_get_attribute_value_float(attributes, num_attributes, DEPTH_ATTR);
+    if (is_approx(projection.depth, 0.))
+        projection.depth = 10.;
+
+    int use_surface  = bbs_get_attribute_value_int(attributes, num_attributes, USE_SURFACE_ATTR);
+    if (use_surface == 1)
+        projection.use_surface = true;     
+
+    std::optional<Transform3d> fix_tr_mat;
+    std::string fix_tr_mat_str = bbs_get_attribute_value_string(attributes, num_attributes, TRANSFORM_ATTR);
+    if (!fix_tr_mat_str.empty()) { 
+        fix_tr_mat = bbs_get_transform_from_3mf_specs_string(fix_tr_mat_str);
+    }
+
+    std::string file_path = bbs_get_attribute_value_string(attributes, num_attributes, SVG_FILE_PATH_ATTR);
+    std::string file_path_3mf = bbs_get_attribute_value_string(attributes, num_attributes, SVG_FILE_PATH_IN_3MF_ATTR);
+
+    // MayBe: store also shapes to not store svg
+    // But be carefull curve will be lost -> scale will not change sampling
+    // shapes could be loaded from SVG
+    ExPolygonsWithIds shapes; 
+    // final shape could be calculated from shapes
+    HealedExPolygons final_shape;
+    final_shape.is_healed = is_healed;
+
+    EmbossShape::SvgFile svg{file_path, file_path_3mf};
+    return EmbossShape{std::move(shapes), std::move(final_shape), scale, std::move(projection), std::move(fix_tr_mat), std::move(svg)};
+}
+
 
 } // namespace Slic3r

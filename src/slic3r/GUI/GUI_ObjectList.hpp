@@ -27,7 +27,6 @@ class ModelConfig;
 class ModelObject;
 class ModelVolume;
 class TriangleMesh;
-struct TextInfo;
 enum class ModelVolumeType : int;
 
 // FIXME: broken build on mac os because of this is missing:
@@ -185,6 +184,7 @@ private:
                                                            // because it would turn off the gizmos (mainly a problem for the SLA gizmo)
 
     wxDataViewItem m_last_selected_item {nullptr};
+
 #ifdef __WXMSW__
     // Workaround for entering the column editing mode on Windows. Simulate keyboard enter when another column of the active line is selected.
     int 	    m_last_selected_column = -1;
@@ -205,7 +205,7 @@ private:
 
 public:
     ObjectList(wxWindow* parent);
-    ~ObjectList();
+    ~ObjectList() override;
 
     void set_min_height();
     void update_min_height();
@@ -215,6 +215,7 @@ public:
     std::vector<ModelObject*>*  objects() const     { return m_objects; }
 
     ModelObject*                object(const int obj_idx) const ;
+
 
     void                create_objects_ctrl();
     // BBS
@@ -285,7 +286,6 @@ public:
     void                load_mesh_object(const TriangleMesh &mesh, const wxString &name, bool center = true);
     // BBS
     void                switch_to_object_process();
-    int                 load_mesh_part(const TriangleMesh &mesh, const wxString &name, const TextInfo &text_info, bool is_temp);
     bool                del_object(const int obj_idx, bool refresh_immediately = true);
     void                del_subobject_item(wxDataViewItem& item);
     void                del_settings_from_config(const wxDataViewItem& parent_item);
@@ -297,9 +297,10 @@ public:
     void                del_info_item(const int obj_idx, InfoItemType type);
     void                split();
     void                merge(bool to_multipart_object);
-    void                merge_volumes(); // BBS: merge parts to single part
+    // void                merge_volumes(); // BBS: merge parts to single part
     void                layers_editing();
 
+    void                boolean();    // BBS: Boolean Operation of parts
     wxDataViewItem      add_layer_root_item(const wxDataViewItem obj_item);
     wxDataViewItem      add_settings_item(wxDataViewItem parent_item, const DynamicPrintConfig* config);
 
@@ -310,6 +311,7 @@ public:
     bool                can_split_instances();
     bool                can_merge_to_multipart_object() const;
     bool                can_merge_to_single_object() const;
+    bool                can_mesh_boolean() const;
 
     bool                has_selected_cut_object() const;
     void                invalidate_cut_info_for_selection();
@@ -325,7 +327,9 @@ public:
     void                part_selection_changed();
 
     // Add object to the list
-    void add_object_to_list(size_t obj_idx, bool call_selection_changed = true, bool notify_partplate = true);
+    // @param do_info_update: [Arthur] this function becomes slow as more functions are added, but I only need a fast version in FillBedJob, and I don't care about any info updates, so I pass a do_info_update param to skip all the uneccessary steps.
+    void add_objects_to_list(std::vector<size_t> obj_idxs, bool call_selection_changed = true, bool notify_partplate = true, bool do_info_update = true);
+    void add_object_to_list(size_t obj_idx, bool call_selection_changed = true, bool notify_partplate = true, bool do_info_update = true);
     // Add object's volumes to the list
     // Return selected items, if add_to_selection is defined
     wxDataViewItemArray add_volumes_to_object_in_list(size_t obj_idx, std::function<bool(const ModelVolume *)> add_to_selection = nullptr);
@@ -450,6 +454,10 @@ public:
     void object_config_options_changed(const ObjectVolumeID& ov_id);
     void printable_state_changed(const std::vector<ObjectVolumeID>& ov_ids);
 
+    // search objectlist
+    void assembly_plate_object_name();
+    void selected_object(ObjectDataViewModelNode* item);
+
 private:
 #ifdef __WXOSX__
 //    void OnChar(wxKeyEvent& event);
@@ -468,6 +476,7 @@ private:
 
     void ItemValueChanged(wxDataViewEvent &event);
     // Workaround for entering the column editing mode on Windows. Simulate keyboard enter when another column of the active line is selected.
+    void OnStartEditing(wxDataViewEvent &event);
 	void OnEditingStarted(wxDataViewEvent &event);
     void OnEditingDone(wxDataViewEvent &event);
 
@@ -475,6 +484,7 @@ private:
     void apply_object_instance_transfrom_to_all_volumes(ModelObject *model_object, bool need_update_assemble_matrix = true);
 
     std::vector<int> m_columns_width;
+    wxSize           m_last_size;
 };
 
 

@@ -1,3 +1,14 @@
+///|/ Copyright (c) Prusa Research 2016 - 2023 Vojtěch Bubník @bubnikv, Filip Sykala @Jony01, Lukáš Matěna @lukasmatena, Tomáš Mészáros @tamasmeszaros, Enrico Turri @enricoturri1966
+///|/ Copyright (c) Slic3r 2013 - 2015 Alessandro Ranellucci @alranel
+///|/ Copyright (c) 2014 Petr Ledvina @ledvinap
+///|/
+///|/ ported from lib/Slic3r/Polygon.pm:
+///|/ Copyright (c) Prusa Research 2017 - 2022 Vojtěch Bubník @bubnikv
+///|/ Copyright (c) Slic3r 2011 - 2014 Alessandro Ranellucci @alranel
+///|/ Copyright (c) 2012 Mark Hindess
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #include "BoundingBox.hpp"
 #include "ClipperUtils.hpp"
 #include "Exception.hpp"
@@ -237,7 +248,7 @@ Points filter_points_by_vectors(const Points &poly, FilterFn filter)
         // p2 is next point to the currently visited point p1.
         Vec2d v2 = (p2 - p1).cast<double>();
         if (filter(v1, v2))
-            out.emplace_back(p2);
+            out.emplace_back(p1);
         v1 = v2;
         p1 = p2;
     }
@@ -249,7 +260,7 @@ template<typename ConvexConcaveFilterFn>
 Points filter_convex_concave_points_by_angle_threshold(const Points &poly, double angle_threshold, ConvexConcaveFilterFn convex_concave_filter)
 {
     assert(angle_threshold >= 0.);
-    if (angle_threshold < EPSILON) {
+    if (angle_threshold > EPSILON) {
         double cos_angle  = cos(angle_threshold);
         return filter_points_by_vectors(poly, [convex_concave_filter, cos_angle](const Vec2d &v1, const Vec2d &v2){
             return convex_concave_filter(v1, v2) && v1.normalized().dot(v2.normalized()) < cos_angle;
@@ -454,6 +465,38 @@ bool has_duplicate_points(const Polygons &polys)
 #endif
 }
 
+bool remove_same_neighbor(Polygon &polygon)
+{
+    Points &points = polygon.points;
+    if (points.empty())
+        return false;
+    auto last = std::unique(points.begin(), points.end());
+
+    // remove first and last neighbor duplication
+    if (const Point &last_point = *(last - 1); last_point == points.front()) {
+        --last;
+    }
+
+    // no duplicits
+    if (last == points.end())
+        return false;
+
+    points.erase(last, points.end());
+    return true;
+}
+
+bool remove_same_neighbor(Polygons &polygons)
+{
+    if (polygons.empty())
+        return false;
+    bool exist = false;
+    for (Polygon &polygon : polygons)
+        exist |= remove_same_neighbor(polygon);
+    // remove empty polygons
+    polygons.erase(std::remove_if(polygons.begin(), polygons.end(), [](const Polygon &p) { return p.points.size() <= 2; }), polygons.end());
+    return exist;
+}
+
 static inline bool is_stick(const Point &p1, const Point &p2, const Point &p3)
 {
     Point v1 = p2 - p1;
@@ -594,7 +637,7 @@ void remove_collinear(Polygons &polys)
 		remove_collinear(poly);
 }
 
-Polygons polygons_simplify(const Polygons &source_polygons, double tolerance)
+Polygons polygons_simplify(const Polygons &source_polygons, double tolerance, bool strictly_simple /* = true */)
 {
     Polygons out;
     out.reserve(source_polygons.size());
@@ -605,7 +648,7 @@ Polygons polygons_simplify(const Polygons &source_polygons, double tolerance)
         simplified.pop_back();
         // Simplify the decimated contour by ClipperLib.
         bool ccw = ClipperLib::Area(simplified) > 0.;
-        for (Points &path : ClipperLib::SimplifyPolygons(ClipperUtils::SinglePathProvider(simplified), ClipperLib::pftNonZero)) {
+        for (Points &path : ClipperLib::SimplifyPolygons(ClipperUtils::SinglePathProvider(simplified), ClipperLib::pftNonZero, strictly_simple)) {
             if (! ccw)
                 // ClipperLib likely reoriented negative area contours to become positive. Reverse holes back to CW.
                 std::reverse(path.begin(), path.end());
@@ -663,5 +706,24 @@ bool contains(const Polygons &polygons, const Point &p, bool border_result)
         poly_count_inside += is_inside_this_poly;
     }
     return (poly_count_inside % 2) == 1;
+}
+
+Polygon make_circle(double radius, double error)
+{
+    double angle = 2. * acos(1. - error / radius);
+    size_t num_segments = size_t(ceil(2. * M_PI / angle));
+    return make_circle_num_segments(radius, num_segments);
+}
+
+Polygon make_circle_num_segments(double radius, size_t num_segments)
+{
+    Polygon out;
+    out.points.reserve(num_segments);
+    double angle_inc = 2.0 * M_PI / num_segments;
+    for (size_t i = 0; i < num_segments; ++ i) {
+        const double angle = angle_inc * i;
+        out.points.emplace_back(coord_t(cos(angle) * radius), coord_t(sin(angle) * radius));
+    }
+    return out;
 }
 }

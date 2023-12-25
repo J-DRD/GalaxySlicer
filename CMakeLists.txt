@@ -42,7 +42,6 @@ set(SLIC3R_GTK "2" CACHE STRING "GTK version to use with wxWidgets on Linux")
 
 set(IS_CROSS_COMPILE FALSE)
 
-
 if (APPLE)
     set(CMAKE_FIND_FRAMEWORK LAST)
     set(CMAKE_FIND_APPBUNDLE LAST)
@@ -113,6 +112,10 @@ if (MSVC)
     # C4267: The compiler detected a conversion from size_t to a smaller type.
     add_compile_options(/wd4244 /wd4267)
 endif ()
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER 15)
+    add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE _HAS_AUTO_PTR_ETC=0)
+endif()
 
 if (MINGW)
     add_compile_options(-Wa,-mbig-obj)
@@ -281,6 +284,11 @@ if (APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=partial-availability -Werror=unguarded-availability -Werror=unguarded-availability-new")
 endif ()
 
+if(MSVC)
+# 添加编译选项，忽略警告 C4305 （格式转换截断）
+add_compile_options(/wd4305)
+endif()
+
 # Where all the bundled libraries reside?
 set(LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(LIBDIR_BIN ${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -324,6 +332,16 @@ if(CMAKE_CXX_FLAGS_RELWITHDEBINFO MATCHES "/O2")
     string(REGEX REPLACE "/O2" "/Od" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    if(CMAKE_C_FLAGS_RELWITHDEBINFO MATCHES "-O2")
+        string(REGEX REPLACE "-O2" "-O0" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+    endif()
+
+    if(CMAKE_CXX_FLAGS_RELWITHDEBINFO MATCHES "-O2")
+        string(REGEX REPLACE "-O2" "-O0" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    endif()
+endif()
+
 if(MSVC)
     if(CMAKE_C_FLAGS_RELWITHDEBINFO MATCHES "/Ob1")
         string(REGEX REPLACE "/Ob1" "/Ob0" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
@@ -350,7 +368,7 @@ endif()
 # set(Boost_COMPILER "-mgw81")
 # boost::process was introduced first in version 1.64.0,
 # boost::beast::detail::base64 was introduced first in version 1.66.0
-set(MINIMUM_BOOST_VERSION "1.66.0")
+set(MINIMUM_BOOST_VERSION "1.75.0")
 set(_boost_components "system;filesystem;thread;log;locale;regex;chrono;atomic;date_time;iostreams")
 find_package(Boost ${MINIMUM_BOOST_VERSION} REQUIRED COMPONENTS ${_boost_components})
 
@@ -406,9 +424,7 @@ if(SLIC3R_STATIC)
     set(TBB_STATIC 1)
 endif()
 set(TBB_DEBUG 1)
-
 set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo Release "")
-
 find_package(TBB REQUIRED)
 # include_directories(${TBB_INCLUDE_DIRS})
 # add_definitions(${TBB_DEFINITIONS})
@@ -505,10 +521,16 @@ find_package(glfw3 REQUIRED)
 
 # Find the Cereal serialization library
 find_package(cereal REQUIRED)
+if (NOT TARGET cereal::cereal)
+    set_target_properties(cereal PROPERTIES IMPORTED_GLOBAL TRUE)
+    add_library(cereal::cereal ALIAS cereal)
+else ()
+    set_target_properties(cereal::cereal PROPERTIES IMPORTED_GLOBAL TRUE)
+endif ()
 
 # l10n
 set(L10N_DIR "${SLIC3R_RESOURCES_DIR}/i18n")
-set(BBL_L18N_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bbl/i18n")
+set(BBL_L18N_DIR "${CMAKE_CURRENT_SOURCE_DIR}/localization/i18n")
 add_custom_target(gettext_make_pot
     COMMAND xgettext --keyword=L --keyword=_L --keyword=_u8L --keyword=L_CONTEXT:1,2c --keyword=_L_PLURAL:1,2 --add-comments=TRN --from-code=UTF-8 --no-location --debug --boost
         -f "${BBL_L18N_DIR}/list.txt"
@@ -566,9 +588,23 @@ else ()
                    "OpenVDB installation with the OPENVDB_FIND_MODULE_PATH cache variable.")
 endif ()
 
+find_path(SPNAV_INCLUDE_DIR spnav.h)
+if (SPNAV_INCLUDE_DIR)
+    find_library(HAVE_SPNAV spnav)
+    if (HAVE_SPNAV)
+        add_definitions(-DHAVE_SPNAV)
+        add_library(libspnav SHARED IMPORTED)
+        target_link_libraries(libspnav INTERFACE spnav)
+        message(STATUS "SPNAV library found")
+    else()
+        message(STATUS "SPNAV library NOT found, Spacenavd not supported")
+    endif()
+else()
+    message(STATUS "SPNAV library NOT found, Spacenavd not supported")
+endif()
 
 set(TOP_LEVEL_PROJECT_DIR ${PROJECT_SOURCE_DIR})
-function(GalaxySlicer_copy_dlls target config postfix output_dlls)
+function(galaxyslicer_copy_dlls target config postfix output_dlls)
     if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
         set(_bits 64)
     elseif ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
@@ -697,7 +733,10 @@ endif()
 
 # Resources install target, configure fhs.hpp on UNIX
 if (WIN32)
-    install(DIRECTORY "${SLIC3R_RESOURCES_DIR}/" DESTINATION "${CMAKE_INSTALL_PREFIX}/resources")
+    install(DIRECTORY "${SLIC3R_RESOURCES_DIR}/" DESTINATION "./resources")
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+    include(InstallRequiredSystemLibraries) 
+    install (PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION ".")
 elseif (SLIC3R_FHS)
     # CMAKE_INSTALL_FULL_DATAROOTDIR: read-only architecture-independent data root (share)
     set(SLIC3R_FHS_RESOURCES "${CMAKE_INSTALL_FULL_DATAROOTDIR}/GalaxySlicer")
@@ -706,8 +745,8 @@ elseif (SLIC3R_FHS)
     )
     install(FILES src/platform/unix/GalaxySlicer.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
     foreach(SIZE 32 128 192)
-        install(FILES ${SLIC3R_RESOURCES_DIR}/images/BambuStudio_${SIZE}px.png
-            DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/${SIZE}x${SIZE}/apps RENAME BambuStudio.png
+        install(FILES ${SLIC3R_RESOURCES_DIR}/images/GalaxySlicer_${SIZE}px.png
+            DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/${SIZE}x${SIZE}/apps RENAME GalaxySlicer.png
         )
     endforeach()
 elseif (CMAKE_MACOSX_BUNDLE)
@@ -717,4 +756,34 @@ else ()
     install(DIRECTORY "${SLIC3R_RESOURCES_DIR}/" DESTINATION "${CMAKE_INSTALL_PREFIX}/resources")
 endif ()
 
+install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt DESTINATION ".")
 configure_file(${LIBDIR}/platform/unix/fhs.hpp.in ${LIBDIR_BIN}/platform/unix/fhs.hpp)
+
+set (CPACK_PACKAGE_NAME "GalaxySlicer")
+set (CPACK_PACKAGE_VENDOR "SoftFever")
+set (CPACK_PACKAGE_VERSION_MAJOR "${SLIC3R_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${SLIC3R_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${SLIC3R_VERSION_PATCH}")
+set (CPACK_PACKAGE_FILE_NAME "GalaxySlicer_Windows_Installer_${GalaxySlicer_VERSION}")
+set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "GalaxySlicer is an open source slicer for FDM printers")
+set (CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/Fr3ak2402/GalaxySlicer")
+set (CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+set (CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/images\\\\GalaxySlicer.ico")
+set (CPACK_NSIS_MUI_ICON "${CPACK_PACKAGE_ICON}")
+set (CPACK_NSIS_MUI_UNIICON "${CPACK_PACKAGE_ICON}")
+set (CPACK_NSIS_INSTALLED_ICON_NAME  "$INSTDIR\\\\galaxy-slicer.exe")
+set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+    CreateShortCut \\\"$DESKTOP\\\\GalaxySlicer.lnk\\\" \\\"$INSTDIR\\\\galaxy-slicer.exe\\\"
+")
+set (CPACK_PACKAGE_CHECKSUM SHA256)
+set (CPACK_PACKAGE_INSTALL_REGISTRY_KEY "GalaxySlicer")
+set (CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+set (CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
+# set (CPACK_NSIS_MODIFY_PATH "ON")
+set(CPACK_PACKAGE_EXECUTABLES "galaxy-slicer;GalaxySlicer")
+set(CPACK_CREATE_DESKTOP_LINKS "galaxy-slicer")
+set (CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE.txt) # must also include in install command
+
+set(CPACK_WIX_UPGRADE_GUID "058245e8-20e0-4a95-9ab7-1acfe17ad511")
+set(CPACK_GENERATOR NSIS)
+include(CPack)

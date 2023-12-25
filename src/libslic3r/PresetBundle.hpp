@@ -9,8 +9,22 @@
 #include <unordered_map>
 #include <boost/filesystem/path.hpp>
 
-#define DEFAULT_USER_FOLDER_NAME     "default"
+#define DEFAULT_USER_FOLDER_NAME "default"
+#define BUNDLE_STRUCTURE_JSON_NAME "bundle_structure.json"
 
+#define VALIDATE_PRESETS_SUCCESS                0
+#define VALIDATE_PRESETS_PRINTER_NOT_FOUND      1
+#define VALIDATE_PRESETS_FILAMENTS_NOT_FOUND    2
+#define VALIDATE_PRESETS_MODIFIED_GCODES        3
+
+
+// define an enum class of vendor type
+enum class VendorType {
+    Unknown = 0,
+    Klipper,
+    Marlin,
+    Marlin_BBL
+};
 namespace Slic3r {
 
 // Bundle of Print + Filament + Printer presets.
@@ -50,6 +64,12 @@ public:
     PresetsConfigSubstitutions load_user_presets(std::string user, ForwardCompatibilitySubstitutionRule rule);
     PresetsConfigSubstitutions load_user_presets(AppConfig &config, std::map<std::string, std::map<std::string, std::string>>& my_presets, ForwardCompatibilitySubstitutionRule rule);
     PresetsConfigSubstitutions import_presets(std::vector<std::string> &files, std::function<int(std::string const &)> override_confirm, ForwardCompatibilitySubstitutionRule rule);
+    bool                       import_json_presets(PresetsConfigSubstitutions &            substitutions,
+                                                   std::string &                           file,
+                                                   std::function<int(std::string const &)> override_confirm,
+                                                   ForwardCompatibilitySubstitutionRule    rule,
+                                                   int &                                   overwrite,
+                                                   std::vector<std::string> &              result);
     void save_user_presets(AppConfig& config, std::vector<std::string>& need_to_delete_list);
     void remove_users_preset(AppConfig &config, std::map<std::string, std::map<std::string, std::string>> * my_presets = nullptr);
     void update_user_presets_directory(const std::string preset_folder);
@@ -57,7 +77,7 @@ public:
     void update_system_preset_setting_ids(std::map<std::string, std::map<std::string, std::string>>& system_presets);
 
     //BBS: add API to get previous machine
-    bool validate_printers(const std::string &name, DynamicPrintConfig& config);
+    int validate_presets(const std::string &file_name, DynamicPrintConfig& config, std::set<std::string>& different_gcodes);
 
     //BBS: add function to generate differed preset for save
     //the pointer should be freed by the caller
@@ -66,6 +86,11 @@ public:
 
     //BBS: get vendor's current version
     Semver get_vendor_profile_version(std::string vendor_name);
+
+    // Galaxy: get vendor type
+    VendorType get_current_vendor_type();
+    // Vendor related handy functions
+    bool is_bbl_vendor() { return get_current_vendor_type() == VendorType::Marlin_BBL; }
 
     //BBS: project embedded preset logic
     PresetsConfigSubstitutions load_project_embedded_presets(std::vector<Preset*> project_presets, ForwardCompatibilitySubstitutionRule substitution_rule);
@@ -86,6 +111,10 @@ public:
     //BBS: check whether this is the only edited filament
     bool is_the_only_edited_filament(unsigned int filament_index);
 
+    // Galaxy: update selected filament and print
+    void           update_selections(AppConfig &config);
+    void set_calibrate_printer(std::string name);
+
     PresetCollection            prints;
     PresetCollection            sla_prints;
     PresetCollection            filaments;
@@ -98,7 +127,10 @@ public:
     // extruders.size() should be the same as printers.get_edited_preset().config.nozzle_diameter.size()
     std::vector<std::string>    filament_presets;
     // BBS: ams
-    std::vector<DynamicPrintConfig> filament_ams_list;
+    std::map<int, DynamicPrintConfig> filament_ams_list;
+    // Calibrate
+    Preset const * calibrate_printer = nullptr;
+    std::set<Preset const *> calibrate_filaments;
 
     // The project configuration values are kept separated from the print/filament/printer preset,
     // they are being serialized / deserialized from / to the .amf, .3mf, .config, .gcode,
@@ -154,6 +186,7 @@ public:
         // Load a system config bundle.
         LoadSystem,
         LoadVendorOnly,
+        LoadFilamentOnly,
     };
     using LoadConfigBundleAttributes = enum_bitmask<LoadConfigBundleAttribute>;
     // Load the config bundle based on the flags.
@@ -170,7 +203,7 @@ public:
     //void export_current_configbundle(const std::string &path);
     //BBS: add a function to export system presets for cloud-slicer
     //void export_system_configs(const std::string &path);
-    std::vector<std::string> export_current_configs(const std::string &path, std::function<int(std::string const &)> override_confirm, 
+    std::vector<std::string> export_current_configs(const std::string &path, std::function<int(std::string const &)> override_confirm,
         bool include_modify, bool export_system_settings = false);
 
     // Enable / disable the "- default -" preset.
@@ -199,10 +232,15 @@ public:
 
     const std::string&          get_preset_name_by_alias(const Preset::Type& preset_type, const std::string& alias) const;
 
+    const int                   get_required_hrc_by_filament_type(const std::string& filament_type) const;
     // Save current preset of a provided type under a new name. If the name is different from the old one,
     // Unselected option would be reverted to the beginning values
     //BBS: add project embedded preset logic
     void                        save_changes_for_preset(const std::string& new_name, Preset::Type type, const std::vector<std::string>& unselected_options, bool save_to_project = false);
+
+    std::pair<PresetsConfigSubstitutions, std::string> load_system_models_from_json(ForwardCompatibilitySubstitutionRule compatibility_rule);
+    std::pair<PresetsConfigSubstitutions, std::string> load_system_filaments_json(ForwardCompatibilitySubstitutionRule compatibility_rule);
+    VendorProfile                                      get_custom_vendor_models() const;
 
     //BBS: add BBL as default
     static const char *BBL_BUNDLE;

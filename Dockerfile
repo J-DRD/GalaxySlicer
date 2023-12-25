@@ -1,4 +1,4 @@
-FROM docker.io/ubuntu:20.04
+FROM docker.io/ubuntu:22.04
 LABEL maintainer "DeftDawg <DeftDawg@gmail.com>"
 
 # Disable interactive package configuration
@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install  -y \
     libosmesa6-dev \
     libsecret-1-dev \
     libsoup2.4-dev \
+    libssl3 \
     libssl-dev \
     libudev-dev \
     libwayland-dev \
@@ -54,13 +55,13 @@ RUN apt-get update && apt-get install  -y \
 ENV LC_ALL=en_US.utf8
 RUN locale-gen $LC_ALL
 
-# Set this so that GalaxySlicer doesn't complain about
+# Set this so that Bambu Studio doesn't complain about
 # the CA cert path on every startup
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
-COPY ./ BambuStudio
+COPY ./ GalaxySlicer
 
-WORKDIR BambuStudio
+WORKDIR /GalaxySlicer
 
 # These can run together, but we run them seperate for podman caching
 # Update System dependencies
@@ -76,7 +77,7 @@ RUN ./BuildLinux.sh -s
 ENV container podman
 RUN ./BuildLinux.sh -i
 
-# It's easier to run GalaxySlicer as the same username,
+# It's easier to run Bambu Studio as the same username,
 # UID and GID as your workstation.  Since we bind mount
 # your home directory into the container, it's handy
 # to keep permissions the same.  Just in case, defaults
@@ -86,9 +87,9 @@ ARG USER=root
 ARG UID=0
 ARG GID=0
 RUN [[ "$UID" != "0" ]] \
-  && groupadd -g $GID $USER \
+  && groupadd -f -g $GID $USER \
   && useradd -u $UID -g $GID $USER
 
 # Using an entrypoint instead of CMD because the binary
 # accepts several command line arguments.
-ENTRYPOINT ["/BambuStudio/build/package/bin/galaxy-slicer"]
+ENTRYPOINT ["/GalaxySlicer/build/package/bin/galaxy-slicer"]

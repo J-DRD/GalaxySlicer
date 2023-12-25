@@ -46,9 +46,10 @@ bool SlicingProcessCompletedEvent::critical_error() const
 	} catch (const Slic3r::SlicingError &) {
 		// Exception derived from SlicingError is non-critical.
 		return false;
-	} catch (...) {
-	}
-	return true;
+    } catch (const Slic3r::SlicingErrors &) {
+        return false;
+    } catch (...) {}
+    return true;
 }
 
 bool SlicingProcessCompletedEvent::invalidate_plater() const
@@ -69,7 +70,7 @@ bool SlicingProcessCompletedEvent::invalidate_plater() const
 	return false;
 }
 
-std::pair<std::string, size_t> SlicingProcessCompletedEvent::format_error_message() const
+std::pair<std::string, std::vector<size_t>> SlicingProcessCompletedEvent::format_error_message() const
 {
 	std::string error;
     size_t      monospace = 0;
@@ -88,12 +89,20 @@ std::pair<std::string, size_t> SlicingProcessCompletedEvent::format_error_messag
     } catch (SlicingError &ex) {
 		error = ex.what();
 		monospace = ex.objectId();
+    } catch (SlicingErrors &exs) {
+        std::vector<size_t> ids;
+        for (auto &ex : exs.errors_) {
+            error     = ex.what();
+            monospace = ex.objectId();
+            ids.push_back(monospace);
+        }
+        return std::make_pair(std::move(error), ids);
     } catch (std::exception &ex) {
-		error = ex.what();
-	} catch (...) {
-		error = "Unknown C++ exception.";
-	}
-	return std::make_pair(std::move(error), monospace);
+        error = ex.what();
+    } catch (...) {
+        error = "Unknown C++ exception.";
+    }
+    return std::make_pair(std::move(error), std::vector<size_t>{monospace});
 }
 
 BackgroundSlicingProcess::BackgroundSlicingProcess()
@@ -186,15 +195,14 @@ std::string BackgroundSlicingProcess::output_filepath_for_project(const boost::f
 void BackgroundSlicingProcess::process_fff()
 {
     assert(m_print == m_fff_print);
-    PresetBundle &preset_bundle = *wxGetApp().preset_bundle;
-    m_fff_print->is_BBL_printer() = preset_bundle.printers.get_edited_preset().is_bbl_vendor_preset(&preset_bundle);
+    m_fff_print->is_BBL_printer() = wxGetApp().preset_bundle->is_bbl_vendor();
 	//BBS: add the logic to process from an existed gcode file
 	if (m_print->finished()) {
 		BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" %1%: skip slicing, to process previous gcode file")%__LINE__;
 		m_fff_print->set_status(80, _utf8(L("Processing G-Code from Previous file...")));
 		wxCommandEvent evt(m_event_slicing_completed_id);
 		// Post the Slicing Finished message for the G-code viewer to update.
-		// Passing the timestamp
+		// Passing the timestamp 
 		evt.SetInt((int)(m_fff_print->step_state_with_timestamp(PrintStep::psSlicingFinished).timestamp));
 		wxQueueEvent(GUI::wxGetApp().mainframe->m_plater, evt.Clone());
 
@@ -203,8 +211,12 @@ void BackgroundSlicingProcess::process_fff()
 			BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" %1%: export gcode from %2% directly to %3%")%__LINE__%m_temp_output_path %m_export_path;
 		}
 		else {
-			m_fff_print->export_gcode_from_previous_file(m_temp_output_path, m_gcode_result, [this](const ThumbnailsParams& params) { return this->render_thumbnails(params); });
-			BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" %1%: export_gcode_from_previous_file from %2% finished")%__LINE__ % m_temp_output_path;
+            if (m_upload_job.empty()) {
+                m_fff_print->export_gcode_from_previous_file(m_temp_output_path, m_gcode_result, [this](const ThumbnailsParams &params) {
+                    return this->render_thumbnails(params);
+                });
+            }
+            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" %1%: export_gcode_from_previous_file from %2% finished")%__LINE__ % m_temp_output_path;
 		}
 	}
 	else {
@@ -265,7 +277,7 @@ void BackgroundSlicingProcess::process_sla()
 
 			//BBS: add plate id for thumbnail generation
             ThumbnailsList thumbnails = this->render_thumbnails(
-				ThumbnailsParams{ THUMBNAIL_SIZE, true, true, true, true, 0 });
+				ThumbnailsParams{ current_print()->full_print_config().option<ConfigOptionPoints>("thumbnails")->values, true, true, true, true, 0 });
 
             Zipper zipper(export_path);
             m_sla_archive.export_print(zipper, *m_sla_print);																											         // true, false, true, true); // renders also supports and pad
@@ -308,6 +320,8 @@ void BackgroundSlicingProcess::thread_proc()
 			break;
 		// Process the background slicing task.
 		m_state = STATE_RUNNING;
+		//BBS: internal cancel
+		m_internal_cancelled = false;
 		lck.unlock();
 		std::exception_ptr exception;
 #ifdef _WIN32
@@ -327,6 +341,10 @@ void BackgroundSlicingProcess::thread_proc()
 				exception ? SlicingProcessCompletedEvent::Error : SlicingProcessCompletedEvent::Finished, exception);
 			BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": send SlicingProcessCompletedEvent to main, status %1%")%evt.status();
 			wxQueueEvent(GUI::wxGetApp().mainframe->m_plater, evt.Clone());
+		}
+		else {
+			//BBS: internal cancel
+			m_internal_cancelled = true;
 		}
 		m_print->restart();
 		lck.unlock();
@@ -650,6 +668,9 @@ bool BackgroundSlicingProcess::empty() const
 StringObjectException BackgroundSlicingProcess::validate(StringObjectException *warning, Polygons* collison_polygons, std::vector<std::pair<Polygon, float>>* height_polygons)
 {
 	assert(m_print != nullptr);
+    assert(m_print == m_fff_print);
+
+    m_fff_print->is_BBL_printer() = wxGetApp().preset_bundle->is_bbl_vendor();
     return m_print->validate(warning, collison_polygons, height_polygons);
 }
 

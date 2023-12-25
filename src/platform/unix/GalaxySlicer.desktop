@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=GalaxySlicer
 GenericName=3D Printing Software
-Icon=BambuStudio
+Icon=GalaxySlicer
 Exec=galaxy-slicer %F
 Terminal=false
 Type=Application

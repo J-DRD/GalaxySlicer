@@ -31,23 +31,13 @@
 #include "Widgets/AMSControl.hpp"
 #include "Widgets/FanControl.hpp"
 #include "HMS.hpp"
-#include "Widgets/ErrorMsgStaticText.hpp"
+
 class StepIndicator;
 
-#define COMMAND_TIMEOUT_U0      15
 #define COMMAND_TIMEOUT         5
 
 namespace Slic3r {
 namespace GUI {
-
-enum MonitorStatus {
-    MONITOR_UNKNOWN             = 0,
-    MONITOR_NORMAL              = 1 << 1,
-    MONITOR_NO_PRINTER          = 1 << 2,
-    MONITOR_DISCONNECTED        = 1 << 3,
-    MONITOR_DISCONNECTED_SERVER = 1 << 4,
-    MONITOR_CONNECTING          = 1 << 5,
-};
 
 enum CameraRecordingStatus {
     RECORDING_NONE,
@@ -63,6 +53,198 @@ enum CameraTimelapseStatus {
     TIMELAPSE_OFF_HOVER,
     TIMELAPSE_ON_NORMAL,
     TIMELAPSE_ON_HOVER,
+};
+
+enum PrintingTaskType {
+    PRINGINT,
+    CALIBRATION,
+};
+
+struct ScoreData
+{
+    int                                            rating_id;
+    int                                            design_id;
+    std::string                                    model_id;
+    int                                            profile_id;
+    int                                            star_count;
+    bool                                           success_printed;
+    wxString                                       comment_text;
+    std::vector<std::string>                       image_url_paths;
+    std::set<wxString>                             need_upload_images;
+    std::vector<std::pair<wxString, std::string>>  local_to_url_image;
+};
+
+typedef std::function<void(BBLModelTask* subtask)> OnGetSubTaskFn;
+
+class ScoreDialog : public GUI::DPIDialog
+{
+public:
+    ScoreDialog(wxWindow *parent, int design_id, std::string model_id, int profile_id, int rating_id, bool success_printed, int star_count = 0);
+    ScoreDialog(wxWindow *parent, ScoreData *score_data);
+    ~ScoreDialog();
+
+    int       get_rating_id() { return m_rating_id; }
+    ScoreData get_score_data();
+    void      set_comment(std::string comment);
+    void      set_cloud_bitmap(std::vector<std::string> cloud_bitmaps);
+
+protected:
+    enum StatusCode { 
+        UPLOAD_PROGRESS = 0, 
+        UPLOAD_EXIST_ISSUE, 
+        UPLOAD_IMG_FAILED,
+        CODE_NUMBER 
+    };
+
+    std::shared_ptr<int>     m_tocken;
+    const int                m_photo_nums = 16;
+    int                      m_rating_id;
+    int                      m_design_id;
+    std::string              m_model_id;
+    int                      m_profile_id;
+    int                      m_star_count;
+    bool                     m_success_printed;
+    std::vector<std::string> m_image_url_paths;
+    StatusCode               m_upload_status_code;
+
+    struct ImageMsg
+    {
+        wxString          local_image_url; //local image path
+        std::string       img_url_paths; // oss url path
+        vector<wxPanel *> image_broad; 
+        bool              is_selected;
+        bool              is_uploaded; // load
+        wxBoxSizer *      image_tb_broad = nullptr;
+    };
+
+    std::vector<ScalableButton *>                  m_score_star;
+    wxTextCtrl *                                   m_comment_text  = nullptr;
+    Button *                                       m_button_ok     = nullptr;
+    Button *                                       m_button_cancel = nullptr;
+    Label *                                        m_add_photo     = nullptr;
+    Label *                                        m_delete_photo  = nullptr;
+    wxGridSizer *                                  m_image_sizer   = nullptr;
+    wxStaticText *                                 warning_text    = nullptr;
+    std::unordered_map<wxStaticBitmap *, ImageMsg> m_image;
+    std::unordered_set<wxStaticBitmap *>           m_selected_image_list;
+
+    void init();
+    void update_static_bitmap(wxStaticBitmap *static_bitmap, wxImage image);
+    void create_comment_text(const wxString &comment = "");
+    void load_photo(const std::vector<std::pair<wxString, std::string>> &filePaths);
+    void on_dpi_changed(const wxRect &suggested_rect) override;
+    void OnBitmapClicked(wxMouseEvent &event);
+
+    wxBoxSizer * create_broad_sizer(wxStaticBitmap *bitmap, ImageMsg &cur_image_msg);
+    wxBoxSizer * get_score_sizer();
+    wxBoxSizer * get_star_sizer();
+    wxBoxSizer * get_comment_text_sizer();
+    wxBoxSizer * get_photo_btn_sizer();
+    wxBoxSizer * get_button_sizer();
+    wxBoxSizer * get_main_sizer(const std::vector<std::pair<wxString, std::string>> &images = std::vector<std::pair<wxString, std::string>>(), const wxString &comment = "");
+
+    std::set<std::pair<wxStaticBitmap *, wxString>>        add_need_upload_imgs();
+    std::pair<wxStaticBitmap *, ImageMsg>                  create_local_thumbnail(wxString &local_path);
+    std::pair<wxStaticBitmap *, ImageMsg>                  create_oss_thumbnail(std::string &oss_path);
+    
+};
+
+class PrintingTaskPanel : public wxPanel
+{
+public:
+    PrintingTaskPanel(wxWindow* parent, PrintingTaskType type);
+    ~PrintingTaskPanel();
+    void create_panel(wxWindow* parent);
+    
+
+private:
+    MachineObject*  m_obj;
+    ScalableBitmap  m_thumbnail_placeholder;
+    wxBitmap        m_thumbnail_bmp_display;
+    ScalableBitmap  m_bitmap_use_time;
+    ScalableBitmap  m_bitmap_use_weight;
+    ScalableBitmap  m_bitmap_background;
+
+    wxPanel *       m_panel_printing_title;
+    wxPanel*        m_staticline;
+    wxPanel*        m_panel_error_txt;
+
+    wxBoxSizer*     m_printing_sizer;
+    wxStaticText *  m_staticText_printing;
+    wxStaticText*   m_staticText_subtask_value;
+    wxStaticText*   m_staticText_consumption_of_time;
+    wxStaticText*   m_staticText_consumption_of_weight;
+    wxStaticText*   m_printing_stage_value;
+    wxStaticText*   m_staticText_profile_value;
+    wxStaticText*   m_staticText_progress_percent;
+    wxStaticText*   m_staticText_progress_percent_icon;
+    wxStaticText*   m_staticText_progress_left;
+    // Galaxy: show print end time
+    wxStaticText * m_staticText_progress_end;
+    wxStaticText*   m_staticText_layers;
+    wxStaticText *  m_has_rated_prompt;
+    wxStaticText *  m_request_failed_info;
+    wxStaticBitmap* m_bitmap_thumbnail;
+    int             m_plate_index { -1 };
+    wxStaticBitmap* m_bitmap_static_use_time;
+    wxStaticBitmap* m_bitmap_static_use_weight;
+    ScalableButton* m_button_pause_resume;
+    ScalableButton* m_button_abort;
+    Button*         m_button_market_scoring;
+    Button*         m_button_clean;
+    Button *                      m_button_market_retry;
+    wxPanel *                     m_score_subtask_info;
+    wxPanel *                     m_score_staticline;
+    wxPanel *                     m_request_failed_panel;
+    // score page
+    int                           m_star_count;
+    std::vector<ScalableButton *> m_score_star;
+    bool                          m_star_count_dirty = false;
+
+    ProgressBar*    m_gauge_progress;
+    Label* m_error_text;
+    PrintingTaskType m_type;
+
+public:
+    void init_bitmaps();
+    void init_scaled_buttons();
+    void error_info_reset();
+    void show_error_msg(wxString msg);
+    void reset_printing_value();
+    void msw_rescale();
+    
+public:
+    void enable_pause_resume_button(bool enable, std::string type);
+    void enable_abort_button(bool enable);
+    void update_subtask_name(wxString name);
+    void update_stage_value(wxString stage, int val);
+    void update_progress_percent(wxString percent, wxString icon);
+    void update_left_time(wxString time);
+    void update_left_time(int mc_left_time);
+    void update_layers_num(bool show, wxString num = wxEmptyString);
+    void show_priting_use_info(bool show, wxString time = wxEmptyString, wxString weight = wxEmptyString);
+    void show_profile_info(bool show, wxString profile = wxEmptyString);
+    void set_thumbnail_img(const wxBitmap& bmp);
+    void set_plate_index(int plate_idx = -1);
+    void market_scoring_show();
+    void market_scoring_hide();
+    
+public:
+    ScalableButton* get_abort_button() {return m_button_abort;};
+    ScalableButton* get_pause_resume_button() {return m_button_pause_resume;};
+    Button* get_market_scoring_button() {return m_button_market_scoring;};
+    Button * get_market_retry_buttom() { return m_button_market_retry; };
+    Button* get_clean_button() {return m_button_clean;};
+    wxStaticBitmap* get_bitmap_thumbnail() {return m_bitmap_thumbnail;};
+    wxPanel *  get_request_failed_panel() { return m_request_failed_panel; }
+    int get_star_count() { return m_star_count; }
+    void set_star_count(int star_count);
+    std::vector<ScalableButton *> &get_score_star() { return m_score_star; }
+    bool get_star_count_dirty() { return m_star_count_dirty; }
+    void set_star_count_dirty(bool dirty) { m_star_count_dirty = dirty; }
+    void                           set_has_reted_text(bool has_rated);
+    void paint(wxPaintEvent&);
+
 };
 
 class StatusBasePanel : public wxScrolledWindow
@@ -134,6 +316,7 @@ protected:
     wxStaticBitmap *m_bitmap_thumbnail;
     wxStaticText *  m_staticText_subtask_value;
     wxStaticText *  m_printing_stage_value;
+    wxStaticText *  m_staticText_profile_value;
     ProgressBar*    m_gauge_progress;
     wxStaticText *  m_staticText_progress_percent;
     wxStaticText *  m_staticText_progress_percent_icon;
@@ -154,19 +337,22 @@ protected:
     /* TempInput */
     wxBoxSizer *    m_misc_ctrl_sizer;
     StaticBox*      m_fan_panel; 
-    TempInput *     m_tempCtrl_nozzle;
-    int             m_temp_nozzle_timeout {0};
     StaticLine *    m_line_nozzle;
+    TempInput* m_tempCtrl_nozzle;
+    int             m_temp_nozzle_timeout{ 0 };
     TempInput *     m_tempCtrl_bed;
     int             m_temp_bed_timeout {0};
-    TempInput *     m_tempCtrl_frame;
+    TempInput *     m_tempCtrl_chamber;
+    int             m_temp_chamber_timeout {0};
     bool             m_current_support_cham_fan{true};
+    bool             m_current_support_aux_fan{true};
     FanSwitchButton *m_switch_nozzle_fan;
     int             m_switch_nozzle_fan_timeout{0};
     FanSwitchButton *m_switch_printing_fan;
     int             m_switch_printing_fan_timeout{0};
     FanSwitchButton *m_switch_cham_fan;
     int             m_switch_cham_fan_timeout{0};
+    wxPanel*        m_switch_block_fan;
 
     float           m_fixed_aspect_ratio{1.8};
 
@@ -197,7 +383,7 @@ protected:
     wxBoxSizer *    m_tasklist_caption_sizer;
     wxPanel*        m_panel_error_txt;
     wxPanel*        m_staticline;
-    ErrorMsgStaticText *  m_error_text;
+    Label *         m_error_text;
     wxStaticText*   m_staticText_calibration_caption;
     wxStaticText*   m_staticText_calibration_caption_top;
     wxStaticText*   m_calibration_text;
@@ -206,7 +392,7 @@ protected:
     StepIndicator*  m_calibration_flow;
 
     wxPanel *       m_machine_ctrl_panel;
-    wxPanel *       m_project_task_panel;
+    PrintingTaskPanel *       m_project_task_panel;
 
     // Virtual event handlers, override them in your derived class
     virtual void on_subtask_pause_resume(wxCommandEvent &event) { event.Skip(); }
@@ -237,7 +423,6 @@ public:
 
     void init_bitmaps();
     wxBoxSizer *create_monitoring_page();
-    wxBoxSizer *create_project_task_page(wxWindow *parent);
     wxBoxSizer *create_machine_control_page(wxWindow *parent);
 
     wxBoxSizer *create_temp_axis_group(wxWindow *parent);
@@ -253,7 +438,7 @@ public:
     wxBoxSizer *create_ams_group(wxWindow *parent);
     wxBoxSizer *create_settings_group(wxWindow *parent);
 
-    void show_ams_group(bool show = true, bool support_virtual_tray = true, bool support_extrustion_cali = true, bool support_vt_load = true);
+    void show_ams_group(bool show = true);
 };
 
 
@@ -266,7 +451,7 @@ protected:
     std::shared_ptr<SliceInfoPopup> m_slice_info_popup;
     std::shared_ptr<ImageTransientPopup> m_image_popup;
     std::shared_ptr<CameraPopup> m_camera_popup;
-    std::vector<SliceInfoPanel *> slice_info_list;
+    std::set<int> rated_model_id;
     AMSSetting *m_ams_setting_dlg{nullptr};
     PrintOptionsDialog*  print_options_dlg { nullptr };
     CalibrationDialog*   calibration_dlg {nullptr};
@@ -290,27 +475,33 @@ protected:
     int          m_last_timelapse = -1;
     int          m_last_extrusion = -1;
     int          m_last_vcamera   = -1;
+    int          m_model_mall_request_count = 0;
     bool         m_is_load_with_temp = false;
+    json         m_rating_result;
 
     wxWebRequest web_request;
     bool bed_temp_input    = false;
     bool nozzle_temp_input = false;
+    bool cham_temp_input   = false;
+    bool request_model_info_flag = false;
     int speed_lvl = 1; // 0 - 3
     int speed_lvl_timeout {0};
     boost::posix_time::ptime speed_dismiss_time;
     bool m_showing_speed_popup = false;
-
+    bool m_show_mode_changed = false;
     std::map<wxString, wxImage> img_list; // key: url, value: wxBitmap png Image
     std::map<std::string, std::string> m_print_connect_types;
     std::vector<Button *>       m_buttons;
     int last_status;
+    ScoreData *m_score_data;
+
     void init_scaled_buttons();
-    void update_error_message();
     void create_tasklist_info();
-    void clean_tasklist_info();
     void show_task_list_info(bool show = true);
     void update_tasklist_info();
 
+    void on_market_scoring(wxCommandEvent &event);
+    void on_market_retry(wxCommandEvent &event);
     void on_subtask_pause_resume(wxCommandEvent &event);
     void on_subtask_abort(wxCommandEvent &event);
     void on_print_error_clean(wxCommandEvent &event);
@@ -337,9 +528,11 @@ protected:
     void on_nozzle_temp_kill_focus(wxFocusEvent &event);
     void on_nozzle_temp_set_focus(wxFocusEvent &event);
     void on_set_nozzle_temp();
+    void on_set_chamber_temp();
 
     /* extruder apis */
     void on_ams_load(SimpleEvent &event);
+    void update_filament_step();
     void on_ams_load_curr();
     void on_ams_unload(SimpleEvent &event);
     void on_ams_filament_backup(SimpleEvent& event);
@@ -351,9 +544,11 @@ protected:
     void on_ams_selected(wxCommandEvent &event);
     void on_ams_guide(wxCommandEvent &event);
     void on_ams_retry(wxCommandEvent &event);
-    void on_print_error_func(wxCommandEvent& event);
+    void on_print_error_done(wxCommandEvent& event);
 
     void on_fan_changed(wxCommandEvent& event);
+    void on_cham_temp_kill_focus(wxFocusEvent& event);
+    void on_cham_temp_set_focus(wxFocusEvent& event);
     void on_switch_speed(wxCommandEvent& event);
     void on_lamp_switch(wxCommandEvent &event);
     void on_printing_fan_switch(wxCommandEvent &event);
@@ -379,14 +574,15 @@ protected:
     void show_printing_status(bool ctrl_area = true, bool temp_area = true);
     void update_left_time(int mc_left_time);
     void update_basic_print_data(bool def = false);
-    void update_subtask(MachineObject *obj);
+    void update_model_info();
+    void update_subtask(MachineObject* obj);
     void update_cloud_subtask(MachineObject *obj);
     void update_sdcard_subtask(MachineObject *obj);
     void update_temp_ctrl(MachineObject *obj);
     void update_misc_ctrl(MachineObject *obj);
     void update_ams(MachineObject* obj);
     void update_extruder_status(MachineObject* obj);
-    void update_ams_control_state(bool is_support_virtual_tray, bool is_curr_tray_selected);
+    void update_ams_control_state(bool is_curr_tray_selected);
     void update_cali(MachineObject* obj);
 
     void reset_printing_values();
@@ -396,6 +592,9 @@ protected:
     /* camera */
     void update_camera_state(MachineObject* obj);
     bool show_vcamera = false;
+
+public:
+    void update_error_message();
 
 public:
     StatusPanel(wxWindow *      parent,
@@ -424,6 +623,7 @@ public:
     long           last_read_done_bits{ -1 };
     long           last_reading_bits { -1 };
     long           last_ams_version { -1 };
+    int            last_cali_version{-1};
 
     enum ThumbnailState task_thumbnail_state {ThumbnailState::PLACE_HOLDER};
     std::vector<int> last_stage_list_info;
@@ -432,7 +632,6 @@ public:
 
     void set_default();
     void show_status(int status);
-
     void set_hold_count(int& count);
 
     void rescale_camera_icons();

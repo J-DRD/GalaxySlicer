@@ -6,48 +6,73 @@
 		"files": [
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/en/GalaxySlicer_en.po",
+				"pattern": "localization/i18n/en/GalaxySlicer_en.po",
 				"lang": "en"
 			},
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/fr/GalaxySlicer_fr.po",
+				"pattern": "localization/i18n/fr/GalaxySlicer_fr.po",
 				"lang": "fr"
 			},
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/de/GalaxySlicer_de.po",
+				"pattern": "localization/i18n/de/GalaxySlicer_de.po",
 				"lang": "de"
 			},
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/sv/GalaxySlicer_sv.po",
+				"pattern": "localization/i18n/sv/GalaxySlicer_sv.po",
 				"lang": "sv"
 			},
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/es/GalaxySlicer_es.po",
+				"pattern": "localization/i18n/es/GalaxySlicer_es.po",
 				"lang": "es"
 			},
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/nl/GalaxySlicer_nl.po",
+				"pattern": "localization/i18n/nl/GalaxySlicer_nl.po",
 				"lang": "nl"
 			},
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/hu/GalaxySlicer_hu.po",
+				"pattern": "localization/i18n/tr/GalaxySlicer_tr.po",
+				"lang": "tr"
+			},
+			{
+				"type": "po",
+				"pattern": "localization/i18n/hu/GalaxySlicer_hu.po",
 				"lang": "hu"
 			},
 			{
 				"type": "po",
-				"pattern": "bbl/i18n/ja/GalaxySlicer_ja.po",
+				"pattern": "localization/i18n/ja/GalaxySlicer_ja.po",
 				"lang": "ja"
+			},
+			{
+				"type": "po",
+				"pattern": "localization/i18n/ko/GalaxySlicer_ko.po",
+				"lang": "ko"
+			},
+			{
+				"type": "po",
+				"pattern": "localization/i18n/ru/GalaxySlicer_ru.po",
+				"lang": "ru"
+			},
+			{
+				"type": "po",
+				"pattern": "localization/i18n/zh_TW/GalaxySlicer_zh_TW.po",
+				"lang": "zh_TW"
+			},
+			{
+				"type": "po",
+				"pattern": "localization/i18n/tr/GalaxySlicer_tr.po",
+				"lang": "tr"
 			}
 		]
 	},
 	"download": {
-		"folder": "bbl/i18n",
+		"folder": "localization/i18n",
 		"includeSourceLang" : "true",
 		"files": {
 			"output": "${lang}/GalaxySlicer_${lang}.po"

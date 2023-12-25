@@ -25,7 +25,7 @@ TempInput::TempInput()
 {
     hover  = false;
     radius = 0;
-    border_color = StateColor(std::make_pair(*wxWHITE, (int) StateColor::Disabled), std::make_pair(0x693A71, (int) StateColor::Focused), std::make_pair(0x693A71, (int) StateColor::Hovered),
+    border_color = StateColor(std::make_pair(*wxWHITE, (int) StateColor::Disabled), std::make_pair(0x693a71, (int) StateColor::Focused), std::make_pair(0x693a71, (int) StateColor::Hovered),
                  std::make_pair(*wxWHITE, (int) StateColor::Normal));
     background_color = StateColor(std::make_pair(*wxWHITE, (int) StateColor::Disabled), std::make_pair(*wxWHITE, (int) StateColor::Normal));
     SetFont(Label::Body_12);
@@ -117,7 +117,7 @@ void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString
         }
     });
     text_ctrl->SetFont(Label::Body_13);
-    text_ctrl->SetForegroundColour(text_color.colorForStates(StateColor::Normal));
+    text_ctrl->SetForegroundColour(StateColor::darkModeColorFor(*wxBLACK));
     if (!normal_icon.IsEmpty()) { this->normal_icon = ScalableBitmap(this, normal_icon.ToStdString(), 16); }
     if (!actice_icon.IsEmpty()) { this->actice_icon = ScalableBitmap(this, actice_icon.ToStdString(), 16); }
     this->degree_icon = ScalableBitmap(this, "degree", 16);
@@ -192,14 +192,14 @@ void TempInput::Warning(bool warn, WarningType type)
     if (warning_mode) {
         if (wdialog == nullptr) {
             wdialog = new PopupWindow(this);
-            wdialog->SetBackgroundColour(wxColour(0xFFFFFF));
+            wdialog->SetBackgroundColour(wxColour("#FFFFFF"));
 
             wdialog->SetSizeHints(wxDefaultSize, wxDefaultSize);
 
             wxBoxSizer *sizer_body = new wxBoxSizer(wxVERTICAL);
 
             auto body = new wxPanel(wdialog, wxID_ANY, wxDefaultPosition, {this->GetSize().x - 4, -1}, wxTAB_TRAVERSAL);
-            body->SetBackgroundColour(wxColour(0xFFFFFF));
+            body->SetBackgroundColour(wxColour("#FFFFFF"));
 
 
             wxBoxSizer *sizer_text;
@@ -371,8 +371,8 @@ void TempInput::render(wxDC &dc)
     if (warning_mode) {
         border_color = wxColour(255, 111, 0);
     } else {
-        border_color = StateColor(std::make_pair(*wxWHITE, (int) StateColor::Disabled), std::make_pair(0x693A71, (int) StateColor::Focused),
-                                  std::make_pair(0x693A71, (int) StateColor::Hovered), std::make_pair(*wxWHITE, (int) StateColor::Normal));
+        border_color = StateColor(std::make_pair(*wxWHITE, (int) StateColor::Disabled), std::make_pair(0x693a71, (int) StateColor::Focused),
+                                  std::make_pair(0x693a71, (int) StateColor::Hovered), std::make_pair(*wxWHITE, (int) StateColor::Normal));
     }
 
     dc.SetBrush(*wxTRANSPARENT_BRUSH);

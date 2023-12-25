@@ -43,7 +43,7 @@ namespace Slic3r {
 //static const std::string CONFIG_INHERITS_KEY = "inherits";
 //static const std::string CONFIG_INSTANT_KEY = "instantiation";
 
-// Escape \n, \r and backslash
+// Escape double quotes, \n, \r and backslash
 std::string escape_string_cstyle(const std::string &str)
 {
     // Allocate a buffer twice the input string length,
@@ -58,9 +58,9 @@ std::string escape_string_cstyle(const std::string &str)
         } else if (c == '\n') {
             (*outptr ++) = '\\';
             (*outptr ++) = 'n';
-        } else if (c == '\\') {
-            (*outptr ++) = '\\';
-            (*outptr ++) = '\\';
+        } else if (c == '\\' || c == '"') {
+            (*outptr++) = '\\';
+            (*outptr++) = c;
         } else
             (*outptr ++) = c;
     }
@@ -117,7 +117,7 @@ std::string escape_strings_cstyle(const std::vector<std::string> &strs)
     return std::string(out.data(), outptr - out.data());
 }
 
-// Unescape \n, \r and backslash
+// Unescape double quotes, \n, \r and backslash
 bool unescape_string_cstyle(const std::string &str, std::string &str_out)
 {
     std::vector<char> out(str.size(), 0);
@@ -308,6 +308,7 @@ ConfigOption* ConfigOptionDef::create_default_option() const
                 opt->keys_map = this->enum_keys_map;
                 return opt;
             }
+            delete dft;
         }
 
         return this->default_value->clone();
@@ -653,22 +654,52 @@ double ConfigBase::get_abs_value(const t_config_option_key &opt_key) const
 {
     // Get stored option value.
     const ConfigOption *raw_opt = this->option(opt_key);
+    if (raw_opt == nullptr) {
+      std::stringstream ss;
+      ss << "You can't define an option that need " << opt_key << " without defining it!";
+      throw std::runtime_error(ss.str());
+    }
     assert(raw_opt != nullptr);
+
     if (raw_opt->type() == coFloat)
         return static_cast<const ConfigOptionFloat*>(raw_opt)->value;
+    if (raw_opt->type() == coInt)
+      return static_cast<const ConfigOptionInt *>(raw_opt)->value;
+    if (raw_opt->type() == coBool)
+      return static_cast<const ConfigOptionBool *>(raw_opt)->value ? 1 : 0;
+
+    const ConfigOptionPercent *cast_opt = nullptr;
     if (raw_opt->type() == coFloatOrPercent) {
-        // Get option definition.
-        const ConfigDef *def = this->def();
-        if (def == nullptr)
-            throw NoDefinitionException(opt_key);
-        const ConfigOptionDef *opt_def = def->get(opt_key);
-        assert(opt_def != nullptr);
-        // Compute absolute value over the absolute value of the base option.
-        //FIXME there are some ratio_over chains, which end with empty ratio_with.
-        // For example, XXX_extrusion_width parameters are not handled by get_abs_value correctly.
-        return opt_def->ratio_over.empty() ? 0. :
-            static_cast<const ConfigOptionFloatOrPercent*>(raw_opt)->get_abs_value(this->get_abs_value(opt_def->ratio_over));
+        auto cofop = static_cast<const ConfigOptionFloatOrPercent*>(raw_opt);
+            if (cofop->value == 0 && boost::ends_with(opt_key, "_line_width")) {
+                return this->get_abs_value("line_width");
+            }
+            if (!cofop->percent)
+                return cofop->value;
+            cast_opt = cofop;
     }
+
+    if (raw_opt->type() == coPercent) {
+      cast_opt = static_cast<const ConfigOptionPercent *>(raw_opt);
+    }
+
+    // Get option definition.
+    const ConfigDef *def = this->def();
+    if (def == nullptr)
+        throw NoDefinitionException(opt_key);
+    const ConfigOptionDef *opt_def = def->get(opt_key);
+
+
+    assert(opt_def != nullptr);
+    if (opt_def->ratio_over == "")
+        return cast_opt->get_abs_value(1);
+    // Compute absolute value over the absolute value of the base option.
+    //FIXME there are some ratio_over chains, which end with empty ratio_with.
+    // For example, XXX_extrusion_width parameters are not handled by get_abs_value correctly.
+    return opt_def->ratio_over.empty() ? 0. :
+        static_cast<const ConfigOptionFloatOrPercent*>(raw_opt)->get_abs_value(this->get_abs_value(opt_def->ratio_over));
+    
+
     throw ConfigurationError("ConfigBase::get_abs_value(): Not a valid option type for get_abs_value()");
 }
 
@@ -706,6 +737,8 @@ void ConfigBase::setenv_() const
 //BBS
 ConfigSubstitutions ConfigBase::load_string_map(std::map<std::string, std::string>& key_values, ForwardCompatibilitySubstitutionRule compatibility_rule)
 {
+    CNumericLocalesSetter locales_setter;
+
     ConfigSubstitutionContext substitutions_ctxt(compatibility_rule);
     std::map<std::string, std::string>::iterator it;
     for (it = key_values.begin(); it != key_values.end(); it++) {
@@ -752,10 +785,16 @@ int ConfigBase::load_from_json(const std::string &file, ConfigSubstitutionContex
     json j;
     std::list<std::string> different_settings_append;
     std::string new_support_style;
+    std::string is_infill_first;
+    std::string get_wall_sequence;
     bool is_project_settings = false;
+
+    CNumericLocalesSetter locales_setter;
+
     try {
         boost::nowide::ifstream ifs(file);
         ifs >> j;
+        ifs.close();
 
         const ConfigDef* config_def = this->def();
         if (config_def == nullptr) {
@@ -810,6 +849,16 @@ int ConfigBase::load_from_json(const std::string &file, ConfigSubstitutionContex
                             different_settings_append.push_back(opt_key);
                             different_settings_append.push_back("support_style");
                             new_support_style = "tree_hybrid";
+                        }
+                    } else if (opt_key == "wall_infill_order") {
+                        //BBS: check wall_infill order to decide if it be different and append to diff_setting_append
+                        if (it.value() == "outer wall/inner wall/infill" || it.value() == "infill/outer wall/inner wall" || it.value() == "inner-outer-inner wall/infill") {
+                            get_wall_sequence = "wall_seq_diff_to_system";
+                        }
+
+                        if (it.value() == "infill/outer wall/inner wall" || it.value() == "infill/inner wall/outer wall") {
+                            different_settings_append.push_back("is_infill_first");
+                            is_infill_first = "true";
                         }
                     }
                 }
@@ -882,6 +931,12 @@ int ConfigBase::load_from_json(const std::string &file, ConfigSubstitutionContex
                 ConfigOptionEnum<SupportMaterialStyle>* opt = this->option<ConfigOptionEnum<SupportMaterialStyle>>("support_style", true);
                 opt->value = smsTreeHybrid;
             }
+
+            if (!is_infill_first.empty()) {
+                ConfigOptionBool *opt = this->option<ConfigOptionBool>("is_infill_first", true);
+                opt->value = true;
+            }
+
             if (is_project_settings) {
                 std::vector<std::string>& different_settings = this->option<ConfigOptionStrings>("different_settings_to_system", true)->values;
                 size_t size = different_settings.size();
@@ -898,6 +953,25 @@ int ConfigBase::load_from_json(const std::string &file, ConfigSubstitutionContex
                         is_first[index] = true;
                     }
                     else {
+                        // remove unneeded key
+                        if (get_wall_sequence.empty()) {
+                            std::string wall_sqe_string = "wall_sequence";
+                            int pos=different_settings[index].find(wall_sqe_string);
+
+                            if (pos != different_settings[index].npos) {
+                                int erase_len = wall_sqe_string.size();
+                                if (pos + erase_len < different_settings[index].size() && different_settings[index][pos + erase_len] == ';')
+                                    erase_len++;
+                                different_settings[index].erase(pos, erase_len);
+                            }
+
+                        }
+
+                        if (different_settings[index].empty()) {
+                            is_first[index] = true;
+                            continue;
+                        }
+
                         Slic3r::unescape_strings_cstyle(different_settings[index], original_diffs[index]);
                     }
                 }
@@ -910,6 +984,8 @@ int ConfigBase::load_from_json(const std::string &file, ConfigSubstitutionContex
                     if (diff_key == "support_type")
                         index = 0;
                     else if (diff_key == "support_style")
+                        index = 0;
+                    else if (diff_key == "is_infill_first")
                         index = 0;
 
                     //check whether exist firstly
@@ -1190,10 +1266,10 @@ ConfigSubstitutions ConfigBase::load_from_gcode_file(const std::string &file, Fo
     bool has_delimiters = true;
     {
         //BBS
-        std::string bambuslicer_gcode_header = "; BambuStudio";
+        std::string bambuslicer_gcode_header = "; GalaxySlicer";
 
-        std::string GalaxySlicer_gcode_header = std::string("; generated by ");
-        GalaxySlicer_gcode_header += SLIC3R_APP_NAME;
+        std::string galaxyslicer_gcode_header = std::string("; generated by ");
+        galaxyslicer_gcode_header += SLIC3R_APP_NAME;
 
         std::string header;
         bool        header_found = false;
@@ -1205,7 +1281,7 @@ ConfigSubstitutions ConfigBase::load_from_gcode_file(const std::string &file, Fo
             line_c = skip_whitespaces(line_c);
             // BBS
             if (strncmp(bambuslicer_gcode_header.c_str(), line_c, strlen(bambuslicer_gcode_header.c_str())) == 0 ||
-                strncmp(GalaxySlicer_gcode_header.c_str(), line_c, strlen(GalaxySlicer_gcode_header.c_str())) == 0) {
+                strncmp(galaxyslicer_gcode_header.c_str(), line_c, strlen(galaxyslicer_gcode_header.c_str())) == 0) {
                 header_found = true;
                 break;
             }

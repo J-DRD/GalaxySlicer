@@ -1,17 +1,3 @@
-
-# Use Curl 7.75.0 for Windows
-if (WIN32)
-	set(_curl_url "https://github.com/curl/curl/archive/refs/tags/curl-7_75_0.zip")
-	set(_curl_hash a63ae025bb0a14f119e73250f2c923f4bf89aa93b8d4fafa4a9f5353a96a765a)
-else()
-	#set(_curl_url "https://github.com/curl/curl/releases/download/curl-8_2_0/curl-8.2.0.zip")
-	#set(_curl_hash 3f36ff8e8eb780a9e1400309a1f813f260399baa93c2fc8ac0c389e2161c5098)
-	
-	set(_curl_url "https://github.com/curl/curl/archive/refs/tags/curl-7_75_0.zip")
-	set(_curl_hash a63ae025bb0a14f119e73250f2c923f4bf89aa93b8d4fafa4a9f5353a96a765a)
-endif()
-
-# Set Curl Platform Flags
 set(_curl_platform_flags 
   -DENABLE_IPV6:BOOL=ON
   -DENABLE_VERSIONED_SYMBOLS:BOOL=ON
@@ -39,7 +25,8 @@ set(_curl_platform_flags
 )
 
 if (WIN32)
-  set(_curl_platform_flags  ${_curl_platform_flags} -DCMAKE_USE_SCHANNEL=ON)
+  #set(_curl_platform_flags  ${_curl_platform_flags} -DCMAKE_USE_SCHANNEL=ON)
+  set(_curl_platform_flags  ${_curl_platform_flags} -DCMAKE_USE_OPENSSL=ON -DCURL_CA_PATH:STRING=none)
 elseif (APPLE)
   set(_curl_platform_flags 
     
@@ -69,11 +56,11 @@ else()
   set(_curl_static ON)
 endif()
 
-bambustudio_add_cmake_project(CURL
+galaxyslicer_add_cmake_project(CURL
   # GIT_REPOSITORY      https://github.com/curl/curl.git
   # GIT_TAG             curl-7_75_0
-  URL                 ${_curl_url}
-  URL_HASH            SHA256=${_curl_hash}
+  URL                 https://github.com/curl/curl/archive/refs/tags/curl-7_75_0.zip
+  URL_HASH            SHA256=a63ae025bb0a14f119e73250f2c923f4bf89aa93b8d4fafa4a9f5353a96a765a
   DEPENDS             ${ZLIB_PKG}
   # PATCH_COMMAND       ${GIT_EXECUTABLE} checkout -f -- . && git clean -df && 
   #                     ${GIT_EXECUTABLE} apply --whitespace=fix ${CMAKE_CURRENT_LIST_DIR}/curl-mods.patch
@@ -85,9 +72,9 @@ bambustudio_add_cmake_project(CURL
     ${_curl_platform_flags}
 )
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+# if (APPLE OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"))
   add_dependencies(dep_CURL dep_OpenSSL)
-endif ()
+# endif ()
 
 if (MSVC)
     add_debug_dep(dep_CURL)

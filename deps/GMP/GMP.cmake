@@ -57,8 +57,8 @@ else ()
     endif ()
 
     ExternalProject_Add(dep_GMP
-        URL https://github.com/bambulab/gmp/archive/refs/tags/6.2.1.tar.gz
-        URL_HASH SHA256=705ae57ee2014b2c6fc0f572c85ee43276b99b6b256ee16c1a9d3a8c4e3609d5
+        URL https://github.com/fr3ak2402/GalaxySlicer_deps/releases/download/September_23/gmp-6.3.0.tar.gz
+        URL_HASH SHA256=e56fd59d76810932a0555aa15a14b61c16bed66110d3c75cc2ac49ddaa9ab24c
         DOWNLOAD_DIR ${DEP_DOWNLOAD_DIR}/GMP
         BUILD_IN_SOURCE ON 
         CONFIGURE_COMMAND  env "CFLAGS=${_gmp_ccflags}" "CXXFLAGS=${_gmp_ccflags}" ./configure ${_cross_compile_arg} --enable-shared=no --enable-cxx=yes --enable-static=yes "--prefix=${DESTDIR}/usr/local" ${_gmp_build_tgt}

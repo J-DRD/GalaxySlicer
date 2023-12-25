@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <assert.h>
+#include <GCode/GCodeProcessor.hpp>
 
 #ifdef __APPLE__
     #include <boost/spirit/include/karma.hpp>
@@ -18,16 +19,24 @@ namespace Slic3r {
 bool GCodeWriter::full_gcode_comment = true;
 const double GCodeWriter::slope_threshold = 3 * PI / 180;
 
+bool GCodeWriter::supports_separate_travel_acceleration(GCodeFlavor flavor)
+{
+    return (flavor == gcfRepetier || flavor == gcfMarlinFirmware ||  flavor == gcfRepRapFirmware);
+}
+
 void GCodeWriter::apply_print_config(const PrintConfig &print_config)
 {
     this->config.apply(print_config, true);
     m_single_extruder_multi_material = print_config.single_extruder_multi_material.value;
-    bool use_mach_limits = print_config.gcode_flavor.value == gcfMarlinLegacy ||
-                     print_config.gcode_flavor.value == gcfMarlinFirmware ||
-                     print_config.gcode_flavor.value == gcfKlipper ||
-                     print_config.gcode_flavor.value == gcfRepRapFirmware;
+    bool use_mach_limits = print_config.gcode_flavor.value == gcfMarlinLegacy || print_config.gcode_flavor.value == gcfMarlinFirmware ||
+                           print_config.gcode_flavor.value == gcfKlipper || print_config.gcode_flavor.value == gcfRepRapFirmware;
     m_max_acceleration = std::lrint(use_mach_limits ? print_config.machine_max_acceleration_extruding.values.front() : 0);
-    m_max_jerk = std::lrint(use_mach_limits ? std::min(print_config.machine_max_jerk_x.values.front(), print_config.machine_max_jerk_y.values.front()) : 0);
+    m_max_travel_acceleration = static_cast<unsigned int>(
+        std::round((use_mach_limits && supports_separate_travel_acceleration(print_config.gcode_flavor.value)) ?
+                       print_config.machine_max_acceleration_travel.values.front() :
+                       0));
+    m_max_jerk         = std::lrint(
+        use_mach_limits ? std::min(print_config.machine_max_jerk_x.values.front(), print_config.machine_max_jerk_y.values.front()) : 0);
     m_max_jerk_z = print_config.machine_max_jerk_z.values.front();
     m_max_jerk_e = print_config.machine_max_jerk_e.values.front();
 }
@@ -149,43 +158,63 @@ std::string GCodeWriter::set_bed_temperature(int temperature, bool wait)
     return gcode.str();
 }
 
-std::string GCodeWriter::set_acceleration(unsigned int acceleration)
+std::string GCodeWriter::set_chamber_temperature(int temperature, bool wait)
+{
+    std::string code, comment;
+    std::ostringstream gcode;
+
+    if (wait)
+    {
+        // Galaxy: should we let the M191 command to turn on the auxiliary fan?
+        if (config.auxiliary_fan)
+            gcode << "M106 P2 S255 \n";
+        gcode << "M191 S" << std::to_string(temperature) << " ;"
+              << "set chamber_temperature and wait for it to be reached\n";
+        if (config.auxiliary_fan)
+            gcode << "M106 P2 S0 \n";
+    }
+    else {
+        code = "M141";
+        comment = "set chamber_temperature";
+        gcode << code << " S" << temperature << ";" << comment << "\n";
+    }
+    return gcode.str();
+}
+
+// copied from PrusaSlicer
+std::string GCodeWriter::set_acceleration_internal(Acceleration type, unsigned int acceleration)
 {
     // Clamp the acceleration to the allowed maximum.
-    if (m_max_acceleration > 0 && acceleration > m_max_acceleration)
+    if (type == Acceleration::Print && m_max_acceleration > 0 && acceleration > m_max_acceleration)
         acceleration = m_max_acceleration;
+    if (type == Acceleration::Travel && m_max_travel_acceleration > 0 && acceleration > m_max_travel_acceleration)
+        acceleration = m_max_travel_acceleration;
 
-    if (acceleration == 0 || acceleration == m_last_acceleration)
+    // Are we setting travel acceleration for a flavour that supports separate travel and print acc?
+    bool separate_travel = (type == Acceleration::Travel && supports_separate_travel_acceleration(this->config.gcode_flavor));
+
+    auto& last_value = separate_travel ? m_last_travel_acceleration : m_last_acceleration ;
+    if (acceleration == 0 || acceleration == last_value)
         return std::string();
     
-    m_last_acceleration = acceleration;
+    last_value = acceleration;
     
     std::ostringstream gcode;
-    if (FLAVOR_IS(gcfRepetier)) {
-        // M201: Set max printing acceleration
-        gcode << "M201 X" << acceleration << " Y" << acceleration;
-        //BBS
-        if (GCodeWriter::full_gcode_comment) gcode << " ; adjust acceleration";
-        gcode << "\n";
-        // M202: Set max travel acceleration
-        gcode << "M202 X" << acceleration << " Y" << acceleration;
-    } else if (FLAVOR_IS(gcfRepRapFirmware)) {
-        // M204: Set default acceleration
-        gcode << "M204 P" << acceleration;
-    } else if (FLAVOR_IS(gcfMarlinFirmware)) {
-        // This is new MarlinFirmware with separated print/retraction/travel acceleration.
-        // Use M204 P, we don't want to override travel acc by M204 S (which is deprecated anyway).
-        gcode << "M204 P" << acceleration;
-    } else if (FLAVOR_IS(gcfKlipper) && this->config.accel_to_decel_enable) {
-        gcode << "SET_VELOCITY_LIMIT ACCEL_TO_DECEL=" << acceleration * this->config.accel_to_decel_factor / 100;
-        if (GCodeWriter::full_gcode_comment)
-            gcode << " ; adjust ACCEL_TO_DECEL";
-        gcode << "\nM204 S" << acceleration;
-        // Set max accel to decel to half of acceleration
-    } else
+    if (FLAVOR_IS(gcfRepetier))
+        gcode << (separate_travel ? "M202 X" : "M201 X") << acceleration << " Y" << acceleration;
+    else if (FLAVOR_IS(gcfRepRapFirmware) || FLAVOR_IS(gcfMarlinFirmware))
+        gcode << (separate_travel ? "M204 T" : "M204 P") << acceleration;
+    else if (FLAVOR_IS(gcfKlipper)) {
+        gcode << "SET_VELOCITY_LIMIT ACCEL=" << acceleration;
+        if (this->config.accel_to_decel_enable) {
+            gcode << " ACCEL_TO_DECEL=" << acceleration * this->config.accel_to_decel_factor / 100;
+            if (GCodeWriter::full_gcode_comment)
+                gcode << " ; adjust ACCEL_TO_DECEL";
+        }
+    }
+    else
         gcode << "M204 S" << acceleration;
-    
-    //BBS
+
     if (GCodeWriter::full_gcode_comment) gcode << " ; adjust acceleration";
     gcode << "\n";
     
@@ -219,13 +248,55 @@ std::string GCodeWriter::set_jerk_xy(double jerk)
 
 }
 
+std::string GCodeWriter::set_accel_and_jerk(unsigned int acceleration, double jerk)
+{
+    // Only Klipper supports setting acceleration and jerk at the same time. Throw an error if we try to do this on other flavours.
+    if(FLAVOR_IS_NOT(gcfKlipper))
+        throw std::runtime_error("set_accel_and_jerk() is only supported by Klipper");
+
+    // Clamp the acceleration to the allowed maximum.
+    if (m_max_acceleration > 0 && acceleration > m_max_acceleration)
+        acceleration = m_max_acceleration;
+    
+    bool is_empty = true;
+    std::ostringstream gcode;
+    gcode << "SET_VELOCITY_LIMIT";
+    if (acceleration != 0 && acceleration != m_last_acceleration) {
+        gcode << " ACCEL=" << acceleration;
+        if (this->config.accel_to_decel_enable) {
+            gcode << " ACCEL_TO_DECEL=" << acceleration * this->config.accel_to_decel_factor / 100;
+        }
+        m_last_acceleration = acceleration;
+        is_empty = false;
+    }
+    // Clamp the jerk to the allowed maximum.
+    if (m_max_jerk > 0 && jerk > m_max_jerk)
+        jerk = m_max_jerk;
+
+    if (jerk > 0.01 && !is_approx(jerk, m_last_jerk)) {
+        gcode << " SQUARE_CORNER_VELOCITY=" << jerk;
+        m_last_jerk = jerk;
+        is_empty = false;
+    }
+
+    if(is_empty)
+        return std::string();
+
+    if (GCodeWriter::full_gcode_comment)
+        gcode << " ; adjust VELOCITY_LIMIT(accel/jerk)";
+    gcode << "\n";
+
+    return gcode.str();
+
+}
+
 std::string GCodeWriter::set_pressure_advance(double pa) const
 {
     std::ostringstream gcode;
     if (pa < 0)
         return gcode.str();
     if(m_is_bbl_printers){
-        //SoftFever (OrcaSlicer): set L1000 to use linear model
+        //SoftFever: set L1000 to use linear model
         gcode << "M900 K" <<std::setprecision(4)<< pa << " L1000 M10 ; Override pressure advance value\n";
     }
     else{
@@ -249,7 +320,7 @@ std::string GCodeWriter::reset_e(bool force)
         return "";
     
     if (m_extruder != nullptr) {
-        if (m_extruder->E() == 0. && ! force)
+        if (is_zero(m_extruder->E()) && ! force)
             return "";
         m_extruder->reset_E();
     }
@@ -270,6 +341,10 @@ std::string GCodeWriter::update_progress(unsigned int num, unsigned int tot, boo
 {
     if (FLAVOR_IS_NOT(gcfMakerWare) && FLAVOR_IS_NOT(gcfSailfish))
         return "";
+
+    if (config.disable_m73) {
+        return "";
+    }
     
     unsigned int percent = (unsigned int)floor(100.0 * num / tot + 0.5);
     if (!allow_100) percent = std::min(percent, (unsigned int)99);
@@ -284,7 +359,8 @@ std::string GCodeWriter::update_progress(unsigned int num, unsigned int tot, boo
 
 std::string GCodeWriter::toolchange_prefix() const
 {
-    return FLAVOR_IS(gcfMakerWare) ? "M135 T" :
+    return config.manual_filament_change ? ";" + GCodeProcessor::reserved_tag(GCodeProcessor::ETags::Manual_Tool_Change) + "T":
+           FLAVOR_IS(gcfMakerWare) ? "M135 T" :
            FLAVOR_IS(gcfSailfish)  ? "M108 T" : "T";
 }
 
@@ -298,7 +374,7 @@ std::string GCodeWriter::toolchange(unsigned int extruder_id)
     // return the toolchange command
     // if we are running a single-extruder setup, just set the extruder and return nothing
     std::ostringstream gcode;
-    if (this->multiple_extruders) {
+    if (this->multiple_extruders || (this->config.filament_diameter.values.size() > 1 && !is_bbl_printers())) {
         gcode << this->toolchange_prefix() << extruder_id;
         //BBS
         if (GCodeWriter::full_gcode_comment)
@@ -376,22 +452,21 @@ std::string GCodeWriter::travel_to_xyz(const Vec3d &point, const std::string &co
         Vec3d target = { dest_point(0) - m_x_offset, dest_point(1) - m_y_offset, dest_point(2) };
         Vec3d delta = target - source;
         Vec2d delta_no_z = { delta(0), delta(1) };
-
-
-
         //BBS: don'need slope travel because we don't know where is the source position the first time
         //BBS: Also don't need to do slope move or spiral lift if x-y distance is absolute zero
-        if (this->is_current_position_clear() && delta(2) > 0 && delta_no_z.norm() != 0.0f) {
-            double radius = delta(2) / (2 * PI * atan(GCodeWriter::slope_threshold));
-            Vec2d ij_offset = radius * delta_no_z.normalized();
-            ij_offset = { -ij_offset(1), ij_offset(0) };
+        if (delta(2) > 0 && delta_no_z.norm() != 0.0f)    {
             //BBS: SpiralLift
-            if (m_to_lift_type == LiftType::SpiralLift) {
+            if (m_to_lift_type == LiftType::SpiralLift && this->is_current_position_clear()) {
                 //BBS: todo: check the arc move all in bed area, if not, then use lazy lift
+                double radius = delta(2) / (2 * PI * atan(GCodeWriter::slope_threshold));
+                Vec2d ij_offset = radius * delta_no_z.normalized();
+                ij_offset = { -ij_offset(1), ij_offset(0) };
                 slop_move = this->_spiral_travel_to_z(target(2), ij_offset, "spiral lift Z");
             }
             //BBS: LazyLift
-            else if (atan2(delta(2), delta_no_z.norm()) < GCodeWriter::slope_threshold) {
+            else if (m_to_lift_type == LiftType::LazyLift &&
+                this->is_current_position_clear() && 
+                atan2(delta(2), delta_no_z.norm()) < GCodeWriter::slope_threshold) {
                 //BBS: check whether we can make a travel like
                 //   _____
                 //  /       to make the z list early to avoid to hit some warping place when travel is long.
@@ -403,6 +478,9 @@ std::string GCodeWriter::travel_to_xyz(const Vec3d &point, const std::string &co
                 //BBS
                 w0.emit_comment(GCodeWriter::full_gcode_comment, comment);
                 slop_move = w0.string();
+            }
+            else if (m_to_lift_type == LiftType::NormalLift) {
+                slop_move = _travel_to_z(target.z(), "normal lift Z");
             }
         }
 
@@ -604,23 +682,23 @@ std::string GCodeWriter::extrude_to_xyz(const Vec3d &point, double dE, const std
     return w.string();
 }
 
-std::string GCodeWriter::retract(bool before_wipe)
+std::string GCodeWriter::retract(bool before_wipe, double retract_length)
 {
     double factor = before_wipe ? m_extruder->retract_before_wipe() : 1.;
     assert(factor >= 0. && factor <= 1. + EPSILON);
     return this->_retract(
-        factor * m_extruder->retraction_length(),
+        retract_length > EPSILON ? retract_length : factor * m_extruder->retraction_length(),
         factor * m_extruder->retract_restart_extra(),
         "retract"
     );
 }
 
-std::string GCodeWriter::retract_for_toolchange(bool before_wipe)
+std::string GCodeWriter::retract_for_toolchange(bool before_wipe, double retract_length)
 {
     double factor = before_wipe ? m_extruder->retract_before_wipe() : 1.;
     assert(factor >= 0. && factor <= 1. + EPSILON);
     return this->_retract(
-        factor * m_extruder->retract_length_toolchange(),
+        retract_length > EPSILON ? retract_length : factor * m_extruder->retract_length_toolchange(),
         factor * m_extruder->retract_restart_extra_toolchange(),
         "retract for toolchange"
     );
@@ -635,7 +713,7 @@ std::string GCodeWriter::_retract(double length, double restart_extra, const std
         length = 1;
 
     std::string gcode;
-    if (double dE = m_extruder->retract(length, restart_extra);  dE != 0) {
+    if (double dE = m_extruder->retract(length, restart_extra);  !is_zero(dE)) {
         if (this->config.use_firmware_retraction) {
             gcode = FLAVOR_IS(gcfMachinekit) ? "G22 ; retract\n" : "G10 ; retract\n";
         }
@@ -663,7 +741,7 @@ std::string GCodeWriter::unretract()
     if (FLAVOR_IS(gcfMakerWare))
         gcode = "M101 ; extruder on\n";
     
-    if (double dE = m_extruder->unretract(); dE != 0) {
+    if (double dE = m_extruder->unretract(); !is_zero(dE)) {
         if (this->config.use_firmware_retraction) {
             gcode += FLAVOR_IS(gcfMachinekit) ? "G23 ; unretract\n" : "G11 ; unretract\n";
             gcode += this->reset_e();
@@ -686,22 +764,25 @@ std::string GCodeWriter::unretract()
 /*  If this method is called more than once before calling unlift(),
     it will not perform subsequent lifts, even if Z was raised manually
     (i.e. with travel_to_z()) and thus _lifted was reduced. */
-std::string GCodeWriter::lift(LiftType lift_type)
+std::string GCodeWriter::lift(LiftType lift_type, bool spiral_vase)
 {
     // check whether the above/below conditions are met
     double target_lift = 0;
     {
-        //BBS
-        target_lift = this->config.z_hop.get_at(m_extruder->id());
+        double above = this->config.retract_lift_above.get_at(m_extruder->id());
+        double below = this->config.retract_lift_below.get_at(m_extruder->id());
+        if (m_pos(2) >= above && (below == 0 || m_pos(2) <= below))
+            target_lift = this->config.z_hop.get_at(m_extruder->id());
     }
     // BBS
     if (m_lifted == 0 && m_to_lift == 0 && target_lift > 0) {
-        if (lift_type == LiftType::LazyLift || lift_type == LiftType::SpiralLift) {
-            m_to_lift = target_lift;
-            m_to_lift_type = lift_type;
-        } else  {
+        if (spiral_vase) {
             m_lifted = target_lift;
             return this->_travel_to_z(m_pos(2) + target_lift, "lift Z");
+        }
+        else {
+            m_to_lift = target_lift;
+            m_to_lift_type = lift_type;
         }
     }
     return "";
@@ -772,6 +853,43 @@ std::string GCodeWriter::set_additional_fan(unsigned int speed)
     }
     gcode << "\n";
     return gcode.str();
+}
+
+std::string GCodeWriter::set_exhaust_fan( int speed,bool add_eol)
+{
+    std::ostringstream gcode;
+    gcode << "M106" << " P3" << " S" << (int)(speed / 100.0 * 255);
+
+    if(add_eol)
+        gcode << "\n";
+    return gcode.str();
+}
+
+void GCodeWriter::add_object_start_labels(std::string& gcode)
+{
+    if (!m_gcode_label_objects_start.empty()) {
+        gcode += m_gcode_label_objects_start;
+        m_gcode_label_objects_start = "";
+    }
+}
+
+void GCodeWriter::add_object_end_labels(std::string& gcode)
+{
+    if (!m_gcode_label_objects_end.empty()) {
+        gcode += m_gcode_label_objects_end;
+        m_gcode_label_objects_end = "";
+
+        // Galaxy: reset E so that e value remain correct after skipping the object
+        // ref to: https://github.com/Fr3ak2402/GalaxySlicer/pull/205/commits/7f1fe0bd544077626080aa1a9a0576aa735da1a4#r1083470162
+        if (!this->config.use_relative_e_distances)
+            gcode += reset_e(true);
+    }
+}
+
+void GCodeWriter::add_object_change_labels(std::string& gcode)
+{
+    add_object_end_labels(gcode);
+    add_object_start_labels(gcode);
 }
 
 void GCodeFormatter::emit_axis(const char axis, const double v, size_t digits) {

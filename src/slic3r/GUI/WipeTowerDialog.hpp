@@ -1,13 +1,46 @@
 #ifndef _WIPE_TOWER_DIALOG_H_
 #define _WIPE_TOWER_DIALOG_H_
 
+#include "GUI_Utils.hpp"
+
 #include <wx/spinctrl.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/checkbox.h>
 #include <wx/msgdlg.h>
 
+#include "RammingChart.hpp"
 class Button;
+class Label;
+
+
+class RammingPanel : public wxPanel {
+public:
+    RammingPanel(wxWindow* parent);
+    RammingPanel(wxWindow* parent,const std::string& data);
+    std::string get_parameters();
+
+private:
+    Chart* m_chart = nullptr;
+    wxSpinCtrl* m_widget_volume = nullptr;
+    wxSpinCtrl* m_widget_ramming_line_width_multiplicator = nullptr;
+    wxSpinCtrl* m_widget_ramming_step_multiplicator = nullptr;
+    wxSpinCtrlDouble* m_widget_time = nullptr;
+    int m_ramming_step_multiplicator;
+    int m_ramming_line_width_multiplicator;
+      
+    void line_parameters_changed();
+};
+
+
+class RammingDialog : public wxDialog {
+public:
+    RammingDialog(wxWindow* parent,const std::string& parameters);    
+    std::string get_parameters() { return m_output_data; }
+private:
+    RammingPanel* m_panel_ramming = nullptr;
+    std::string m_output_data;
+};
 
 class WipingPanel : public wxPanel {
 public:
@@ -19,6 +52,8 @@ public:
     void toggle_advanced(bool user_action = false);
     void create_panels(wxWindow* parent, const int num);
     void calc_flushing_volumes();
+    void msw_rescale();
+    wxBoxSizer* create_calc_btn_sizer(wxWindow* parent);
 
     float get_flush_multiplier()
     {
@@ -48,6 +83,10 @@ private:
     wxBoxSizer* m_sizer_advanced = nullptr;
     wxGridSizer* m_gridsizer_advanced = nullptr;
     wxButton* m_widget_button     = nullptr;
+    Label* m_tip_message_label = nullptr;
+
+    std::vector<wxButton *> icon_list1;
+    std::vector<wxButton *> icon_list2;
 
     const int m_min_flush_volume;
     const int m_max_flush_volume;
@@ -62,13 +101,13 @@ private:
 
 
 
-class WipingDialog : public wxDialog {
+class WipingDialog : public Slic3r::GUI::DPIDialog
+{
 public:
     WipingDialog(wxWindow* parent, const std::vector<float>& matrix, const std::vector<float>& extruders, const std::vector<std::string>& extruder_colours,
         int extra_flush_volume, float flush_multiplier);
     std::vector<float> get_matrix() const    { return m_output_matrix; }
     std::vector<float> get_extruders() const { return m_output_extruders; }
-
     wxBoxSizer* create_btn_sizer(long flags);
 
     float get_flush_multiplier()
@@ -79,10 +118,13 @@ public:
         return m_panel_wiping->get_flush_multiplier();
     }
 
+    void on_dpi_changed(const wxRect &suggested_rect) override;
+
 private:
     WipingPanel*  m_panel_wiping  = nullptr;
     std::vector<float> m_output_matrix;
     std::vector<float> m_output_extruders;
+    std::unordered_map<int, Button *> m_button_list;
 };
 
 #endif  // _WIPE_TOWER_DIALOG_H_

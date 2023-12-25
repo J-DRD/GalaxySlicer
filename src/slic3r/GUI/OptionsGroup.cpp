@@ -78,6 +78,7 @@ const t_field& OptionsGroup::build_field(const t_config_option_key& id, const Co
             case coEnums:
                 m_fields.emplace(id, Choice::Create<Choice>(this->ctrl_parent(), opt, id));
 				break;
+            case coPoint:
             case coPoints:
                 m_fields.emplace(id, PointCtrl::Create<PointCtrl>(this->ctrl_parent(), opt, id));
 				break;
@@ -212,10 +213,12 @@ void OptionsGroup::append_line(const Line& line)
 //BBS: get line for opt_key
 Line* OptionsGroup::get_line(const std::string& opt_key)
 {
-    for (int index = 0; index < m_lines.size(); index++)
+    for (auto& l : m_lines)
     {
-        if (m_lines[index].get_first_option_key() == opt_key)
-            return &(m_lines[index]);
+        if(l.is_separator())
+            continue;
+        if (l.get_first_option_key() == opt_key)
+            return &l;
     }
 
     return nullptr;
@@ -233,26 +236,26 @@ void OptionsGroup::activate_line(Line& line)
 
     m_use_custom_ctrl_as_parent = false;
 
-	if (line.full_width && (
-		line.widget != nullptr ||
-		!line.get_extra_widgets().empty())
-		) {
-		// BBS: new layout
-		const auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(h_sizer, 1, wxEXPAND | wxALL, wxOSX ? 0 : 15);
+    if (line.full_width && (
+        line.widget != nullptr ||
+        !line.get_extra_widgets().empty())
+        ) {
+        // BBS: new layout
+        const auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
+        sizer->Add(h_sizer, 1, wxEXPAND | wxALL, wxOSX ? 0 : 15);
         if (line.widget != nullptr) {
-			// description lines
-			h_sizer->Add(line.widget(this->ctrl_parent()), 0, wxEXPAND | wxLEFT, titleWidth * wxGetApp().em_unit());
+            // description lines
+            sizer->Add(line.widget(this->ctrl_parent()), 0, wxEXPAND | wxALL, wxOSX ? 0 : 15);
             return;
         }
-		if (!line.get_extra_widgets().empty()) {
+        if (!line.get_extra_widgets().empty()) {
             bool is_first_item = true;
-			for (auto extra_widget : line.get_extra_widgets()) {
-				h_sizer->Add(extra_widget(this->ctrl_parent()), is_first_item ? 1 : 0, wxLEFT, titleWidth * wxGetApp().em_unit());
-				is_first_item = false;
-			}
-			return;
-		}
+            for (auto extra_widget : line.get_extra_widgets()) {
+                h_sizer->Add(extra_widget(this->ctrl_parent()), is_first_item ? 1 : 0, wxLEFT, titleWidth * wxGetApp().em_unit());
+                is_first_item = false;
+            }
+            return;
+        }
     }
 
 	auto option_set = line.get_options();
@@ -792,8 +795,14 @@ bool ConfigOptionsGroup::update_visibility(ConfigOptionMode mode)
     int coef = 0;
     int hidden_row_cnt = 0;
     const int cols = m_grid_sizer->GetCols();
+    Line * line = &m_lines.front();
+    size_t line_opt_end = line->get_options().size();
     for (auto opt_mode : m_options_mode) {
-		const bool show = opt_mode <= mode;
+        const bool show = opt_mode <= mode && line->toggle_visible;
+        if (--line_opt_end == 0) {
+            ++line;
+            line_opt_end = line->get_options().size();
+        }
         if (!show) {
             hidden_row_cnt++;
             for (int i = 0; i < cols; ++i)
@@ -1019,15 +1028,29 @@ boost::any ConfigOptionsGroup::get_config_value(const DynamicPrintConfig& config
 		ret = config.opt_int(opt_key, idx);
 		break;
 	case coEnum:
+        if (!config.has("first_layer_sequence_choice") && opt_key == "first_layer_sequence_choice") {
+            // reset to Auto value
+            ret = 0;
+            break;
+        }
+        if (!config.has("curr_bed_type") && opt_key == "curr_bed_type") {
+            // reset to global value
+            DynamicConfig& global_cfg = wxGetApp().preset_bundle->project_config;
+            ret = global_cfg.option("curr_bed_type")->getInt();
+            break;
+        }
         ret = config.option(opt_key)->getInt();
-		break;
+        break;
     // BBS
     case coEnums:
         ret = config.opt_int(opt_key, idx);
         break;
+    case coPoint:
+        ret = config.option<ConfigOptionPoint>(opt_key)->value;
+        break;
 	case coPoints:
 		if (opt_key == "printable_area")
-			ret = config.option<ConfigOptionPoints>(opt_key)->values;
+            ret = get_thumbnails_string(config.option<ConfigOptionPoints>(opt_key)->values);
         else if (opt_key == "bed_exclude_area")
             ret = get_thumbnails_string(config.option<ConfigOptionPoints>(opt_key)->values);
         else if (opt_key == "thumbnails")
@@ -1137,9 +1160,12 @@ boost::any ConfigOptionsGroup::get_config_value2(const DynamicPrintConfig& confi
     case coEnums:
         ret = config.opt_int(opt_key, idx);
         break;
+    case coPoint:
+        ret = config.option<ConfigOptionPoint>(opt_key)->value;
+        break;
     case coPoints:
         if (opt_key == "printable_area")
-            ret = config.option<ConfigOptionPoints>(opt_key)->values;
+            ret = get_thumbnails_string(config.option<ConfigOptionPoints>(opt_key)->values);
         else if (opt_key == "bed_exclude_area")
             ret = get_thumbnails_string(config.option<ConfigOptionPoints>(opt_key)->values);
         else if (opt_key == "thumbnails")
@@ -1235,14 +1261,18 @@ wxString OptionsGroup::get_url(const std::string& path_end)
         anchor.Replace(L" ", "-");
         str = str.Left(pos) + anchor;
     }
-    // GalaxySlicer: point to sf wiki for seam parameters
+    //ToDo Wiki
+    // Softfever: point to sf wiki for seam parameters
     if (path_end == "Seam") {
-        return wxString::Format(L"https://github.com/GalaxySlicer/GalaxySlicer/wiki/%s", from_u8(path_end));
+        return wxString::Format(L"https://github.com/Fr3ak2402/GalaxySlicer/wiki/%s", from_u8(path_end));
     }
     else {
         //BBS
         return wxString::Format(L"https://wiki.bambulab.com/%s/software/bambu-studio/%s", L"en", str);
     }
+    // Galaxy: point to sf wiki for seam parameters
+    //return wxString::Format(L"https://github.com/SoftFever/OrcaSlicer/wiki/%s", from_u8(path_end));
+
 }
 
 bool OptionsGroup::launch_browser(const std::string& path_end)

@@ -508,7 +508,7 @@ bool ExtrusionCalibration::check_k_validation(wxString k_text)
         ;
     }
 
-    if (k < 0 || k > 0.5)
+    if (k < 0 || k > 0.3)
         return false;
     return true;
 }
@@ -544,8 +544,8 @@ void ExtrusionCalibration::on_click_save(wxCommandEvent &event)
     wxString k_text = m_k_val->GetTextCtrl()->GetValue();
     wxString n_text = m_n_val->GetTextCtrl()->GetValue();
     if (!ExtrusionCalibration::check_k_validation(k_text)) {
-        wxString k_tips = _L("Please input a valid value (K in 0~0.5)");
-        wxString kn_tips = _L("Please input a valid value (K in 0~0.5, N in 0.6~2.0)");
+        wxString k_tips = _L("Please input a valid value (K in 0~0.3)");
+        wxString kn_tips = _L("Please input a valid value (K in 0~0.3, N in 0.6~2.0)");
         MessageDialog msg_dlg(nullptr, k_tips, wxEmptyString, wxICON_WARNING | wxOK);
         msg_dlg.ShowModal();
         return;
@@ -675,6 +675,11 @@ void ExtrusionCalibration::update_combobox_filaments()
                         curr_selection = filament_index;
                     }
 
+                    if (filament_it->name == obj->extrusion_cali_filament_name && !obj->extrusion_cali_filament_name.empty())
+                    {
+                        curr_selection = filament_index;
+                    }
+
                     wxString filament_name = wxString::FromUTF8(filament_it->name);
                     filament_items.Add(filament_name);
                     break;
@@ -783,6 +788,11 @@ void ExtrusionCalibration::update_filament_info()
             wxString filament_name = wxString::FromUTF8(filament_it->name);
             if (filament_name.compare(m_comboBox_filament->GetValue()) == 0) {
                 m_filament_type = filament_it->name;
+
+                if (obj) {
+                    obj->extrusion_cali_filament_name = filament_it->name;
+                    BOOST_LOG_TRIVIAL(info) << "set extrusion cali filament name = " << obj->extrusion_cali_filament_name;
+                }
 
                 // update nozzle temperature
                 ConfigOption* opt_nozzle_temp = filament_it->config.option("nozzle_temperature");

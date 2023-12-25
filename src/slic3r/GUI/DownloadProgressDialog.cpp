@@ -20,6 +20,8 @@
 #include "wxExtensions.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "GUI_App.hpp"
+#include "Jobs/BoostThreadWorker.hpp"
+#include "Jobs/PlaterWorker.hpp"
 
 #define DESIGN_INPUT_SIZE wxSize(FromDIP(100), -1)
 
@@ -59,7 +61,8 @@ DownloadProgressDialog::DownloadProgressDialog(wxString title)
     m_panel_download->SetSize(wxSize(FromDIP(400), FromDIP(70)));
     m_panel_download->SetMinSize(wxSize(FromDIP(400), FromDIP(70)));
     m_panel_download->SetMaxSize(wxSize(FromDIP(400), FromDIP(70)));
-    
+
+    m_worker = std::make_unique<PlaterWorker<BoostThreadWorker>>(this, m_status_bar, "download_worker");
 
     //mode Download Failed 
     auto m_panel_download_failed = new wxPanel(m_simplebook_status, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -98,8 +101,8 @@ DownloadProgressDialog::DownloadProgressDialog(wxString title)
     sizer_install_failed->Add(m_install_hyperlink, 0, wxALIGN_CENTER | wxALL, 5);
 
 
-    m_panel_download_failed->SetSizer(sizer_install_failed);
-    m_panel_download_failed->Layout();
+    m_panel_install_failed->SetSizer(sizer_install_failed);
+    m_panel_install_failed->Layout();
     sizer_install_failed->Fit(m_panel_install_failed);
 
     m_sizer_main->Add(m_simplebook_status, 0, wxALL, FromDIP(20));
@@ -144,7 +147,7 @@ bool DownloadProgressDialog::Show(bool show)
 {
     if (show) {
         m_simplebook_status->SetSelection(0);
-        m_upgrade_job = make_job(m_status_bar);
+        auto m_upgrade_job = make_job();
         m_upgrade_job->set_event_handle(this);
         m_status_bar->set_progress(0);
         Bind(EVT_UPGRADE_NETWORK_SUCCESS, [this](wxCommandEvent& evt) {
@@ -182,23 +185,17 @@ bool DownloadProgressDialog::Show(bool show)
         });
 
         m_status_bar->set_cancel_callback_fina([this]() {
-            if (m_upgrade_job) {
-                m_upgrade_job->cancel();
-                //EndModal(wxID_CLOSE);
-            }
-                
+            m_worker->cancel_all();
         });
-        m_upgrade_job->start();
+
+        replace_job(*m_worker, std::move(m_upgrade_job));
     }
     return DPIDialog::Show(show);
 }
 
 void DownloadProgressDialog::on_close(wxCloseEvent& event)
 {
-    if (m_upgrade_job) {
-        m_upgrade_job->cancel();
-        m_upgrade_job->join();
-    }
+    m_worker.get()->cancel_all();
     event.Skip();
 }
 
@@ -208,7 +205,7 @@ void DownloadProgressDialog::on_dpi_changed(const wxRect &suggested_rect) {}
 
 void DownloadProgressDialog::update_release_note(std::string release_note, std::string version) {}
 
-std::shared_ptr<UpgradeNetworkJob> DownloadProgressDialog::make_job(std::shared_ptr<ProgressIndicator> pri) { return std::make_shared<UpgradeNetworkJob>(pri); }
+std::unique_ptr<UpgradeNetworkJob> DownloadProgressDialog::make_job() { return std::make_unique<UpgradeNetworkJob>(); }
 
 void DownloadProgressDialog::on_finish() { wxGetApp().restart_networking(); }
 

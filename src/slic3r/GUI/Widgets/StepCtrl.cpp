@@ -20,7 +20,7 @@ StepCtrlBase::StepCtrlBase(wxWindow *      parent,
     , font_tip(Label::Body_14)
     , clr_bar(0xACACAC)
     , clr_step(0xACACAC)
-    , clr_text(std::make_pair(0x693A71, (int) StateColor::Checked), 
+    , clr_text(std::make_pair(0x693a71, (int) StateColor::Checked), 
             std::make_pair(0x6B6B6B, (int) StateColor::Normal))
     , clr_tip(0x828280)
 {
@@ -85,6 +85,19 @@ unsigned int StepCtrlBase::GetCount() const { return steps.size(); }
 wxString StepCtrlBase::GetItemText(unsigned int item) const
 {
     return item < steps.size() ? steps[item] : wxString{};
+}
+
+int StepCtrlBase::GetItemUseText(wxString txt) const
+{
+    for(int i = 0; i < steps.size(); i++){
+        if (steps[i] == txt) {
+            return i;
+        }
+        else {
+            continue;
+        }
+    }
+    return 0;
 }
 
 void StepCtrlBase::SetItemText(unsigned int item, wxString const &value)
@@ -240,7 +253,7 @@ StepIndicator::StepIndicator(wxWindow *parent, wxWindowID id, const wxPoint &pos
     clr_bar = 0xE1E1E1;
     clr_step = StateColor(
             std::make_pair(0xACACAC, (int) StateColor::Disabled), 
-            std::make_pair(0x693A71, 0));
+            std::make_pair(0x693a71, 0));
     clr_text = StateColor(
             std::make_pair(0xACACAC, (int) StateColor::Disabled), 
             std::make_pair(0x323A3D, (int) StateColor::Checked), 

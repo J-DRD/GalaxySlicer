@@ -84,9 +84,9 @@ namespace Slic3r {
 #define L(s) (s)
 #define _(s) Slic3r::I18N::translate(s)
 
-static const float g_min_purge_volume = 100.f;
-static const float g_purge_volume_one_time = 135.f;
-static const int g_max_flush_count = 4;
+static const float g_min_purge_volume = 90.f;
+static const float g_purge_volume_one_time = 110.f;
+static const int g_max_flush_count = 3;
 // static const size_t g_max_label_object = 64;
 
 Vec2d travel_point_1;
@@ -359,9 +359,9 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
 
         /*  Reduce feedrate a bit; travel speed is often too high to move on existing material.
             Too fast = ripping of existing material; too slow = short wipe path, thus more blob.  */
-        double _wipe_speed = gcodegen.config().get_abs_value("wipe_speed");// gcodegen.writer().config.travel_speed.value * 0.8;
+        double _wipe_speed = gcodegen.config().get_abs_value("wipe_speed");// gcodegen.writer().config.travel_speed.value * 0.75;
         if(gcodegen.config().role_based_wipe_speed)
-            _wipe_speed = gcodegen.writer().get_current_speed() / 60.0;
+            _wipe_speed = gcodegen.writer().get_current_speed() / 50.0;
         if(_wipe_speed < 10)
             _wipe_speed = 10;
 

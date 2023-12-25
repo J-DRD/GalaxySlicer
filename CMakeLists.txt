@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.20)
 project(GalaxySlicer)
 
 include("version.inc")
@@ -330,16 +330,6 @@ endif()
 
 if(CMAKE_CXX_FLAGS_RELWITHDEBINFO MATCHES "/O2")
     string(REGEX REPLACE "/O2" "/Od" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-endif()
-
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    if(CMAKE_C_FLAGS_RELWITHDEBINFO MATCHES "-O2")
-        string(REGEX REPLACE "-O2" "-O0" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-    endif()
-
-    if(CMAKE_CXX_FLAGS_RELWITHDEBINFO MATCHES "-O2")
-        string(REGEX REPLACE "-O2" "-O0" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    endif()
 endif()
 
 if(MSVC)

@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
           - os: windows-latest
           #- os: macos-12
             #arch: x86_64
@@ -52,14 +52,7 @@ jobs:
       - name: Get the version and date on Ubuntu and macOS
         if: inputs.os != 'windows-latest'
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            ver="nightly$(date +'%y%m%d')"
-          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            ver="PR${{ github.event.number }}"
-          else
-            ver=$(grep 'set(SLIC3R_VERSION' version.inc | cut -d '"' -f2)
-            ver=V$ver
-          fi
+          ver=1.0 #$(grep 'set(SoftFever_VERSION' version.inc | cut -d '"' -f2)
           echo "ver=$ver" >> $GITHUB_ENV
           echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
         shell: bash

@@ -1,6 +1,5 @@
 name: Build Win x64
 
-
 on: 
     push:
       branches: 
@@ -50,12 +49,24 @@ jobs:
 
       - run: dir "${{ github.workspace }}\deps\build\GalaxySlicer_dep"
       
-      - name: Build GalaxySlicer
+      - name: Build GalaxySlicer 1
         working-directory: ${{ github.workspace }}
         run: .\build_release_vs2019.bat slicer
 
-      - name: Upload GalaxySlicer
+      - name: Upload GalaxySlicer 1
         uses: actions/upload-artifact@v3
         with:
-          name: GalaxySlicer_Win_x64_nightly
+          name: GalaxySlicer_Win_x64_nightly_1
           path: ${{ github.workspace }}/build/GalaxySlicer
+
+          
+      - name: Build GalaxySlicer 2
+        working-directory: ${{ github.workspace }}
+        run: .\build_release_vs2022.bat slicer
+
+      - name: Upload GalaxySlicer 2
+        uses: actions/upload-artifact@v3
+        with:
+          name: GalaxySlicer_Win_x64_nightly_2
+          path: ${{ github.workspace }}/build/GalaxySlicer
+          

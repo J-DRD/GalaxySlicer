@@ -5,7 +5,6 @@ on:
     push:
       branches: 
        - main
-       - dev_9
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
       paths:
        - 'src/**'
@@ -17,8 +16,6 @@ on:
     pull_request:
       branches: 
        - main 
-       - dev_9
-       - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -41,11 +38,11 @@ jobs:
       - run: mkdir ${{ github.workspace }}/deps/build/GalaxySlicer_dep
       - name: download GalaxySlicer deps
         shell: powershell
-        run: '(new-object System.Net.WebClient).DownloadFile("https://github.com/fr3ak2402/GalaxySlicer_deps/releases/download/December_23/GalaxySlicer_dep_Win_x64_06-12-23.zip", "$env:temp\GalaxySlicer_dep_Win_x64.zip")'
+        run: '(new-object System.Net.WebClient).DownloadFile("https://github.com/fr3ak2402/GalaxySlicer_deps/releases/download/October_23/GalaxySlicer_dep_Win_x64_11-10-23.zip", "$env:temp\GalaxySlicer_dep_Win_x64_11-10-23.zip")'
       - name: extract deps
         working-directory: ${{ github.workspace }}/deps/build
         shell: cmd
-        run: '"C:/Program Files/7-Zip/7z.exe" x %temp%\GalaxySlicer_dep_Win_x64.zip'
+        run: '"C:/Program Files/7-Zip/7z.exe" x %temp%\GalaxySlicer_dep_Win_x64_11-10-23.zip'
 
       - run: dir "${{ github.workspace }}\deps\build\GalaxySlicer_dep"
       

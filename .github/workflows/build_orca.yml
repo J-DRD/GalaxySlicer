@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
           - os: windows-latest
           #- os: macos-12
             #arch: x86_64
@@ -316,6 +316,9 @@ jobs:
           ls -l ${{ github.workspace }}/deps/build/destdir
           rm OrcaSlicer_dep_ubuntu_061223.zip
 
+      - name: Create AppImage
+        if: matrix.os == 'ubuntu-20.04'
+        working-directory: ${{ github.workspace }}
         shell: bash
         run: |
           ./BuildLinux.sh -isr

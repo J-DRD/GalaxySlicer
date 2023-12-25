@@ -182,23 +182,21 @@ jobs:
         shell: cmd
         run: '"C:/Program Files/7-Zip/7z.exe" x %temp%\OrcaSlicer_dep_win64_20230810_vs2022.zip'
       
-       - name: build deps
-         if: matrix.os == 'windows-latest'
-           id: cache_deps
-         uses: actions/cache@v3
-         env:
+      - name: build deps
+        if: matrix.os == 'windows-latest'
+        id: cache_deps
+        uses: actions/cache@v3
+        env:
            cache-name: ${{ runner.os }}-cache-orcaslicer_deps
-         with:
+        with:
            path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep
            key: ${{ runner.os }}-build-${{ env.cache-name }}
 
-       - if: ${{ steps.cache_deps.outputs.cache-hit != 'true' }}
-         name: build deps
-         working-directory: ${{ github.workspace }}
-         continue-on-error: true
-         run: .\build_release_vs2022.bat deps
-    
-       - run:  Get-ChildItem ${{ github.workspace }}/deps/build/ -Exclude OrcaSlicer_dep | Remove-Item -Recurse -Force
+#    if: ${{ steps.cache_deps.outputs.cache-hit != 'true' }}
+      - name: build deps
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+        run: .\build_release_vs2022.bat deps && Get-ChildItem ${{ github.workspace }}/deps/build/ -Exclude OrcaSlicer_dep | Remove-Item -Recurse -Force
         
       - name: Build slicer Win
         if: matrix.os == 'windows-latest'

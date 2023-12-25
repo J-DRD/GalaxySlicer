@@ -115,7 +115,7 @@ jobs:
       #  if: matrix.os == 'macos-12'
       #  working-directory: ${{ github.workspace }}
       #  run: |
-      #    curl -LJO https://github.com/fr3ak2402/GalaxySlicer_dep/releases/download/GalaxySlicer_dep_December_23/GalaxySlicer_dep_mac_${{matrix.arch}}_061223
+      #    curl -LJO https://github.com/fr3ak2402/GalaxySlicer_dep/releases/download/December_23/GalaxySlicer_dep_mac_${{matrix.arch}}_061223
       #    tar -zvxf ./GalaxySlicer_dep_mac_${{matrix.arch}}_061223 -C ${{ github.workspace }}/deps/build_${{matrix.arch}}
       #    chown -R $(id -u):$(id -g) ${{ github.workspace }}/deps/build_${{matrix.arch}}
       #    tree ${{ github.workspace }}/deps/build_${{matrix.arch}}
@@ -183,7 +183,7 @@ jobs:
       - name: download deps
         if: matrix.os == 'windows-latest'
         shell: powershell
-        run: '(new-object System.Net.WebClient).DownloadFile("https://github.com/fr3ak2402/GalaxySlicer_dep/releases/download/GalaxySlicer_dep_December_23/GalaxySlicer_dep_Win64_06-12-23_vs2022.zip", "$env:temp\GalaxySlicer_dep_Win64_06-12-23_vs2022.zip")'
+        run: '(new-object System.Net.WebClient).DownloadFile("https://github.com/fr3ak2402/GalaxySlicer_dep/releases/download/December_23/GalaxySlicer_dep_Win64_06-12-23_vs2022.zip", "$env:temp\GalaxySlicer_dep_Win64_06-12-23_vs2022.zip")'
 
       - name: maker dir
         if: matrix.os == 'windows-latest'
@@ -310,7 +310,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/deps/build
           mkdir -p ${{ github.workspace }}/deps/build/destdir
-          curl -LJO https://github.com/fr3ak2402/GalaxySlicer_dep/releases/download/GalaxySlicer_dep_December_23/GalaxySlicer_dep_ubuntu_061223.zip
+          curl -LJO https://github.com/fr3ak2402/GalaxySlicer_dep/releases/download/December_23/GalaxySlicer_dep_ubuntu_061223.zip
           unzip ./GalaxySlicer_dep_ubuntu_061223.zip -d ${{ github.workspace }}/deps/build/destdir
           chown -R $(id -u):$(id -g) ${{ github.workspace }}/deps/build/destdir
           ls -l ${{ github.workspace }}/deps/build/destdir

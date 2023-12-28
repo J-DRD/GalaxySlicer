@@ -165,7 +165,7 @@ std::string GCodeWriter::set_chamber_temperature(int temperature, bool wait)
 
     if (wait)
     {
-        // Orca: should we let the M191 command to turn on the auxiliary fan?
+        // Galaxy: should we let the M191 command to turn on the auxiliary fan?
         if (config.auxiliary_fan)
             gcode << "M106 P2 S255 \n";
         gcode << "M191 S" << std::to_string(temperature) << " ;"
@@ -341,6 +341,10 @@ std::string GCodeWriter::update_progress(unsigned int num, unsigned int tot, boo
 {
     if (FLAVOR_IS_NOT(gcfMakerWare) && FLAVOR_IS_NOT(gcfSailfish))
         return "";
+
+    if (config.disable_m73) {
+        return "";
+    }
     
     unsigned int percent = (unsigned int)floor(100.0 * num / tot + 0.5);
     if (!allow_100) percent = std::min(percent, (unsigned int)99);
@@ -678,23 +682,23 @@ std::string GCodeWriter::extrude_to_xyz(const Vec3d &point, double dE, const std
     return w.string();
 }
 
-std::string GCodeWriter::retract(bool before_wipe)
+std::string GCodeWriter::retract(bool before_wipe, double retract_length)
 {
     double factor = before_wipe ? m_extruder->retract_before_wipe() : 1.;
     assert(factor >= 0. && factor <= 1. + EPSILON);
     return this->_retract(
-        factor * m_extruder->retraction_length(),
+        retract_length > EPSILON ? retract_length : factor * m_extruder->retraction_length(),
         factor * m_extruder->retract_restart_extra(),
         "retract"
     );
 }
 
-std::string GCodeWriter::retract_for_toolchange(bool before_wipe)
+std::string GCodeWriter::retract_for_toolchange(bool before_wipe, double retract_length)
 {
     double factor = before_wipe ? m_extruder->retract_before_wipe() : 1.;
     assert(factor >= 0. && factor <= 1. + EPSILON);
     return this->_retract(
-        factor * m_extruder->retract_length_toolchange(),
+        retract_length > EPSILON ? retract_length : factor * m_extruder->retract_length_toolchange(),
         factor * m_extruder->retract_restart_extra_toolchange(),
         "retract for toolchange"
     );
@@ -875,7 +879,7 @@ void GCodeWriter::add_object_end_labels(std::string& gcode)
         gcode += m_gcode_label_objects_end;
         m_gcode_label_objects_end = "";
 
-        // Orca: reset E so that e value remain correct after skipping the object
+        // Galaxy: reset E so that e value remain correct after skipping the object
         // ref to: https://github.com/Fr3ak2402/GalaxySlicer/pull/205/commits/7f1fe0bd544077626080aa1a9a0576aa735da1a4#r1083470162
         if (!this->config.use_relative_e_distances)
             gcode += reset_e(true);

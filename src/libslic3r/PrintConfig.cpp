@@ -1,3 +1,24 @@
+///|/ Copyright (c) Prusa Research 2016 - 2023 Vojtěch Bubník @bubnikv, Lukáš Matěna @lukasmatena, Lukáš Hejl @hejllukas, Tomáš Mészáros @tamasmeszaros, Oleksandra Iushchenko @YuSanka, Pavel Mikuš @Godrak, David Kocík @kocikdav, Enrico Turri @enricoturri1966, Filip Sykala @Jony01, Vojtěch Král @vojtechkral
+///|/ Copyright (c) 2023 Pedro Lamas @PedroLamas
+///|/ Copyright (c) 2023 Mimoja @Mimoja
+///|/ Copyright (c) 2020 - 2021 Sergey Kovalev @RandoMan70
+///|/ Copyright (c) 2021 Niall Sheridan @nsheridan
+///|/ Copyright (c) 2021 Martin Budden
+///|/ Copyright (c) 2021 Ilya @xorza
+///|/ Copyright (c) 2020 Paul Arden @ardenpm
+///|/ Copyright (c) 2020 rongith
+///|/ Copyright (c) 2019 Spencer Owen @spuder
+///|/ Copyright (c) 2019 Stephan Reichhelm @stephanr
+///|/ Copyright (c) 2018 Martin Loidl @LoidlM
+///|/ Copyright (c) SuperSlicer 2018 Remi Durand @supermerill
+///|/ Copyright (c) 2016 - 2017 Joseph Lenox @lordofhyphens
+///|/ Copyright (c) Slic3r 2013 - 2016 Alessandro Ranellucci @alranel
+///|/ Copyright (c) 2016 Vanessa Ezekowitz @VanessaE
+///|/ Copyright (c) 2015 Alexander Rössler @machinekoder
+///|/ Copyright (c) 2014 Petr Ledvina @ledvinap
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #include "PrintConfig.hpp"
 #include "Config.hpp"
 #include "I18N.hpp"
@@ -270,7 +291,7 @@ CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(ForwardCompatibilitySubstitutionRule)
 
 static const t_config_enum_values s_keys_map_OverhangFanThreshold = {
     { "0%",         Overhang_threshold_none },
-    { "10%",         Overhang_threshold_1_4  },
+    { "10%",        Overhang_threshold_1_4  },
     { "25%",        Overhang_threshold_2_4  },
     { "50%",        Overhang_threshold_3_4  },
     { "75%",        Overhang_threshold_4_4  },
@@ -326,6 +347,14 @@ static const t_config_enum_values s_keys_map_RetractLiftEnforceType = {
     {"Top and Bottom",      rletTopAndBottom}
 };
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(RetractLiftEnforceType)
+
+static const t_config_enum_values  s_keys_map_GCodeThumbnailsFormat = {
+    { "PNG", int(GCodeThumbnailsFormat::PNG) },
+    { "JPG", int(GCodeThumbnailsFormat::JPG) },
+    { "QOI", int(GCodeThumbnailsFormat::QOI) },
+    { "BTT_TFT", int(GCodeThumbnailsFormat::BTT_TFT) }
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(GCodeThumbnailsFormat)
 
 static void assign_printer_technology_to_unknown(t_optiondef_map &options, PrinterTechnology printer_technology)
 {
@@ -622,7 +651,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip    = L("Bed temperature of the initial layer. "
                      "Value 0 means the filament does not support to print on the Textured PEI Plate");
     def->sidetext   = L("°C");
-    def->max        = 0;
+    def->min        = 0;
     def->max        = 300;
     def->set_default_value(new ConfigOptionInts{45});
 
@@ -747,6 +776,15 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(1));
 
+    def = this->add("internal_bridge_flow", coFloat);
+    def->label = L("Internal bridge flow");
+    def->category = L("Quality");
+    def->tooltip = L("This value governs the thickness of the internal bridge layer. This is the first layer over sparse infill. Decrease this value slightly (for example 0.9) to improve surface quality over sparse infill.");
+    def->min = 0;
+    def->max = 2.0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(1));
+
     def = this->add("top_solid_infill_flow_ratio", coFloat);
     def->label = L("Top surface flow ratio");
     def->category = L("Advanced");
@@ -807,8 +845,6 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
-<<<<<<< HEAD
-=======
     def = this->add("overhang_reverse", coBool);
     def->label = L("Reverse on odd");
     def->full_label = L("Overhang reversal");
@@ -838,7 +874,6 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloatOrPercent(50, true));
 
->>>>>>> c29352ec (Add option to "Reverse only internal perimeters" under the reverse on odd feature to reduce part warping)
     def = this->add("overhang_speed_classic", coBool);
     def->label = L("Classic mode");
     def->category = L("Speed");
@@ -911,7 +946,7 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Speed");
     def->tooltip = L("Speed of bridge and completely overhang wall");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(25));
 
@@ -921,7 +956,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip = L("Speed of internal bridge. If the value is expressed as a percentage, it will be calculated based on the bridge_speed. Default value is 150%.");
     def->sidetext = L("mm/s or %");
     def->ratio_over = "bridge_speed";
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloatOrPercent(150, true));
 
@@ -1090,12 +1125,14 @@ void PrintConfigDef::init_fff_params()
 
     def = this->add("activate_air_filtration",coBools);
     def->label = L("Activate air filtration");
-    def->tooltip = L("Activate for better air filtration");
+    def->tooltip = L("Activate for better air filtration. G-code command: M106 P3 S(0-255)");
     def->mode = comSimple;
     def->set_default_value(new ConfigOptionBools{false});
 
     def = this->add("during_print_exhaust_fan_speed", coInts);
-    def->label   = L("Fan speed");
+    //def->label   = L("Fan speed");
+    //GalaxySlicer
+    def->label   = L("During print");
     def->tooltip=L("Speed of exhuast fan during printing.This speed will overwrite the speed in filament custom gcode");
     def->sidetext = L("%");
     def->min=0;
@@ -1104,7 +1141,9 @@ void PrintConfigDef::init_fff_params()
     def->set_default_value(new ConfigOptionInts{60});
 
     def = this->add("complete_print_exhaust_fan_speed", coInts);
-    def->label = L("Fan speed");
+    //def->label   = L("Fan speed");
+    //GalaxySlicer
+    def->label   = L("Complete print");
     def->sidetext = L("%");
     def->tooltip=L("Speed of exhuast fan after printing completes");
     def->min=0;
@@ -1232,7 +1271,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip = L("Speed of outer wall which is outermost and visible. "
                      "It's used to be slower than inner wall speed to get better quality.");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(60));
 
@@ -1244,7 +1283,7 @@ void PrintConfigDef::init_fff_params()
                    "on the outer wall speed setting above. Set to zero for auto.");
     def->sidetext = L("mm/s or %");
     def->ratio_over = "outer_wall_speed";
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloatOrPercent(50, true));
 
@@ -1436,7 +1475,6 @@ void PrintConfigDef::init_fff_params()
                      "Can't be zero");
     def->sidetext = L("mm³/s");
     def->min = 0;
-    def->max = 200;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloats { 2. });
 
@@ -1650,8 +1688,8 @@ def = this->add("filament_loading_speed", coFloats);
 
     // BBS
     def = this->add("temperature_vitrification", coInts);
-    def->label = L("Temperature of vitrificaiton");
-    def->tooltip = L("Material becomes soft at this temperature. Thus the heatbed cannot be hotter than this tempature");
+    def->label = L("Softening temperature");
+    def->tooltip = L("The material softens at this temperature, so when the bed temperature is equal to or greater than it, it's highly recommended to open the front door and/or remove the upper glass to avoid cloggings.");
     def->mode = comSimple;
     def->set_default_value(new ConfigOptionInts{ 100 });
 
@@ -1692,7 +1730,7 @@ def = this->add("filament_loading_speed", coFloats);
     def = this->add("sparse_infill_density", coPercent);
     def->label = L("Sparse infill density");
     def->category = L("Strength");
-    def->tooltip = L("Density of internal sparse infill, 100% means solid throughout");
+    def->tooltip = L("Density of internal sparse infill, 100% turns all sparse infill into solid infill and internal solid infill pattern will be used");
     def->sidetext = L("%");
     def->min = 0;
     def->max = 100;
@@ -1857,7 +1895,7 @@ def = this->add("filament_loading_speed", coFloats);
 
     def = this->add("initial_layer_acceleration", coFloat);
     def->label = L("Initial layer");
-    def->tooltip = L("Acceleration of initial layer. Using a lower value can improve build plate adhensive");
+    def->tooltip = L("Acceleration of initial layer. Using a lower value can improve build plate adhesive");
     def->sidetext = L("mm/s²");
     def->min = 0;
     def->mode = comAdvanced;
@@ -1967,7 +2005,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->label = L("Initial layer");
     def->tooltip = L("Speed of initial layer except the solid infill part");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(30));
 
@@ -1985,7 +2023,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->category = L("Speed");
     def->sidetext = L("mm/s or %");
     def->ratio_over = "travel_speed";
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloatOrPercent(100, true));
 
@@ -2067,10 +2105,17 @@ def = this->add("filament_loading_speed", coFloats);
     def->mode = comSimple;
     def->set_default_value(new ConfigOptionFloat(0.8));
 
+    def = this->add("fuzzy_skin_first_layer", coBool);
+    def->label = L("Apply fuzzy skin to first layer");
+    def->category = L("Others");
+    def->tooltip = L("Whether to apply fuzzy skin on the first layer");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(0));
+
     def = this->add("filter_out_gap_fill", coFloat);
     def->label = L("Filter out tiny gaps");
     def->category = L("Layers and Perimeters");
-    def->tooltip = L("Filter out gaps smaller than the threshold specified. This setting won't affect top/bottom layers");
+    def->tooltip = L("Filter out gaps smaller than the threshold specified");
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0));
     
@@ -2079,7 +2124,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->category = L("Speed");
     def->tooltip = L("Speed of gap infill. Gap usually has irregular line width and should be printed more slowly");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(30));
 
@@ -2163,10 +2208,16 @@ def = this->add("filament_loading_speed", coFloats);
 
     def = this->add("auxiliary_fan", coBool);
     def->label = L("Auxiliary part cooling fan");
-    def->tooltip = L("Enable this option if machine has auxiliary part cooling fan");
+    def->tooltip = L("Enable this option if machine has auxiliary part cooling fan. G-code command: M106 P2 S(0-255).");
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
+	//GalaxySlicer: Exhaus fan control
+    def = this->add("exhaust_fan", coBool);
+    def->label = L("Exhaust cooling fan");
+    def->tooltip = L("Enable this option if machine has exhaust cooling fan. G-code command: M106 P3 S(0-255).");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("fan_speedup_time", coFloat);
 	// Label is set in Tab.cpp in the Line object.
@@ -2207,18 +2258,19 @@ def = this->add("filament_loading_speed", coFloats);
     def->mode    = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0));
 
+    // Orca: may remove this option later
     def =this->add("support_chamber_temp_control",coBool);
     def->label=L("Support control chamber temperature");
-    def->tooltip=L("This option is enabled if machine support controlling chamber temperature");
+    def->tooltip=L("This option is enabled if machine support controlling chamber temperature\nG-code command: M141 S(0-255)");
     def->mode=comDevelop;
-    def->set_default_value(new ConfigOptionBool(false));
+    def->set_default_value(new ConfigOptionBool(true));
     def->readonly=false;
 
     def =this->add("support_air_filtration",coBool);
     def->label=L("Support air filtration");
-    def->tooltip=L("Enable this if printer support air filtration");
+    def->tooltip=L("Enable this if printer support air filtration\nG-code command: M106 P3 S(0-255)");
     def->mode=comDevelop;
-    def->set_default_value(new ConfigOptionBool(false));
+    def->set_default_value(new ConfigOptionBool(true));
 
     def = this->add("gcode_flavor", coEnum);
     def->label = L("G-code flavor");
@@ -2318,7 +2370,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->category = L("Speed");
     def->tooltip = L("Speed of internal sparse infill");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(100));
 
@@ -2367,6 +2419,7 @@ def = this->add("filament_loading_speed", coFloats);
 
     def                = this->add("ironing_pattern", coEnum);
     def->label         = L("Ironing Pattern");
+    def->tooltip       = L("The pattern that will be used when ironing");
     def->category      = L("Quality");
     def->enum_keys_map = &ConfigOptionEnum<InfillPattern>::get_enum_values();
     def->enum_values.push_back("concentric");
@@ -2403,9 +2456,19 @@ def = this->add("filament_loading_speed", coFloats);
     def->category = L("Quality");
     def->tooltip = L("Print speed of ironing lines");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(20));
+
+    def           = this->add("ironing_angle", coFloat);
+    def->label    = L("Ironing angle");
+    def->category = L("Quality");
+    def->tooltip  = L("The angle ironing is done at. A negative number disables this function and uses the default method.");
+    def->sidetext = L("°");
+    def->min      = -1;
+    def->max      = 359;
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(-1));
 
     def = this->add("layer_change_gcode", coString);
     def->label = L("Layer change G-code");
@@ -2575,7 +2638,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->min = 0;
     def->readonly = false;
     def->mode = comAdvanced;
-    def->set_default_value(new ConfigOptionFloats{ 1500., 1250. });
+    def->set_default_value(new ConfigOptionFloats{ 0., 0. });
 
     def = this->add("fan_max_speed", coInts);
     def->label = L("Fan speed");
@@ -2640,7 +2703,7 @@ def = this->add("filament_loading_speed", coFloats);
     def = this->add("additional_cooling_fan_speed", coInts);
     def->label = L("Fan speed");
     def->tooltip = L("Speed of auxiliary part cooling fan. Auxiliary fan will run at this speed during printing except the first several layers "
-                     "which is defined by no cooling layers");
+                     "which is defined by no cooling layers.\nPlease enable auxiliary_fan in printer settings to use this feature. G-code command: M106 P2 S(0-255)");
     def->sidetext = L("%");
     def->min = 0;
     def->max = 100;
@@ -2658,7 +2721,7 @@ def = this->add("filament_loading_speed", coFloats);
 
     def = this->add("slow_down_min_speed", coFloats);
     def->label = L("Min print speed");
-    def->tooltip = L("The minimum printing speed when slow down for cooling");
+    def->tooltip = L("The minimum printing speed for the filament when slow down for better layer cooling is enabled, when printing overhangs and when feature speeds are not specified explicitly.");
     def->sidetext = L("mm/s");
     def->min = 0;
     def->mode = comAdvanced;
@@ -2787,7 +2850,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->tooltip = L("User can self-define the project file name when export");
     def->full_width = true;
     def->mode = comAdvanced;
-    def->set_default_value(new ConfigOptionString("{input_filename_base}_{filament_type[0]}_{print_time}.gcode"));
+    def->set_default_value(new ConfigOptionString("{input_filename_base}_{filament_type[initial_tool]}_{print_time}.gcode"));
 
     def = this->add("make_overhang_printable", coBool);
     def->label = L("Make overhang printable");
@@ -2855,7 +2918,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->tooltip = L("Speed of inner wall");
     def->sidetext = L("mm/s");
     def->aliases = { "perimeter_feed_rate" };
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(60));
 
@@ -3020,21 +3083,6 @@ def = this->add("filament_loading_speed", coFloats);
     def->sidetext = L("mm");
     def->mode = comSimple;
     def->set_default_value(new ConfigOptionFloats { 0.4 });
-
-    def             = this->add("retract_lift_above", coFloats);
-    def->label      = L("Z hop lower boundary");
-    def->tooltip    = L("Z hop will only come into effect when Z is above this value and is below the parameter: \"Z hop upper boundary\"");
-    def->sidetext   = L("mm");
-    def->mode       = comAdvanced;
-    def->set_default_value(new ConfigOptionFloats{0.});
-
-    def             = this->add("retract_lift_below", coFloats);
-    def->label      = L("Z hop upper boundary");
-    def->tooltip    = L("If this value is positive, Z hop will only come into effect when Z is above the parameter: \"Z hop lower boundary\" and is below this value");
-    def->sidetext   = L("mm");
-    def->mode       = comAdvanced;
-    def->set_default_value(new ConfigOptionFloats{0.});
-
 
     def = this->add("z_hop_types", coEnums);
     def->label = L("Z hop type");
@@ -3231,7 +3279,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->min = 0;
     def->sidetext = L("mm/s");
     def->mode = comAdvanced;
-    def->set_default_value(new ConfigOptionFloat(0.0));
+    def->set_default_value(new ConfigOptionFloat(50.0));
 
     def = this->add("slow_down_layer_time", coFloats);
     def->label = L("Layer time");
@@ -3280,7 +3328,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->category = L("Speed");
     def->tooltip = L("Speed of internal solid infill, not the top and bottom surface");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(100));
 
@@ -3345,6 +3393,14 @@ def = this->add("filament_loading_speed", coFloats);
     def->readonly = true;
     def->set_default_value(new ConfigOptionBool(true));
 
+    def = this->add("manual_filament_change", coBool);
+    def->label = L("Manual Filament Change");
+    def->tooltip = L("Enable this option to omit the custom Change filament G-code only at the beginning of the print. "
+                    "The tool change command (e.g., T0) will be skipped throughout the entire print. "
+                    "This is useful for manual multi-material printing, where we use M600/PAUSE to trigger the manual filament change action.");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
     def = this->add("purge_in_prime_tower", coBool);
     def->label = L("Purge in prime tower");
     def->tooltip = L("Purge remaining filament into prime tower");
@@ -3396,6 +3452,16 @@ def = this->add("filament_loading_speed", coFloats);
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<SlicingMode>(SlicingMode::Regular));
 
+    def = this->add("z_offset", coFloat);
+    def->label = L("Z offset");
+    def->tooltip = L("This value will be added (or subtracted) from all the Z coordinates "
+                   "in the output G-code. It is used to compensate for bad Z endstop position: "
+                   "for example, if your endstop zero actually leaves the nozzle 0.3mm far "
+                   "from the print bed, set this to -0.3 (or fix your endstop).");
+    def->sidetext = L("mm");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+    
     def = this->add("enable_support", coBool);
     //BBS: remove material behind support
     def->label = L("Enable support");
@@ -3468,6 +3534,7 @@ def = this->add("filament_loading_speed", coFloats);
     def = this->add("support_top_z_distance", coFloat);
     //def->gui_type = ConfigOptionDef::GUIType::f_enum_open;
     def->label = L("Top Z distance");
+    def->min = 0;
     def->category = L("Support");
     def->tooltip = L("The z gap between the top support interface and object");
     def->sidetext = L("mm");
@@ -3483,12 +3550,12 @@ def = this->add("filament_loading_speed", coFloats);
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.2));
 
-    // BBS:MusangKing
     def = this->add("support_bottom_z_distance", coFloat);
     def->label = L("Bottom Z distance");
     def->category = L("Support");
     def->tooltip = L("The z gap between the bottom support interface and object");
     def->sidetext = L("mm");
+    def->min = 0;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.2));
 
@@ -3668,7 +3735,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->category = L("Speed");
     def->tooltip = L("Speed of support");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(80));
 
@@ -3876,6 +3943,12 @@ def = this->add("filament_loading_speed", coFloats);
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
+    def = this->add("activate_chamber_temp_control",coBools);
+    def->label = L("Activate temperature control");
+    def->tooltip = L("Enable this option for chamber temperature control. An M191 command will be added before \"machine_start_gcode\"\nG-code commands: M141/M191 S(0-255)");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBools{false});
+
     def = this->add("chamber_temperature", coInts);
     def->label = L("Chamber temperature");
     def->tooltip = L("Higher chamber temperature can help suppress or reduce warping and potentially lead to higher interlayer bonding strength for high temperature materials like ABS, ASA, PC, PA and so on."
@@ -3931,6 +4004,15 @@ def = this->add("filament_loading_speed", coFloats);
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionString(""));
 
+    def = this->add("change_extrusion_role_gcode", coString);
+    def->label = L("Change extrusion role G-code");
+    def->tooltip = L("This gcode is inserted when the extrusion role is changed");
+    def->multiline = true;
+    def->full_width = true;
+    def->height = 5;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionString(""));
+
     def = this->add("top_surface_line_width", coFloatOrPercent);
     def->label = L("Top surface");
     def->category = L("Quality");
@@ -3948,7 +4030,7 @@ def = this->add("filament_loading_speed", coFloats);
     def->category = L("Speed");
     def->tooltip = L("Speed of top surface infill which is solid");
     def->sidetext = L("mm/s");
-    def->min = 0;
+    def->min = 1;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(100));
 
@@ -4174,12 +4256,51 @@ def = this->add("filament_loading_speed", coFloats);
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0));
 
+    def = this->add("hole_to_polyhole", coBool);
+    def->label = L("Convert holes to polyholes");
+    def->category = L("Quality");
+    def->tooltip = L("Search for almost-circular holes that span more than one layer and convert the geometry to polyholes."
+                     " Use the nozzle size and the (biggest) diameter to compute the polyhole."
+                     "\nSee http://hydraraptor.blogspot.com/2011/02/polyholes.html");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("hole_to_polyhole_threshold", coFloatOrPercent);
+    def->label = L("Polyhole detection margin");
+    def->category = L("Quality");
+    def->tooltip = L("Maximum defection of a point to the estimated radius of the circle."
+                     "\nAs cylinders are often exported as triangles of varying size, points may not be on the circle circumference."
+                     " This setting allows you some leway to broaden the detection."
+                     "\nIn mm or in % of the radius.");
+    def->sidetext = L("mm or %");
+    def->max_literal = 10;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloatOrPercent(0.01, false));
+
+    def = this->add("hole_to_polyhole_twisted", coBool);
+    def->label = L("Polyhole twist");
+    def->category = L("Quality");
+    def->tooltip = L("Rotate the polyhole every layer.");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(true));
+
     def = this->add("thumbnails", coPoints);
     def->label = L("G-code thumbnails");
     def->tooltip = L("Picture sizes to be stored into a .gcode and .sl1 / .sl1s files, in the following format: \"XxY, XxY, ...\"");
     def->mode = comAdvanced;
     def->gui_type = ConfigOptionDef::GUIType::one_string;
     def->set_default_value(new ConfigOptionPoints{Vec2d(300, 300)});
+
+    def = this->add("thumbnails_format", coEnum);
+    def->label = L("Format of G-code thumbnails");
+    def->tooltip = L("Format of G-code thumbnails: PNG for best quality, JPG for smallest size, QOI for low memory firmware");
+    def->mode = comAdvanced;
+    def->enum_keys_map = &ConfigOptionEnum<GCodeThumbnailsFormat>::get_enum_values();
+    def->enum_values.push_back("PNG");
+    def->enum_values.push_back("JPG");
+    def->enum_values.push_back("QOI");
+    def->enum_values.push_back("BTT TFT");
+    def->set_default_value(new ConfigOptionEnum<GCodeThumbnailsFormat>(GCodeThumbnailsFormat::PNG));
 
     def = this->add("use_relative_e_distances", coBool);
     def->label = L("Use relative E distances");
@@ -5115,6 +5236,9 @@ void PrintConfigDef::handle_legacy(t_config_option_key &opt_key, std::string &va
         opt_key = "only_one_wall_top";
         value = "1";
     }
+    else if (opt_key == "initial_layer_flow_ratio") {
+        opt_key = "bottom_solid_infill_flow_ratio";
+    }
 
     // Ignore the following obsolete configuration keys:
     static std::set<std::string> ignore = {
@@ -5129,7 +5253,9 @@ void PrintConfigDef::handle_legacy(t_config_option_key &opt_key, std::string &va
         "remove_freq_sweep", "remove_bed_leveling", "remove_extrusion_calibration",
         "support_transition_line_width", "support_transition_speed", "bed_temperature", "bed_temperature_initial_layer",
         "can_switch_nozzle_type", "can_add_auxiliary_fan", "extra_flush_volume", "spaghetti_detector", "adaptive_layer_height",
-        "z_hop_type", "z_lift_type", "bed_temperature_difference"
+        "z_hop_type", "z_lift_type", "bed_temperature_difference",
+        "extruder_type",
+        "internal_bridge_support_thickness","extruder_clearance_max_radius"
     };
 
     if (ignore.find(opt_key) != ignore.end()) {
@@ -5595,12 +5721,6 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
         error_message.emplace("internal_solid_infill_pattern", L("invalid value ") + cfg.internal_solid_infill_pattern.serialize());
     }
 
-    // --fill-density
-    if (fabs(cfg.sparse_infill_density.value - 100.) < EPSILON &&
-        ! print_config_def.get("top_surface_pattern")->has_enum_value(cfg.sparse_infill_pattern.serialize())) {
-        error_message.emplace("sparse_infill_pattern", cfg.sparse_infill_pattern.serialize() + L(" doesn't work at 100%% density "));
-    }
-
     // --skirt-height
     if (cfg.skirt_height < 0) {
         error_message.emplace("skirt_height", L("invalid value ") + std::to_string(cfg.skirt_height));
@@ -5609,6 +5729,11 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
     // --bridge-flow-ratio
     if (cfg.bridge_flow <= 0) {
         error_message.emplace("bridge_flow", L("invalid value ") + std::to_string(cfg.bridge_flow));
+    }
+    
+    // --bridge-flow-ratio
+    if (cfg.bridge_flow <= 0) {
+        error_message.emplace("internal_bridge_flow", L("invalid value ") + std::to_string(cfg.internal_bridge_flow));
     }
 
     // extruder clearance

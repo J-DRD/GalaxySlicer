@@ -7,6 +7,7 @@ on:
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
        - dev_9
        - dev_9A
+       - 1-0-0-release
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -21,6 +22,7 @@ on:
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
        - dev_9
        - dev_9A
+       - 1-0-0-release
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'

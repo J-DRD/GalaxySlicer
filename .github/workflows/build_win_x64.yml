@@ -5,6 +5,8 @@ on:
       branches: 
        - main
        - dev_9
+       - dev_9A
+       - 1-0-0-release
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
        - backup
       paths:

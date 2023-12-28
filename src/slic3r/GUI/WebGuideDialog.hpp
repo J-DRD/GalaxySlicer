@@ -124,7 +124,6 @@ private:
     wxString m_response_js;
 
     wxString m_bbl_user_agent;
-    std::string m_editing_filament_id;
 };
 
 }} // namespace Slic3r::GUI

@@ -129,7 +129,6 @@ enum CameraMenuIDs {
 
 class Tab;
 class ConfigWizard;
-class GizmoObjectManipulation;
 
 static wxString dots("...", wxConvUTF8);
 
@@ -275,7 +274,6 @@ private:
     Slic3r::DeviceManager* m_device_manager { nullptr };
     NetworkAgent* m_agent { nullptr };
     std::vector<std::string> need_delete_presets;   // store setting ids of preset
-    std::vector<bool> m_create_preset_blocked { false, false, false, false, false, false }; // excceed limit
     bool m_networking_compatible { false };
     bool m_networking_need_update { false };
     bool m_networking_cancel_update { false };
@@ -290,11 +288,10 @@ private:
     HMSQuery    *hms_query { nullptr };
 
     boost::thread    m_sync_update_thread;
-    std::shared_ptr<int> m_user_sync_token;
+    bool             enable_sync = false;
     bool             m_is_dark_mode{ false };
     bool             m_adding_script_handler { false };
     bool             m_side_popup_status{false};
-    bool             m_show_http_errpr_msgdlg{false};
     wxString         m_info_dialog_content;
     HttpServer       m_http_server;
     bool             m_show_gcode_window{true};
@@ -305,7 +302,6 @@ private:
     void            check_filaments_in_blacklist(std::string tag_supplier, std::string tag_material, bool& in_blacklist, std::string& action, std::string& info);
     std::string     get_local_models_path();
     bool            OnInit() override;
-    int             OnExit() override;
     bool            initialized() const { return m_initialized; }
 
     std::map<std::string, bool> test_url_state;
@@ -327,7 +323,7 @@ private:
     
     // SoftFever
     bool show_gcode_window() const { return m_show_gcode_window; }
-    void toggle_show_gcode_window();
+    void set_show_gcode_window(bool val) { m_show_gcode_window = val; } 
 
     wxString get_inf_dialog_contect () {return m_info_dialog_content;};
 
@@ -344,9 +340,11 @@ private:
     bool            init_opengl();
 
     void            init_download_path();
+
 #if wxUSE_WEBVIEW_EDGE
     void            init_webview_runtime();
 #endif
+
     static unsigned get_colour_approx_luma(const wxColour& colour);
     static bool     dark_mode();
     const wxColour  get_label_default_clr_system();
@@ -483,7 +481,6 @@ private:
     bool            load_language(wxString language, bool initial);
 
     Tab*            get_tab(Preset::Type type);
-    Tab*            get_plate_tab();
     Tab*            get_model_tab(bool part = false);
     Tab*            get_layer_tab();
     ConfigOptionMode get_mode();
@@ -534,7 +531,6 @@ private:
 #endif /* __APPLE */
 
     Sidebar&             sidebar();
-    GizmoObjectManipulation*  obj_manipul();
     ObjectSettings*      obj_settings();
     ObjectList*          obj_list();
     ObjectLayers*        obj_layers();
@@ -587,7 +583,6 @@ private:
 
     std::vector<Tab *>      tabs_list;
     std::vector<Tab *>      model_tabs_list;
-    Tab*                    plate_tab;
 
 	RemovableDriveManager* removable_drive_manager() { return m_removable_drive_manager.get(); }
 	//OtherInstanceMessageHandler* other_instance_message_handler() { return m_other_instance_message_handler.get(); }
@@ -663,7 +658,6 @@ private:
     bool                    m_datadir_redefined { false };
     std::string             m_older_data_dir_path;
     boost::optional<Semver> m_last_config_version;
-    bool                    m_config_corrupted { false };
 };
 
 DECLARE_APP(GUI_App)

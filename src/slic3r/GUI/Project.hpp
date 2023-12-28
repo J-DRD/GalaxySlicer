@@ -73,7 +73,6 @@ public:
     ~ProjectPanel();
 
     
-    void onWebNavigating(wxWebViewEvent& evt);
     void on_reload(wxCommandEvent& evt);
     void on_size(wxSizeEvent &event);
     void on_navigated(wxWebViewEvent& event);

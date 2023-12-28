@@ -1,7 +1,3 @@
-///|/ Copyright (c) Prusa Research 2018 - 2022 Enrico Turri @enricoturri1966, David Kocík @kocikdav, Oleksandra Iushchenko @YuSanka, Vojtěch Král @vojtechkral, Vojtěch Bubník @bubnikv
-///|/
-///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
-///|/
 #ifndef slic3r_GLToolbar_hpp_
 #define slic3r_GLToolbar_hpp_
 
@@ -331,7 +327,7 @@ private:
     mutable GLTexture m_images_texture;
     mutable bool m_images_texture_dirty;
     BackgroundTexture m_background_texture;
-    GLTexture m_arrow_texture;
+    BackgroundTexture m_arrow_texture;
     Layout m_layout;
 
     ItemsList m_items;
@@ -358,7 +354,7 @@ public:
 
     bool init(const BackgroundTexture::Metadata& background_texture);
 
-    bool init_arrow(const std::string& filename);
+    bool init_arrow(const BackgroundTexture::Metadata& arrow_texture);
 
     Layout::EType get_layout_type() const;
     void set_layout_type(Layout::EType type);
@@ -440,8 +436,8 @@ private:
     int contains_mouse_horizontal(const Vec2d& mouse_pos, const GLCanvas3D& parent) const;
     int contains_mouse_vertical(const Vec2d& mouse_pos, const GLCanvas3D& parent) const;
 
-    void render_background(float left, float top, float right, float bottom, float border_w, float border_h) const;
-    void render_horizontal(const GLCanvas3D &parent, GLToolbarItem::EType type);
+    void render_background(float left, float top, float right, float bottom, float border) const;
+    void render_horizontal(const GLCanvas3D& parent,GLToolbarItem::EType type);
     void render_vertical(const GLCanvas3D& parent);
 
     bool generate_icons_texture();

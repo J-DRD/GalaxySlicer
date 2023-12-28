@@ -1,7 +1,3 @@
-///|/ Copyright (c) Prusa Research 2018 - 2023 Enrico Turri @enricoturri1966, Lukáš Matěna @lukasmatena, Lukáš Hejl @hejllukas, Vojtěch Bubník @bubnikv, Vojtěch Král @vojtechkral
-///|/
-///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
-///|/
 #ifndef slic3r_OpenGLManager_hpp_
 #define slic3r_OpenGLManager_hpp_
 
@@ -44,8 +40,6 @@ public:
         const std::string& get_vendor() const;
         const std::string& get_renderer() const;
 
-        bool is_mesa() const;
-
         int get_max_tex_size() const;
         float get_max_anisotropy() const;
 
@@ -87,11 +81,10 @@ private:
     static OSInfo s_os_info;
 #endif //__APPLE__
     static bool s_compressed_textures_supported;
-    static bool s_force_power_of_two_textures;
-
     static EMultisampleState s_multisample;
     static EFramebufferType s_framebuffers_type;
 
+    static bool m_use_manually_generated_mipmaps;
 public:
     OpenGLManager() = default;
     ~OpenGLManager();
@@ -108,7 +101,7 @@ public:
     static EFramebufferType get_framebuffers_type() { return s_framebuffers_type; }
     static wxGLCanvas* create_wxglcanvas(wxWindow& parent);
     static const GLInfo& get_gl_info() { return s_gl_info; }
-    static bool force_power_of_two_textures() { return s_force_power_of_two_textures; }
+    static bool use_manually_generated_mipmaps() { return m_use_manually_generated_mipmaps; }
 
 private:
     static void detect_multisample(int* attribList);

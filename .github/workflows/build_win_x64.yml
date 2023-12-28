@@ -6,7 +6,6 @@ on:
        - main
        - dev_9
        - dev_9b
-
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
        - backup
       paths:
@@ -22,6 +21,7 @@ on:
        - dev_9
        - dev_9b
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
+       - backup
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'

@@ -1,13 +1,14 @@
 name: Build Win x64
 
-
 on: 
     push:
       branches: 
        - main
        - dev_9
        - dev_9b
+
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
+       - backup
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -31,7 +32,7 @@ on:
 jobs:
   build_win64:
     name: Build Win x64
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -43,7 +44,7 @@ jobs:
       - run: mkdir ${{ github.workspace }}/deps/build/GalaxySlicer_dep
       - name: download GalaxySlicer deps
         shell: powershell
-        run: '(new-object System.Net.WebClient).DownloadFile("https://github.com/fr3ak2402/GalaxySlicer_deps/releases/download/October_23/GalaxySlicer_dep_Win_x64_11-10-23.zip", "$env:temp\GalaxySlicer_dep_Win_x64_11-10-23.zip")'
+        run: '(new-object System.Net.WebClient).DownloadFile("https://github.com/fr3ak2402/GalaxySlicer_deps/releases/download/December_23/GalaxySlicer_dep_Win_x64_06-12-23.zip", "$env:temp\GalaxySlicer_dep_Win_x64_11-10-23.zip")'
       - name: extract deps
         working-directory: ${{ github.workspace }}/deps/build
         shell: cmd
@@ -51,12 +52,24 @@ jobs:
 
       - run: dir "${{ github.workspace }}\deps\build\GalaxySlicer_dep"
       
-      - name: Build GalaxySlicer
+      - name: Build GalaxySlicer 1
+        working-directory: ${{ github.workspace }}
+        run: .\build_release_vs2019.bat slicer
+
+      - name: Upload GalaxySlicer 1
+        uses: actions/upload-artifact@v3
+        with:
+          name: GalaxySlicer_Win_x64_nightly_1
+          path: ${{ github.workspace }}/build/GalaxySlicer
+
+          
+      - name: Build GalaxySlicer 2
         working-directory: ${{ github.workspace }}
         run: .\build_release_vs2022.bat slicer
 
-      - name: Upload GalaxySlicer
+      - name: Upload GalaxySlicer 2
         uses: actions/upload-artifact@v3
         with:
-          name: GalaxySlicer_Win_x64_nightly
+          name: GalaxySlicer_Win_x64_nightly_2
           path: ${{ github.workspace }}/build/GalaxySlicer
+          

@@ -6,10 +6,7 @@ on:
       branches: 
        - main
        - dev_9
-<<<<<<< Updated upstream
        - dev_9b
-=======
->>>>>>> Stashed changes
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
       paths:
        - 'src/**'
@@ -22,10 +19,7 @@ on:
       branches: 
        - main 
        - dev_9
-<<<<<<< Updated upstream
        - dev_9b
-=======
->>>>>>> Stashed changes
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
       paths:
        - 'src/**'

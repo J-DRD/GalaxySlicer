@@ -1,3 +1,7 @@
+///|/ Copyright (c) Prusa Research 2017 - 2023 Oleksandra Iushchenko @YuSanka, Vojtěch Bubník @bubnikv, Pavel Mikuš @Godrak, David Kocík @kocikdav, Lukáš Matěna @lukasmatena, Enrico Turri @enricoturri1966, Lukáš Hejl @hejllukas, Filip Sykala @Jony01, Vojtěch Král @vojtechkral
+///|/
+///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+///|/
 #include "libslic3r/libslic3r.h"
 #include "libslic3r/Utils.hpp"
 #include "AppConfig.hpp"
@@ -43,6 +47,7 @@ static const std::string MODELS_STR = "models";
 
 const std::string AppConfig::SECTION_FILAMENTS = "filaments";
 const std::string AppConfig::SECTION_MATERIALS = "sla_materials";
+const std::string AppConfig::SECTION_EMBOSS_STYLE = "font";
 
 std::string AppConfig::get_language_code()
 {
@@ -172,7 +177,7 @@ void AppConfig::set_defaults()
 #endif
 
     if (get("zoom_to_mouse").empty())
-        set_bool("zoom_to_mouse", false);
+        set_bool("zoom_to_mouse", true);
 
 //#ifdef SUPPORT_SHOW_HINTS
     if (get("show_hints").empty())
@@ -180,7 +185,7 @@ void AppConfig::set_defaults()
 //#endif
 
     if (get("show_gcode_window").empty())
-        set_bool("show_gcode_window", true);
+        set_bool("show_gcode_window", false);
 
 
 #ifdef _WIN32
@@ -202,20 +207,20 @@ void AppConfig::set_defaults()
 #endif // _WIN32
 
     // BBS
-    /*if (get("3mf_include_gcode").empty())
-        set_bool("3mf_include_gcode", true);*/
+    if (get("3mf_include_gcode").empty())
+        set_bool("3mf_include_gcode", true);
 
     if (get("developer_mode").empty())
         set_bool("developer_mode", false);
 
     if (get("enable_ssl_for_mqtt").empty())
-        set_bool("enable_ssl_for_mqtt", true);
+        set_bool("enable_ssl_for_mqtt", false);
 
     if (get("enable_ssl_for_ftp").empty())
-        set_bool("enable_ssl_for_ftp", true);
+        set_bool("enable_ssl_for_ftp", false);
 
     if (get("severity_level").empty())
-        set("severity_level", "info");
+        set("severity_level", "error");
 
     if (get("internal_developer_mode").empty())
         set_bool("internal_developer_mode", false);
@@ -230,22 +235,22 @@ void AppConfig::set_defaults()
         set("slicer_uuid", to_string(uuid));
     }
 
-    // Orca
+    // Galaxy
     if (get("stealth_mode").empty()) {
         set_bool("stealth_mode", false);
     }
 
-    // Orca
+    // Galaxy
     if(get("show_splash_screen").empty()) {
         set_bool("show_splash_screen", true);
     }
 
     if (get("show_model_mesh").empty()) {
-        set_bool("show_model_mesh", false);
+        set_bool("show_model_mesh", true);
     }
 
     if (get("show_model_shadow").empty()) {
-        set_bool("show_model_shadow", true);
+        set_bool("show_model_shadow", false);
     }
 
     if (get("show_build_edges").empty()) {
@@ -253,7 +258,11 @@ void AppConfig::set_defaults()
     }
 
     if (get("show_daily_tips").empty()) {
-        set_bool("show_daily_tips", true);
+        set_bool("show_daily_tips", false);
+    }
+    //true is auto calculate
+    if (get("auto_calculate").empty()) {
+        set_bool("auto_calculate", true);
     }
 
     if (get("show_home_page").empty()) {
@@ -309,7 +318,7 @@ void AppConfig::set_defaults()
     }
     
     if (get("max_recent_count").empty()) {
-        set("max_recent_count", "18");
+        set("max_recent_count", "10");
     }
 
     // if (get("staff_pick_switch").empty()) {
@@ -325,7 +334,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("backup_interval").empty()) {
-        set("backup_interval", "10");
+        set("backup_interval", "20");
     }
 
     if (get("curr_bed_type").empty()) {
@@ -356,7 +365,7 @@ void AppConfig::set_defaults()
         set_str("print", "flow_cali", "1");
     }
     if (get("print", "timelapse").empty()) {
-        set_str("print", "timelapse", "1");
+        set_str("print", "timelapse", "0");
     }
 
     // Remove legacy window positions/sizes
@@ -998,7 +1007,7 @@ void AppConfig::set_vendors(const AppConfig &from)
     m_dirty = true;
 }
 
-void AppConfig::save_printer_cali_infos(const PrinterCaliInfo &cali_info)
+void AppConfig::save_printer_cali_infos(const PrinterCaliInfo &cali_info, bool need_change_status)
 {
     auto iter = std::find_if(m_printer_cali_infos.begin(), m_printer_cali_infos.end(), [&cali_info](const PrinterCaliInfo &cali_info_item) {
         return cali_info_item.dev_id == cali_info.dev_id;
@@ -1007,7 +1016,9 @@ void AppConfig::save_printer_cali_infos(const PrinterCaliInfo &cali_info)
     if (iter == m_printer_cali_infos.end()) {
         m_printer_cali_infos.emplace_back(cali_info);
     } else {
-        (*iter).cali_finished = cali_info.cali_finished;
+        if (need_change_status) {
+            (*iter).cali_finished = cali_info.cali_finished;
+        }
         (*iter).cache_flow_ratio = cali_info.cache_flow_ratio;
         (*iter).selected_presets = cali_info.selected_presets;
     }

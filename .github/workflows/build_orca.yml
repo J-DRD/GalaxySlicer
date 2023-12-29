@@ -8,6 +8,7 @@ on:
        - dev_9
        - dev_9A
        - backup
+       - J-DRD-patch-1
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'

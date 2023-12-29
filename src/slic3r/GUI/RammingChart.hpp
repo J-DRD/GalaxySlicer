@@ -1,4 +1,4 @@
-// Galaxy: This file is ported from latest PrusaSlicer
+// Orca: This file is ported from latest PrusaSlicer
 
 #ifndef RAMMING_CHART_H_
 #define RAMMING_CHART_H_

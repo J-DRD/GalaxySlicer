@@ -9,6 +9,7 @@
 #include "GUI_Utils.hpp"
 #include "Widgets/RoundedRectangle.hpp"
 
+class wxString;
 class wxTextCtrl;
 class wxStaticText;
 class ScalableButton;

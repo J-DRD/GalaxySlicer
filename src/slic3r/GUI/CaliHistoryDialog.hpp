@@ -50,9 +50,6 @@ protected:
 
 protected:
     PACalibResult m_new_result;
-
-    TextInput* m_name_value{ nullptr };
-    TextInput* m_k_value{ nullptr };
 };
 
 } // namespace GUI

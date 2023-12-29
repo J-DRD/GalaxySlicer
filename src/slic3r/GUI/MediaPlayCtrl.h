@@ -40,8 +40,6 @@ public:
 
     void ToggleStream();
 
-    void msw_rescale();
-
 protected:
     void onStateChanged(wxMediaEvent & event);
 
@@ -54,8 +52,6 @@ protected:
     void SetStatus(wxString const &msg, bool hyperlink = true);
 
 private:
-    void load();
-
     void on_show_hide(wxShowEvent & evt);
 
     void media_proc();
@@ -77,7 +73,6 @@ private:
     std::string m_lan_ip;
     std::string m_lan_user;
     std::string m_lan_passwd;
-    std::string m_dev_ver;
     std::string m_tutk_state;
     bool m_camera_exists = false;
     bool m_lan_mode = false;

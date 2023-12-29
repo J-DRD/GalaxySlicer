@@ -650,6 +650,7 @@ public:
                 std::string comment;
             };
             bool m_is_dark = false;
+            bool m_visible{ true };
             uint64_t m_selected_line_id{ 0 };
             size_t m_last_lines_size{ 0 };
             std::string m_filename;
@@ -672,6 +673,8 @@ public:
                 m_filename.clear();
                 m_filename.shrink_to_fit();
             }
+
+            void toggle_visibility() { m_visible = !m_visible; }
 
             //BBS: GUI refactor: add canvas size
             //void render(float top, float bottom, uint64_t curr_line_id) const;
@@ -698,7 +701,7 @@ public:
         GCodeWindow gcode_window;
         std::vector<unsigned int> gcode_ids;
         float m_scale = 1.0;
-        bool m_show_marker = false;
+        bool m_show_gcode_window = false;
         void render(const bool has_render_path, float legend_height, int canvas_width, int canvas_height, int right_margin, const EViewType& view_type);
     };
 
@@ -772,7 +775,6 @@ private:
     std::vector<EMoveType> options_items;
 
     bool m_legend_enabled{ true };
-    float m_legend_height;
     PrintEstimatedStatistics m_print_statistics;
     PrintEstimatedStatistics::ETimeMode m_time_estimate_mode{ PrintEstimatedStatistics::ETimeMode::Normal };
 #if ENABLE_GCODE_VIEWER_STATISTICS
@@ -811,7 +813,7 @@ public:
     void reset();
     //BBS: always load shell at preview
     void reset_shell();
-    void load_shells(const Print& print, bool initialized, bool force_previewing = false);
+    void load_shells(const Print& print, bool force_previewing = false);
     void set_shells_on_preview(bool is_previewing) { m_shells.previewing = is_previewing; }
     //BBS: add all plates filament statistics
     void render_all_plates_stats(const std::vector<const GCodeProcessorResult*>& gcode_result_list, bool show = true) const;
@@ -878,9 +880,10 @@ public:
 
     bool is_legend_enabled() const { return m_legend_enabled; }
     void enable_legend(bool enable) { m_legend_enabled = enable; }
-    float get_legend_height() { return m_legend_height; }
 
     void export_toolpaths_to_obj(const char* filename) const;
+
+    void toggle_gcode_window_visibility() { m_sequential_view.gcode_window.toggle_visibility(); }
 
     std::vector<CustomGCode::Item>& get_custom_gcode_per_print_z() { return m_custom_gcode_per_print_z; }
     size_t get_extruders_count() { return m_extruders_count; }

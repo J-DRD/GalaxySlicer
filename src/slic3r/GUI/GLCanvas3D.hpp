@@ -582,8 +582,6 @@ private:
     // I just don't want to do it now before a release (Lukas Matena 24.3.2019)
     bool m_render_sla_auxiliaries;
 
-    std::string m_color_by;
-
     bool m_reload_delayed;
 
     RenderStats m_render_stats;
@@ -631,7 +629,7 @@ private:
     int split_to_objects_count = 0;
     int split_to_part_count = 0;
     int custom_height_count = 0;
-    int assembly_view_count = 0;
+    int custom_painting_count = 0;
 
 public:
     OrientSettings& get_orient_settings()
@@ -814,7 +812,6 @@ public:
     void set_color_clip_plane_colors(const std::array<ColorRGBA, 2>& colors) { m_volumes.set_color_clip_plane_colors(colors); }
 
     void refresh_camera_scene_box();
-    void set_color_by(const std::string& value);
 
     BoundingBoxf3 volumes_bounding_box(bool current_plate_only = false) const;
     BoundingBoxf3 scene_bounding_box() const;
@@ -858,17 +855,15 @@ public:
     //BBS: add part plate related logic
     void select_plate();
     //BBS: GUI refactor: GLToolbar&&gizmo
-    float get_main_toolbar_offset() const;
-    float get_main_toolbar_height() const { return m_main_toolbar.get_height(); }
-    float get_main_toolbar_width() const { return m_main_toolbar.get_width(); }
-    float get_assemble_view_toolbar_width() const { return m_assemble_view_toolbar.get_width(); }
-    float get_assemble_view_toolbar_height() const { return m_assemble_view_toolbar.get_height(); }
-    float get_assembly_paint_toolbar_width() const { return m_paint_toolbar_width; }
-    float get_separator_toolbar_width() const { return m_separator_toolbar.get_width(); }
-    float get_separator_toolbar_height() const { return m_separator_toolbar.get_height(); }
-    bool  is_collapse_toolbar_on_left() const;
-    float get_collapse_toolbar_width() const;
-    float get_collapse_toolbar_height() const;
+    float get_main_toolbar_height() { return m_main_toolbar.get_height();}
+    float get_main_toolbar_width() { return m_main_toolbar.get_width();}
+    float get_assemble_view_toolbar_width() { return m_assemble_view_toolbar.get_width(); }
+    float get_assemble_view_toolbar_height() { return m_assemble_view_toolbar.get_height(); }
+    float get_assembly_paint_toolbar_width() { return m_paint_toolbar_width; }
+    float get_separator_toolbar_width() { return m_separator_toolbar.get_width(); }
+    float get_separator_toolbar_height() { return m_separator_toolbar.get_height(); }
+    float get_collapse_toolbar_width();
+    float get_collapse_toolbar_height();
 
     void update_volumes_colors_by_extruder();
 
@@ -907,7 +902,6 @@ public:
 
     //BBS
     void select_curr_plate_all();
-    void select_object_from_idx(std::vector<int>& object_idxs);
     void remove_curr_plate_all();
     void update_plate_thumbnails();
 
@@ -934,7 +928,7 @@ public:
     void mirror_selection(Axis axis);
 
     void reload_scene(bool refresh_immediately, bool force_full_scene_refresh = false);
-    //Galaxy: shell preview improvement
+    //Orca: shell preview improvement
     void set_shell_transparence(float alpha = 0.2f);
     void load_shells(const Print& print, bool force_previewing = false);
     void reset_shells() { m_gcode_viewer.reset_shell(); }
@@ -966,12 +960,6 @@ public:
     Size get_canvas_size() const;
     Vec2d get_local_mouse_position() const;
 
-    // store opening position of menu
-    std::optional<Vec2d> m_popup_menu_positon; // position of mouse right click
-    void  set_popup_menu_position(const Vec2d &position) { m_popup_menu_positon = position; }
-    const std::optional<Vec2d>& get_popup_menu_position() const { return m_popup_menu_positon; }
-    void clear_popup_menu_position() { m_popup_menu_positon.reset(); }
-
     void set_tooltip(const std::string& tooltip);
 
     // the following methods add a snapshot to the undo/redo stack, unless the given string is empty
@@ -979,7 +967,6 @@ public:
     void do_rotate(const std::string& snapshot_type);
     void do_scale(const std::string& snapshot_type);
     void do_center();
-    void do_center_plate(const int plate_idx);
     void do_mirror(const std::string& snapshot_type);
 
     void update_gizmos_on_off_state();
@@ -1113,8 +1100,6 @@ public:
 
     bool is_object_sinking(int object_idx) const;
 
-    void apply_retina_scale(Vec2d &screen_coordinate) const;
-
     void _perform_layer_editing_action(wxMouseEvent* evt = nullptr);
 
     // Convert the screen space coordinate to an object space coordinate.
@@ -1122,6 +1107,9 @@ public:
     Vec3d _mouse_to_3d(const Point& mouse_pos, float* z = nullptr);
 
     bool make_current_for_postinit();
+
+    //BBS
+    Points estimate_wipe_tower_points(int plate_index, bool global = true) const;
 
 private:
     bool _is_shown_on_screen() const;
@@ -1240,21 +1228,6 @@ private:
     // BBS FIXME
     float get_overlay_window_width() { return 0; /*LayersEditing::get_overlay_window_width();*/ }
 };
-
-const ModelVolume *get_model_volume(const GLVolume &v, const Model &model);
-ModelVolume *get_model_volume(const ObjectID &volume_id, const ModelObjectPtrs &objects);
-ModelVolume *get_model_volume(const GLVolume &v, const ModelObjectPtrs &objects);
-ModelVolume *get_model_volume(const GLVolume &v, const ModelObject &object);
-
-GLVolume *get_first_hovered_gl_volume(const GLCanvas3D &canvas);
-GLVolume *get_selected_gl_volume(const GLCanvas3D &canvas);
-
-ModelObject *get_model_object(const GLVolume &gl_volume, const Model &model);
-ModelObject *get_model_object(const GLVolume &gl_volume, const ModelObjectPtrs &objects);
-
-ModelInstance *get_model_instance(const GLVolume &gl_volume, const Model &model);
-ModelInstance *get_model_instance(const GLVolume &gl_volume, const ModelObjectPtrs &objects);
-ModelInstance *get_model_instance(const GLVolume &gl_volume, const ModelObject &object);
 
 } // namespace GUI
 } // namespace Slic3r

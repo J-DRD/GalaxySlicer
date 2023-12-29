@@ -1,4 +1,4 @@
-// Galaxy: This file is ported from latest PrusaSlicer
+// Orca: This file is ported from latest PrusaSlicer
 
 // Original PrusaSlicer Copyright:
 ///|/ Copyright (c) Prusa Research 2017 - 2023 Lukáš Matěna @lukasmatena, Vojtěch Bubník @bubnikv

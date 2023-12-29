@@ -5,7 +5,7 @@
 #define CURAENGINE_WALLTOOLPATHS_H
 
 #include <memory>
-#include <ankerl/unordered_dense.h>
+#include <unordered_set>
 
 #include "BeadingStrategy/BeadingStrategyFactory.hpp"
 #include "utils/ExtrusionLine.hpp"
@@ -86,8 +86,6 @@ public:
      */
     static bool removeEmptyToolPaths(std::vector<VariableWidthLines> &toolpaths);
 
-    using ExtrusionLineSet = ankerl::unordered_dense::set<std::pair<const ExtrusionLine *, const ExtrusionLine *>, boost::hash<std::pair<const ExtrusionLine *, const ExtrusionLine *>>>;
-
     /*!
      * Get the order constraints of the insets when printing walls per region / hole.
      * Each returned pair consists of adjacent wall lines where the left has an inset_idx one lower than the right.
@@ -96,7 +94,7 @@ public:
      *
      * \param outer_to_inner Whether the wall polygons with a lower inset_idx should go before those with a higher one.
      */
-    static ExtrusionLineSet getRegionOrder(const std::vector<ExtrusionLine *> &input, bool outer_to_inner);
+    static std::unordered_set<std::pair<const ExtrusionLine *, const ExtrusionLine *>, boost::hash<std::pair<const ExtrusionLine *, const ExtrusionLine *>>> getRegionOrder(const std::vector<ExtrusionLine *> &input, bool outer_to_inner);
 
 protected:
     /*!

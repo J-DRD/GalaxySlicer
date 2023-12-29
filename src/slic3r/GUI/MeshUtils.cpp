@@ -176,13 +176,12 @@ bool MeshClipper::has_valid_contour() const
     return m_result && std::any_of(m_result->cut_islands.begin(), m_result->cut_islands.end(), [](const CutIsland& isl) { return !isl.expoly.empty(); });
 }
 
-std::vector<Vec3d> MeshClipper::point_per_contour() const {
-    std::vector<Vec3d> out;
-    if (m_result == std::nullopt) {
-        return out;
-    }
+std::vector<Vec3d> MeshClipper::point_per_contour() const
+{
     assert(m_result);
-    for (auto isl : m_result->cut_islands) {
+    std::vector<Vec3d> out;
+    
+    for (const CutIsland& isl : m_result->cut_islands) {
         assert(isl.expoly.contour.size() > 2);
         // Now return a point lying inside the contour but not in a hole.
         // We do this by taking a point lying close to the edge, repeating
@@ -489,7 +488,7 @@ std::vector<unsigned> MeshRaycaster::get_unobscured_idxs(const Geometry::Transfo
 {
     std::vector<unsigned> out;
 
-    const Transform3d instance_matrix_no_translation_no_scaling = trafo.get_rotation_matrix();
+    const Transform3d& instance_matrix_no_translation_no_scaling = trafo.get_matrix(true,false,true);
     Vec3d direction_to_camera = -camera.get_dir_forward();
     Vec3d direction_to_camera_mesh = (instance_matrix_no_translation_no_scaling.inverse() * direction_to_camera).normalized().eval();
     direction_to_camera_mesh = direction_to_camera_mesh.cwiseProduct(trafo.get_scaling_factor());

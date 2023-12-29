@@ -183,7 +183,7 @@ protected:
     void remove_selected_sphere_raycaster(int id);
     void update_measurement_result();
 
-    // Galaxy
+    // Orca
     void show_tooltip_information(float caption_max, float x, float y);
 
 private:

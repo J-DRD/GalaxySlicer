@@ -143,11 +143,7 @@ void StaticBox::render(wxDC& dc)
 	wxSize size = GetSize();
     if (size.x <= 0 || size.y <= 0)
         return;
-    wxMemoryDC memdc(&dc);
-    if (!memdc.IsOk()) {
-        doRender(dc);
-        return;
-    }
+    wxMemoryDC memdc;
     wxBitmap bmp(size.x, size.y);
     memdc.SelectObject(bmp);
     //memdc.Blit({0, 0}, size, &dc, {0, 0});

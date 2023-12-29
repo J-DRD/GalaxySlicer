@@ -61,12 +61,6 @@ PrintOptionsDialog::PrintOptionsDialog(wxWindow* parent)
         }
         evt.Skip();
     });
-    m_cb_filament_tangle->Bind(wxEVT_TOGGLEBUTTON, [this](wxCommandEvent& evt) {
-        if (obj) {
-            obj->command_xcam_control_filament_tangle_detect(m_cb_filament_tangle->GetValue());
-        }
-        evt.Skip();
-    });
 
     wxGetApp().UpdateDlgDarkUI(this);
 }
@@ -94,7 +88,7 @@ void PrintOptionsDialog::update_ai_monitor_status()
 void PrintOptionsDialog::update_options(MachineObject* obj_)
 {
     if (!obj_) return;
-    if (obj_->is_support_ai_monitoring) {
+    if (obj_->is_function_supported(PrinterFunction::FUNC_AI_MONITORING)) {
         text_ai_monitoring->Show();
         m_cb_ai_monitoring->Show();
         text_ai_monitoring_caption->Show();
@@ -109,7 +103,7 @@ void PrintOptionsDialog::update_options(MachineObject* obj_)
         line1->Hide();
     }
 
-    if (obj_->is_support_build_plate_marker_detect) {
+    if (obj_->is_function_supported(PrinterFunction::FUNC_BUILDPLATE_MARKER_DETECT)) {
         text_plate_mark->Show();
         m_cb_plate_mark->Show();
         text_plate_mark_caption->Show();
@@ -122,7 +116,7 @@ void PrintOptionsDialog::update_options(MachineObject* obj_)
         line2->Hide();
     }
 
-    if (obj_->is_support_first_layer_inspect) {
+    if (obj_->is_function_supported(PrinterFunction::FUNC_FIRSTLAYER_INSPECT)) {
         text_first_layer->Show();
         m_cb_first_layer->Show();
         line3->Show();
@@ -133,7 +127,7 @@ void PrintOptionsDialog::update_options(MachineObject* obj_)
         line3->Hide();
     }
 
-    if (obj_->is_support_auto_recovery_step_loss) {
+    if (obj_->is_function_supported(PrinterFunction::FUNC_AUTO_RECOVERY_STEP_LOSS)) {
         text_auto_recovery->Show();
         m_cb_auto_recovery->Show();
         line4->Show();
@@ -143,7 +137,7 @@ void PrintOptionsDialog::update_options(MachineObject* obj_)
         m_cb_auto_recovery->Hide();
         line4->Hide();
     }
-    if (obj_->is_support_prompt_sound) {
+    if (obj_->is_function_supported(PrinterFunction::FUNC_PROMPT_SOUND)) {
         text_sup_sound->Show();
         m_cb_sup_sound->Show();
         line5->Show();
@@ -153,16 +147,6 @@ void PrintOptionsDialog::update_options(MachineObject* obj_)
         m_cb_sup_sound->Hide();
         line5->Hide();
     }
-    if (obj_->is_support_filament_tangle_detect) {
-        text_filament_tangle->Show();
-        m_cb_filament_tangle->Show();
-        line6->Show();
-    }
-    else {
-        text_filament_tangle->Hide();
-        m_cb_filament_tangle->Hide();
-        line6->Hide();
-    }
 
     this->Freeze();
     
@@ -170,7 +154,6 @@ void PrintOptionsDialog::update_options(MachineObject* obj_)
     m_cb_plate_mark->SetValue(obj_->xcam_buildplate_marker_detector);
     m_cb_auto_recovery->SetValue(obj_->xcam_auto_recovery_step_loss);
     m_cb_sup_sound->SetValue(obj_->xcam_allow_prompt_sound);
-    m_cb_filament_tangle->SetValue(obj_->xcam_filament_tangle_detect);
 
     m_cb_ai_monitoring->SetValue(obj_->xcam_ai_monitoring);
     for (auto i = AiMonitorSensitivityLevel::LOW; i < LEVELS_NUM; i = (AiMonitorSensitivityLevel) (i + 1)) {
@@ -218,11 +201,6 @@ wxBoxSizer* PrintOptionsDialog::create_settings_group(wxWindow* parent)
         wxString level_option = sensitivity_level_to_label_string(i);
         ai_monitoring_level_list->Append(level_option);
     }
-
-    if (ai_monitoring_level_list->GetCount() > 0) {
-        ai_monitoring_level_list->SetSelection(0);
-    }
-    
 
     line_sizer->Add(FromDIP(30), 0, 0, 0);
     line_sizer->Add(text_ai_monitoring_caption, 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(5));
@@ -308,23 +286,6 @@ wxBoxSizer* PrintOptionsDialog::create_settings_group(wxWindow* parent)
     line5 = new StaticLine(parent, false);
     line5->SetLineColour(STATIC_BOX_LINE_COL);
     sizer->Add(line5, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(20));
-    sizer->Add(0, 0, 0, wxTOP, FromDIP(20));
-
-    //filament tangle detect
-    line_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_cb_filament_tangle = new CheckBox(parent);
-    text_filament_tangle = new wxStaticText(parent, wxID_ANY, _L("Filament Tangle Detect"));
-    text_filament_tangle->SetFont(Label::Body_14);
-    line_sizer->Add(FromDIP(5), 0, 0, 0);
-    line_sizer->Add(m_cb_filament_tangle, 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(5));
-    line_sizer->Add(text_filament_tangle, 1, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(5));
-    sizer->Add(0, 0, 0, wxTOP, FromDIP(15));
-    sizer->Add(line_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(18));
-    line_sizer->Add(FromDIP(5), 0, 0, 0);
-
-    line6 = new StaticLine(parent, false);
-    line6->SetLineColour(STATIC_BOX_LINE_COL);
-    sizer->Add(line6, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(20));
 
     ai_monitoring_level_list->Connect( wxEVT_COMBOBOX, wxCommandEventHandler(PrintOptionsDialog::set_ai_monitor_sensitivity), NULL, this );
 

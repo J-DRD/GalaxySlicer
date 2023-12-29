@@ -68,6 +68,7 @@ using namespace std::literals;
 #endif
 
 // #define SLIC3R_DEBUG
+
 // Make assert active if SLIC3R_DEBUG
 #ifdef SLIC3R_DEBUG
     #undef NDEBUG
@@ -911,9 +912,7 @@ bool PrintObject::invalidate_state_by_config_options(
             }
         } else if (
                opt_key == "wall_loops"
-            || opt_key == "alternate_extra_wall"
-            || opt_key == "top_one_wall_type"
-            || opt_key == "min_width_top_surface"
+            || opt_key == "only_one_wall_top"
             || opt_key == "only_one_wall_first_layer"
             || opt_key == "extra_perimeters_on_overhangs"
             || opt_key == "initial_layer_line_width"
@@ -946,8 +945,6 @@ bool PrintObject::invalidate_state_by_config_options(
             steps.emplace_back(posPerimeters);
         } else if (
                opt_key == "layer_height"
-            || opt_key == "mmu_segmented_region_max_width"
-            || opt_key == "mmu_segmented_region_interlocking_depth"
             || opt_key == "raft_layers"
             || opt_key == "raft_contact_distance"
             || opt_key == "slice_closing_radius"
@@ -998,7 +995,6 @@ bool PrintObject::invalidate_state_by_config_options(
             || opt_key == "support_interface_pattern"
             || opt_key == "support_interface_loop_pattern"
             || opt_key == "support_interface_filament"
-            || opt_key == "support_interface_not_for_body"
             || opt_key == "support_interface_spacing"
             || opt_key == "support_bottom_interface_spacing" //BBS
             || opt_key == "support_base_pattern"
@@ -2391,7 +2387,7 @@ void PrintObject::bridge_over_infill()
             const size_t n_vlines = (bb_x.max.x() - bb_x.min.x() + bridging_flow.scaled_spacing() - 1) / bridging_flow.scaled_spacing();
             std::vector<Line> vertical_lines(n_vlines);
             for (size_t i = 0; i < n_vlines; i++) {
-                // Galaxy: Make sure the line is placed in the middle of the extrusion
+                // Orca: Make sure the line is placed in the middle of the extrusion
                 // coord_t x           = bb_x.min.x() + i * bridging_flow.scaled_spacing();
                 coord_t x           = bb_x.min.x() + (i + 0.5) * bridging_flow.scaled_spacing();
                 coord_t y_min       = bb_y.min.y() - bridging_flow.scaled_spacing();
@@ -2690,7 +2686,7 @@ void PrintObject::bridge_over_infill()
                         }
                     }
 
-                    // Galaxy: Keep fine details for better anchoring
+                    // Orca: Keep fine details for better anchoring
                     // bridging_area         = opening(bridging_area, flow.scaled_spacing());
                     bridging_area          = opening(bridging_area, flow.scaled_spacing() * 0.75);
                     bridging_area          = closing(bridging_area, flow.scaled_spacing());
@@ -3312,6 +3308,13 @@ void PrintObject::discover_horizontal_shells()
 // fill_surfaces but we only turn them into VOID surfaces, thus preserving the boundaries.
 void PrintObject::combine_infill()
 {
+    auto max_layer_height = [this](int idx_nozzle) {
+        auto    &print_config = this->print()->config();
+        coordf_t mh           = print_config.max_layer_height.get_at(idx_nozzle - 1);
+        coordf_t nozzle_dmr   = print_config.nozzle_diameter.get_at(idx_nozzle - 1);
+
+        return mh > 0 ? mh : nozzle_dmr;
+    };
     // Work on each region separately.
     for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
         const PrintRegion &region = this->printing_region(region_id);
@@ -3327,10 +3330,8 @@ void PrintObject::combine_infill()
                                                                   region.config().sparse_infill_pattern;
 
         // Limit the number of combined layers to the maximum height allowed by this regions' nozzle.
-        //FIXME limit the layer height to max_layer_height
-        double nozzle_diameter = std::min(
-            this->print()->config().nozzle_diameter.get_at(region.config().sparse_infill_filament.value - 1),
-            this->print()->config().nozzle_diameter.get_at(region.config().solid_infill_filament.value - 1));
+        double nozzle_diameter = std::min(max_layer_height(region.config().sparse_infill_filament.value),
+                                          max_layer_height(region.config().solid_infill_filament.value));
         // define the combinations
         std::vector<size_t> combine(m_layers.size(), 0);
         {
@@ -3433,7 +3434,7 @@ void PrintObject::_generate_support_material()
 
     if (this->config().enable_support.value && is_tree(this->config().support_type.value)) {
         if (this->config().support_style.value == smsOrganic ||
-            // Galaxy: use organic as default
+            // Orca: use organic as default
             this->config().support_style.value == smsDefault) {
             fff_tree_support_generate(*this, std::function<void()>([this]() { this->throw_if_canceled(); }));
         } else {

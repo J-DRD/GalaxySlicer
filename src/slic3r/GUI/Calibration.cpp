@@ -215,27 +215,36 @@ wxWindow* CalibrationDialog::create_check_option(wxString title, wxWindow* paren
 void CalibrationDialog::update_cali(MachineObject *obj)
 {
     if (!obj) return;
-    if (obj->is_support_ai_monitoring && obj->is_support_lidar_calibration) {
+    if (obj->is_function_supported(PrinterFunction::FUNC_AI_MONITORING)
+        && obj->is_function_supported(PrinterFunction::FUNC_LIDAR_CALIBRATION)) {
         select_xcam_cali->Show();
     } else {
         select_xcam_cali->Hide();
         m_checkbox_list["xcam_cali"]->SetValue(false);
     }
     
-    if(obj->is_support_auto_leveling){
+    if(obj->is_function_supported(PrinterFunction::FUNC_AUTO_LEVELING)){
         select_bed_leveling->Show();
     }else{
         select_bed_leveling->Hide();
         m_checkbox_list["bed_leveling"]->SetValue(false);
     }
 
-    if (obj->is_support_motor_noise_cali) {
+    if (obj->is_function_supported(PrinterFunction::FUNC_MOTOR_NOISE_CALI)) {
         select_motor_noise->Show();
     } else {
         select_motor_noise->Hide();
         m_checkbox_list["motor_noise"]->SetValue(false);
     }
 
+    if (!m_checkbox_list["vibration"]->GetValue() && !m_checkbox_list["bed_leveling"]->GetValue() && !m_checkbox_list["xcam_cali"]->GetValue() &&
+        !m_checkbox_list["motor_noise"]->GetValue()) {
+        m_calibration_btn->Disable();
+        m_calibration_btn->SetLabel(_L("No step selected"));
+        return ;
+    } else {
+        m_calibration_btn->Enable();
+    }
 
     if (obj->is_calibration_running() || obj->is_calibration_done()) {
         if (obj->is_calibration_done()) {
@@ -272,14 +281,6 @@ void CalibrationDialog::update_cali(MachineObject *obj)
         }
         m_calibration_flow->DeleteAllItems();
         m_calibration_btn->SetLabel(_L("Start Calibration"));
-    }
-    if (!obj->is_calibration_running() && !m_checkbox_list["vibration"]->GetValue() && !m_checkbox_list["bed_leveling"]->GetValue() &&
-        !m_checkbox_list["xcam_cali"]->GetValue() && !m_checkbox_list["motor_noise"]->GetValue()) {
-        m_calibration_btn->Disable();
-        m_calibration_btn->SetLabel(_L("No step selected"));
-    }
-    else if(!obj->is_calibration_running()){
-        m_calibration_btn->Enable();
     }
 }
 

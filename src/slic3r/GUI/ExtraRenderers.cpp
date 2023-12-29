@@ -225,8 +225,7 @@ wxWindow* BitmapTextRenderer::CreateEditorCtrl(wxWindow* parent, wxRect labelRec
 bool BitmapTextRenderer::GetValueFromEditorCtrl(wxWindow* ctrl, wxVariant& value)
 {
     wxTextCtrl* text_editor = wxDynamicCast(ctrl, wxTextCtrl);
-    auto item = GetView()->GetModel()->GetParent(m_item);
-    if (!text_editor || (item.IsOk() && text_editor->GetValue().IsEmpty()))
+    if (!text_editor || text_editor->GetValue().IsEmpty())
         return false;
 
     m_was_unusable_symbol = Slic3r::GUI::Plater::has_illegal_filename_characters(text_editor->GetValue());

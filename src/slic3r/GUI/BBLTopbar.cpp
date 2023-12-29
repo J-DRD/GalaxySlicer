@@ -574,6 +574,15 @@ void BBLTopbar::OnFullScreen(wxAuiToolBarEvent& event)
         m_frame->Restore();
     }
     else {
+        wxDisplay display(this);
+        auto      size = display.GetClientArea().GetSize();
+#ifdef __WXMSW__
+        HWND hWnd = m_frame->GetHandle();
+        RECT      borderThickness;
+        SetRectEmpty(&borderThickness);
+        AdjustWindowRectEx(&borderThickness, GetWindowLongPtr(hWnd, GWL_STYLE), FALSE, 0);
+        m_frame->SetMaxSize(size + wxSize{-borderThickness.left + borderThickness.right, -borderThickness.top + borderThickness.bottom});
+#endif //  __WXMSW__
         m_normalRect = m_frame->GetRect();
         m_frame->Maximize();
     }
@@ -609,7 +618,7 @@ void BBLTopbar::OnFileToolItem(wxAuiToolBarEvent& evt)
     tb->SetToolSticky(evt.GetId(), true);
 
     if (!m_skip_popup_file_menu) {
-        GetParent()->PopupMenu(m_file_menu, wxPoint(FromDIP(1), this->GetSize().GetHeight() - 2));
+        this->PopupMenu(m_file_menu, wxPoint(FromDIP(1), this->GetSize().GetHeight() - 2));
     }
     else {
         m_skip_popup_file_menu = false;
@@ -662,7 +671,7 @@ void BBLTopbar::OnDropdownToolItem(wxAuiToolBarEvent& evt)
     tb->SetToolSticky(evt.GetId(), true);
 
     if (!m_skip_popup_dropdown_menu) {
-        GetParent()->PopupMenu(&m_top_menu, wxPoint(FromDIP(1), this->GetSize().GetHeight() - 2));
+        PopupMenu(&m_top_menu, wxPoint(FromDIP(1), this->GetSize().GetHeight() - 2));
     }
     else {
         m_skip_popup_dropdown_menu = false;
@@ -680,7 +689,7 @@ void BBLTopbar::OnCalibToolItem(wxAuiToolBarEvent &evt)
 
     if (!m_skip_popup_calib_menu) {
         auto rec = this->GetToolRect(ID_CALIB);
-        GetParent()->PopupMenu(&m_calib_menu, wxPoint(rec.GetLeft(), this->GetSize().GetHeight() - 2));
+        PopupMenu(&m_calib_menu, wxPoint(rec.GetLeft(), this->GetSize().GetHeight() - 2));
     } else {
         m_skip_popup_calib_menu = false;
     }

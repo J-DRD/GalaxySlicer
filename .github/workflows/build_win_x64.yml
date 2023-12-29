@@ -6,7 +6,13 @@ on:
       branches: 
        - main
        - dev_9
+
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
+
+       - dev_9b
+       - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
+       - J-DRD-patch-1
+
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -18,6 +24,10 @@ on:
       branches: 
        - main 
        - dev_9
+       - 1-0-0-release
+
+       - dev_9b
+       - J-DRD-patch-1
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
       paths:
        - 'src/**'

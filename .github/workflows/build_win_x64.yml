@@ -8,6 +8,7 @@ on:
        - dev_9b
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
        - backup
+       - J-DRD-patch-1
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'

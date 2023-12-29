@@ -44,8 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-          - os: windows-latest
+          - os: ubuntu-20.04
+          - os: windows-2022
           #- os: macos-12
             #arch: x86_64
           #- os: macos-12
@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Get the version and date on Ubuntu and macOS
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-2022'
         id: get-version-unix
         run: |
           ver=1.0 #$(grep 'set(SoftFever_VERSION' version.inc | cut -d '"' -f2)
@@ -66,7 +66,7 @@ jobs:
         shell: bash
 
       - name: Get the version and date on Windows
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2022'
         id: get-version-windows
         run: |
           echo "date=$(Get-Date -Format 'yyyyMMdd')" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
@@ -163,16 +163,16 @@ jobs:
 # Windows
       - name: setup MSVC
         if: matrix.os == 'windows-latest'
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v1.2
 
-      - name: Install nsis
-        if: matrix.os == 'windows-latest'
-        run: |
-          dir "C:/Program Files (x86)/Windows Kits/10/Include"
-          choco install nsis
+      #- name: Install nsis
+      #  if: matrix.os == 'windows-latest'
+      #  run: |
+      #    dir "C:/Program Files (x86)/Windows Kits/10/Include"
+      #    choco install nsis
           
       - name: download deps
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2022'
         shell: powershell
         run: '(new-object System.Net.WebClient).DownloadFile("https://github.com/SoftFever/OrcaSlicer_deps/releases/download/OrcaSlicer_deps_Oct2023/OrcaSlicer_dep_win64_20230810_vs2022.zip", "$env:temp\OrcaSlicer_dep_win64_20230810_vs2022.zip")'
 
@@ -182,38 +182,40 @@ jobs:
         run: |
           mkdir ${{ github.workspace }}/deps/build
           mkdir ${{ github.workspace }}/deps/build/OrcaSlicer_dep
+          mkdir ${{ github.workspace }}/deps/build/GalaxySlicer_dep
 
       - name: extract deps
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2022'
         working-directory: ${{ github.workspace }}/deps/build
         shell: cmd
         run: '"C:/Program Files/7-Zip/7z.exe" x %temp%\OrcaSlicer_dep_win64_20230810_vs2022.zip'
-      
-      # - name: build deps
-        # if: matrix.os == 'windows-latest'
-        #   id: cache_deps
-      #   uses: actions/cache@v3
-      #   env:
-      #     cache-name: ${{ runner.os }}-cache-orcaslicer_deps
-      #   with:
-      #     path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep
-      #     key: ${{ runner.os }}-build-${{ env.cache-name }}
-
-      # - if: ${{ steps.cache_deps.outputs.cache-hit != 'true' }}
-      #   name: build deps
-      #   working-directory: ${{ github.workspace }}
-      #   continue-on-error: true
-      #   run: .\build_release_vs2022.bat deps
-    
-      # - run:  Get-ChildItem ${{ github.workspace }}/deps/build/ -Exclude OrcaSlicer_dep | Remove-Item -Recurse -Force
-
-      - name: Build slicer Win
-        if: matrix.os == 'windows-latest'
-        working-directory: ${{ github.workspace }}
-        run: .\build_release_vs2019.bat slicer
         
+      - name: extract deps
+        if: matrix.os == 'windows-2022'
+        working-directory: ${{ github.workspace }}/deps/build
+        shell: cmd
+        run: '"C:/Program Files/7-Zip/7z.exe" x %temp%\GalaxySlicer_dep_win64_20230810_vs2022.zip'
+      
+      - name: build deps
+        if: matrix.os == 'windows-2022'
+        id: cache_deps
+        uses: actions/cache@v2
+        env:
+           cache-name: ${{ runner.os }}-cache-orcaslicer_deps
+        with:
+          path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+          -if: ${{ steps.cache_deps.outputs.cache-hit != 'true' }}
+          name: build deps
+          working-directory: ${{ github.workspace }}
+          continue-on-error: true
+          run: .\build_release_vs2022.bat deps
+          -run:  Get-ChildItem ${{ github.workspace }}/deps/build/ -Exclude OrcaSlicer_dep | Remove-Item -Recurse -Force
+
+
       - name: Build slicer Win
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2022'
         working-directory: ${{ github.workspace }}
         run: .\build_release_vs2022.bat slicer
 
@@ -224,13 +226,13 @@ jobs:
           cpack -G NSIS
 
       - name: pack app
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2022'
         working-directory: ${{ github.workspace }}/build
         shell: cmd
-        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip OrcaSlicer_dev_build.zip ${{ github.workspace }}/build/OrcaSlicer'
+        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip OrcaSlicer_dev_build.zip ${{ github.workspace }}/build/'
 
       - name: Upload artifacts Win zip
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2022'
         uses: actions/upload-artifact@v3
         with:
           name: OrcaSlicer_Windows_V${{ env.ver }}_portable
@@ -244,7 +246,7 @@ jobs:
           path: ${{ github.workspace }}/build/OrcaSlicer*.exe
 
       - name: Upload artifacts Win PDB
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'winows-latest'
         uses: actions/upload-artifact@v3
         with:
           name: OrcaSlicer_Windows_V${{ env.ver }}_pdb

@@ -129,6 +129,7 @@ enum CameraMenuIDs {
 
 class Tab;
 class ConfigWizard;
+class GizmoObjectManipulation;
 
 static wxString dots("...", wxConvUTF8);
 
@@ -531,6 +532,7 @@ private:
 #endif /* __APPLE */
 
     Sidebar&             sidebar();
+    GizmoObjectManipulation*  obj_manipul();
     ObjectSettings*      obj_settings();
     ObjectList*          obj_list();
     ObjectLayers*        obj_layers();
@@ -658,6 +660,7 @@ private:
     bool                    m_datadir_redefined { false };
     std::string             m_older_data_dir_path;
     boost::optional<Semver> m_last_config_version;
+    bool                    m_config_corrupted { false };
 };
 
 DECLARE_APP(GUI_App)

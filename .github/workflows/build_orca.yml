@@ -6,7 +6,7 @@ on:
        - main
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
        - dev_9
-       - dev_9b
+       - dev_9A
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -20,7 +20,7 @@ on:
        - main
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
        - dev_9
-       - dev_9b
+       - dev_9A
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- os: ubuntu-latest
+          - os: ubuntu-latest
           - os: windows-latest
           #- os: macos-12
             #arch: x86_64
@@ -156,7 +156,7 @@ jobs:
 # Windows
       - name: setup MSVC
         if: matrix.os == 'windows-latest'
-        uses: microsoft/setup-msbuild@v1.2
+        uses: microsoft/setup-msbuild@v1.1
 
       - name: Install nsis
         if: matrix.os == 'windows-latest'
@@ -182,26 +182,39 @@ jobs:
         shell: cmd
         run: '"C:/Program Files/7-Zip/7z.exe" x %temp%\OrcaSlicer_dep_win64_20230810_vs2022.zip'
       
-      - name: build deps
-        if: matrix.os == 'windows-latest'
-        id: cache_deps
-        uses: actions/cache@v3
-        env:
-           cache-name: ${{ runner.os }}-cache-orcaslicer_deps
-        with:
-           path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep
-           key: ${{ runner.os }}-build-${{ env.cache-name }}
+      # - name: build deps
+        # if: matrix.os == 'windows-latest'
+        #   id: cache_deps
+      #   uses: actions/cache@v3
+      #   env:
+      #     cache-name: ${{ runner.os }}-cache-orcaslicer_deps
+      #   with:
+      #     path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep
+      #     key: ${{ runner.os }}-build-${{ env.cache-name }}
 
-#    if: ${{ steps.cache_deps.outputs.cache-hit != 'true' }}
-      - name: build deps
+      # - if: ${{ steps.cache_deps.outputs.cache-hit != 'true' }}
+      #   name: build deps
+      #   working-directory: ${{ github.workspace }}
+      #   continue-on-error: true
+      #   run: .\build_release_vs2022.bat deps
+    
+      # - run:  Get-ChildItem ${{ github.workspace }}/deps/build/ -Exclude OrcaSlicer_dep | Remove-Item -Recurse -Force
+
+      - name: Build slicer Win
+        if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}
-        continue-on-error: true
-        run: .\build_release_vs2022.bat deps && Get-ChildItem ${{ github.workspace }}/deps/build/ -Exclude OrcaSlicer_dep | Remove-Item -Recurse -Force
+        run: .\build_release_vs2019.bat slicer
         
       - name: Build slicer Win
         if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}
         run: .\build_release_vs2022.bat slicer
+
+      - name: Create installer Win
+        if: matrix.os == 'windows-latest'
+        working-directory: ${{ github.workspace }}/build
+        run: |
+          cpack -G NSIS
 
       - name: pack app
         if: matrix.os == 'windows-latest'
@@ -215,6 +228,13 @@ jobs:
         with:
           name: OrcaSlicer_Windows_V${{ env.ver }}_portable
           path: ${{ github.workspace }}/build/OrcaSlicer
+
+      - name: Upload artifacts Win installer
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: OrcaSlicer_Windows_V${{ env.ver }}
+          path: ${{ github.workspace }}/build/OrcaSlicer*.exe
 
       - name: Upload artifacts Win PDB
         if: matrix.os == 'windows-latest'

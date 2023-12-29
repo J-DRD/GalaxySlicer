@@ -10,10 +10,15 @@ endif()
 if(NOT DEFINED BBL_INTERNAL_TESTING)
 set(BBL_INTERNAL_TESTING "1")
 endif()
-set(GalaxySlicer_VERSION "1.0.0-beta3")
+set(GalaxySlicer_VERSION "1.0.0-beta2")
+
+# Build number
+string(TIMESTAMP BUILD_NUM "%Y.%j" UTC)
+set(GalaxySlicer_BUILD ${BUILD_NUM})
+
 string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)"
        GalaxySlicer_VERSION_MATCH ${GalaxySlicer_VERSION})
 set(SLIC3R_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(SLIC3R_VERSION_MINOR ${CMAKE_MATCH_2})
 set(SLIC3R_VERSION_PATCH ${CMAKE_MATCH_3})
-set(SLIC3R_VERSION "01.07.06.92")
+set(SLIC3R_VERSION "01.07.07.89")

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GalaxySlicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-01 19:20+0200\n"
+"POT-Creation-Date: 2023-11-19 13:08+0100\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -98,6 +98,9 @@ msgstr "Ingen auto support"
 msgid "Support Generated"
 msgstr "Support skapad"
 
+msgid "Gizmo-Place on Face"
+msgstr ""
+
 msgid "Lay on face"
 msgstr "Lägg på yta"
 
@@ -161,6 +164,12 @@ msgstr "Triangel"
 msgid "Height Range"
 msgstr "Höjd intervall"
 
+msgid "Vertical"
+msgstr ""
+
+msgid "Horizontal"
+msgstr ""
+
 msgid "Remove painted color"
 msgstr "Ta bort färgläggning"
 
@@ -171,8 +180,14 @@ msgstr "Färgläggning använder: Filament %1%"
 msgid "Move"
 msgstr "Flytta"
 
+msgid "Gizmo-Move"
+msgstr ""
+
 msgid "Rotate"
 msgstr "Rotera"
+
+msgid "Gizmo-Rotate"
+msgstr ""
 
 msgid "Optimize orientation"
 msgstr "Optimisera placering"
@@ -183,11 +198,11 @@ msgstr "Applicera"
 msgid "Scale"
 msgstr "Skala"
 
+msgid "Gizmo-Scale"
+msgstr ""
+
 msgid "Error: Please close all toolbar menus first"
 msgstr "FEL: Stäng alla verktygsmenyer först"
-
-msgid "Tool-Lay on Face"
-msgstr "Ytplacerings verktyg"
 
 msgid "in"
 msgstr "i"
@@ -483,26 +498,20 @@ msgstr "Målning av sömmar"
 msgid "Remove selection"
 msgstr "Ta bort val"
 
-msgid "Shift + Mouse move up or dowm"
-msgstr "Shift + Mus flytta uppåt eller nedåt"
+msgid "Entering Seam painting"
+msgstr "Inmatning söm målning"
 
-msgid "Rotate text"
-msgstr "Rotera text"
+msgid "Leaving Seam painting"
+msgstr "Lämnar söm målning"
 
-msgid "Text shape"
-msgstr "Text form"
+msgid "Paint-on seam editing"
+msgstr "Redigering av måla på sömmen"
 
 msgid "Font"
 msgstr "Typsnitt"
 
 msgid "Thickness"
 msgstr "Tjocklek"
-
-msgid "Input text"
-msgstr "Skriv in text"
-
-msgid "Embeded"
-msgstr "Inbäddad"
 
 msgid "Text Gap"
 msgstr "Text mellanrum"
@@ -515,11 +524,23 @@ msgid ""
 "depth"
 msgstr "Inbäddat djup"
 
+msgid "Input text"
+msgstr "Skriv in text"
+
 msgid "Surface"
 msgstr "Yta"
 
 msgid "Horizontal text"
 msgstr "Vågrät text"
+
+msgid "Shift + Mouse move up or dowm"
+msgstr "Shift + Mus flytta uppåt eller nedåt"
+
+msgid "Rotate text"
+msgstr "Rotera text"
+
+msgid "Text shape"
+msgstr "Text form"
 
 msgid "Ctrl+"
 msgstr "Ctrl +"
@@ -606,11 +627,6 @@ msgstr ""
 msgid "WebView2 Runtime"
 msgstr ""
 
-msgid ""
-"GalaxySlicer configuration file may be corrupted and is not abled to be "
-"parsed.Please delete the file and try again."
-msgstr ""
-
 #, c-format, boost-format
 msgid ""
 "%s\n"
@@ -637,6 +653,13 @@ msgstr "Det är den senaste versionen."
 
 msgid "Info"
 msgstr "Info"
+
+msgid ""
+"The GalaxySlicer configuration file may be corrupted and cannot be parsed.\n"
+"GalaxySlicer has attempted to recreate the configuration file.\n"
+"Please note, application settings will be lost, but printer profiles will "
+"not be affected."
+msgstr ""
 
 msgid "Rebuild"
 msgstr "Återskapa"
@@ -844,6 +867,9 @@ msgid "Orca Cube"
 msgstr ""
 
 msgid "Voron Cube"
+msgstr ""
+
+msgid "Disc"
 msgstr ""
 
 msgid "3DBenchy"
@@ -1874,10 +1900,26 @@ msgid "GNU Affero General Public License, version 3"
 msgstr "GNU Affero General Public License, version 3"
 
 msgid ""
-"GalaxySlicer is based on BambuStudio by Bambulab, which is from PrusaSlicer "
-"by Prusa Research.  PrusaSlicer is from Slic3r by Alessandro Ranellucci and "
-"the RepRap community"
+"GalaxySlicer is based on OrcaSlicer, BambuStudio, PrusaSlicer, and "
+"SuperSlicer."
 msgstr ""
+
+msgid "OrcaSlicer is originally based on BambuStudio by BambuLab."
+msgstr ""
+
+msgid "BambuStudio is originally based on PrusaSlicer by PrusaResearch."
+msgstr ""
+
+msgid ""
+"PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
+msgstr ""
+
+msgid ""
+"Slic3r was created by Alessandro Ranellucci with the help of many other "
+"contributors."
+msgstr ""
+"Slic3r skapades av Alessandro Ranellucci med hjälp av många andra "
+"medarbetare."
 
 msgid "Libraries"
 msgstr "Bibliotek"
@@ -1893,27 +1935,9 @@ msgstr ""
 msgid "About %s"
 msgstr "Om %s"
 
-msgid ""
-"GalaxySlicer is based on OrcaSlicer, BambuStudio, PrusaSlicer, and "
-"SuperSlicer."
-msgstr ""
-
-msgid "OrcaSlicer is originally based on BambuStudio by BambuLab."
-msgstr ""
-
-msgid "BambuStudio is originally based on PrusaSlicer by PrusaResearch."
-msgstr ""
-
 msgid "PrusaSlicer is originally based on Slic3r by Alessandro Ranellucci."
 msgstr ""
 "PrusaSlicer är ursprungligen baserad på Slic3r av Alessandro Ranellucci."
-
-msgid ""
-"Slic3r was created by Alessandro Ranellucci with the help of many other "
-"contributors."
-msgstr ""
-"Slic3r skapades av Alessandro Ranellucci med hjälp av många andra "
-"medarbetare."
 
 msgid "Version"
 msgstr "Version"
@@ -2151,9 +2175,16 @@ msgstr ""
 msgid "Group"
 msgstr "Grupp"
 
+msgid "The printer does not currently support auto refill."
+msgstr ""
+
 msgid ""
-"There are currently no identical spare consumables available, and automatic "
-"replenishment is currently not possible. \n"
+"AMS filament backup is not enabled, please enable it in the AMS settings."
+msgstr ""
+
+msgid ""
+"If there are two identical filaments in AMS, AMS filament backup will be "
+"enabled. \n"
 "(Currently supporting automatic supply of consumables with the same brand, "
 "material type, and color)"
 msgstr ""
@@ -2542,19 +2573,6 @@ msgstr ""
 "JA - Behåll Prime Torn\n"
 "NEJ  - Behåll Oberoende Lagerhöjd på support"
 
-#, boost-format
-msgid "%1% infill pattern doesn't support 100%% density."
-msgstr "%1% ifyllnads mönster stöds ej 100%% densitet."
-
-msgid ""
-"Switch to rectilinear pattern?\n"
-"Yes - switch to rectilinear pattern automaticlly\n"
-"No  - reset density to default non 100% value automaticlly"
-msgstr ""
-"Byta till rätlinjigt mönster?\n"
-"Ja - Växla automatiskt till rätlinjigt mönster\n"
-"Nej - Återställ automatiskt densiteten till standardvärdet som inte är 100 %."
-
 msgid ""
 "While printing by Object, the extruder may collide skirt.\n"
 "Thus, reset the skirt layer to 1 to avoid that."
@@ -2712,7 +2730,17 @@ msgstr ""
 msgid "Failed to start printing job"
 msgstr "Det gick inte att starta utskriftsjobbet"
 
-msgid "Invalid nozzle diameter"
+msgid ""
+"This calibration does not support the currently selected nozzle diameter"
+msgstr ""
+
+msgid "Current flowrate cali param is invalid"
+msgstr ""
+
+msgid "Selected diameter and machine diameter do not match"
+msgstr ""
+
+msgid "Failed to generate cali gcode"
 msgstr ""
 
 msgid "Calibration error"
@@ -2932,6 +2960,15 @@ msgstr "Skrivare"
 
 msgid "Print settings"
 msgstr "Utskrifts inställningar"
+
+msgid "Custom g-code"
+msgstr ""
+
+msgid "Template"
+msgstr ""
+
+msgid "ToolChange"
+msgstr ""
 
 msgid "Time Estimation"
 msgstr "Beräknad tid"
@@ -3701,12 +3738,9 @@ msgstr "Ladda ner Virtuella Kamerans Verktyg"
 
 msgid ""
 "Another virtual camera is running.\n"
-"Bambu Studio supports only a single virtual camera.\n"
+"GalaxySlicer supports only a single virtual camera.\n"
 "Do you want to stop this virtual camera?"
 msgstr ""
-"En annan virtuell kamera körs.\n"
-"Bambu Studio stöder endast en virtuell kamera.\n"
-"Vill du stoppa den här virtuella kameran?"
 
 #, c-format, boost-format
 msgid "Virtual camera initialize failed (%s)!"
@@ -3902,6 +3936,11 @@ msgstr "Lager: N/A"
 msgid "Clear"
 msgstr "Rensa"
 
+msgid ""
+"You have completed printing the mall model, \n"
+"but the synchronization of rating information has failed."
+msgstr ""
+
 msgid "How do you like this printing file?"
 msgstr ""
 
@@ -3960,9 +3999,6 @@ msgstr "Avbryt utskrift"
 
 msgid "Are you sure you want to cancel this print?"
 msgstr "Är du säker på att du vill avbryta utskriften?"
-
-msgid "Done"
-msgstr "Klar"
 
 msgid "Downloading..."
 msgstr "Laddar ner..."
@@ -4349,6 +4385,24 @@ msgstr "Filament inställningar"
 msgid "Printer settings"
 msgstr "Skrivarens inställningar"
 
+msgid "Remove current plate (if not last one)"
+msgstr ""
+
+msgid "Auto orient objects on current plate"
+msgstr ""
+
+msgid "Arrange objects on current plate"
+msgstr ""
+
+msgid "Unlock current plate"
+msgstr ""
+
+msgid "Lock current plate"
+msgstr ""
+
+msgid "Customize current plate"
+msgstr ""
+
 msgid "Untitled"
 msgstr "Ej namngiven"
 
@@ -4465,12 +4519,10 @@ msgid "Restore"
 msgstr "Återställ"
 
 msgid ""
-"The bed temperature exceeds filament's vitrification temperature. Please "
-"open the front door of printer before printing to avoid nozzle clog."
+"The current hot bed temperature is relatively high. The nozzle may be "
+"clogged when printing this filament in a closed enclosure. Please open the "
+"front door and/or remove the upper glass."
 msgstr ""
-"Byggplattans temperatur överskrider filamentens förglasningstemperatur. "
-"Öppna skrivarens främre dörr innan du skriver ut för att undvika att nozzeln "
-"täpps till."
 
 msgid ""
 "The nozzle hardness required by the filament is higher than the default "
@@ -4598,8 +4650,14 @@ msgstr "Objektet är för stort"
 msgid "Export STL file:"
 msgstr "Exportera STL-fil:"
 
+msgid "Export AMF file:"
+msgstr ""
+
 msgid "Save file as:"
 msgstr "Spara fil som:"
+
+msgid "Export OBJ file:"
+msgstr ""
 
 msgid "Delete object which is a part of cut object"
 msgstr "Radera objekt som är en del av det utskurna objektet"
@@ -4619,17 +4677,38 @@ msgstr "Det valda objektet kan inte delas."
 msgid "Another export job is running."
 msgstr "En annan exportering pågår."
 
+msgid "Replace from:"
+msgstr ""
+
+msgid "Unable to replace with more than one volume"
+msgstr ""
+
+msgid "Error during replace"
+msgstr "Fel vid byte"
+
 msgid "Select a new file"
 msgstr "Välj en ny fil"
 
 msgid "File for the replace wasn't selected"
 msgstr "Ersättningsfilen valdes inte"
 
-msgid "Error during replace"
-msgstr "Fel vid byte"
-
 msgid "Please select a file"
 msgstr "Välj en fil"
+
+msgid "Do you want to replace it"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Reload from:"
+msgstr ""
+
+msgid "Unable to reload:"
+msgstr ""
+
+msgid "Error during reload"
+msgstr ""
 
 msgid "Slicing"
 msgstr "Bereder"
@@ -4703,7 +4782,7 @@ msgid "Project downloaded %d%%"
 msgstr "Projektet har laddats ned %d%%"
 
 msgid ""
-"Importing to Bambu Studio failed. Please download the file and manually "
+"Importing to GalaxySlicer failed. Please download the file and manually "
 "import it."
 msgstr ""
 
@@ -4760,6 +4839,15 @@ msgstr "Kopior av det valda objektet"
 
 msgid "Save G-code file as:"
 msgstr "Spara G-kod som:"
+
+msgid "Save SLA file as:"
+msgstr ""
+
+msgid "The provided file name is not valid."
+msgstr ""
+
+msgid "The following characters are not allowed by a FAT file system:"
+msgstr ""
 
 msgid "Save Sliced file as:"
 msgstr "Spara beredningen som:"
@@ -4924,6 +5012,15 @@ msgstr "Brittisk standard"
 msgid "Units"
 msgstr "Enheter"
 
+msgid "Home"
+msgstr ""
+
+msgid "Default Page"
+msgstr ""
+
+msgid "Set the page opened on startup."
+msgstr ""
+
 msgid "Zoom to mouse position"
 msgstr "Zooma till musens position"
 
@@ -4933,6 +5030,18 @@ msgid ""
 msgstr ""
 "Zooma in mot muspekarens position i 3D-vyn, istället för mot 2D-fönstrets "
 "mitt."
+
+msgid "Use free camera"
+msgstr ""
+
+msgid "If enabled, use free camera. If not enabled, use constrained camera."
+msgstr ""
+
+msgid "Show splash screen"
+msgstr ""
+
+msgid "Show the splash screen during startup."
+msgstr ""
 
 msgid "Show \"Tip of the day\" notification after start"
 msgstr "Visa \"Dagens tips\" efter start"
@@ -4987,12 +5096,6 @@ msgstr "Associera .step/.stp-filer till GalaxySlicer"
 msgid ""
 "If enabled, sets GalaxySlicer as default application to open .step files"
 msgstr "Om aktiverad, väljs GalaxySlicer som standard att öppna .step filer"
-
-msgid "Online Models"
-msgstr "Online modeller"
-
-msgid "Show online staff-picked models on the home page"
-msgstr "Visa personalens utvalda modeller online på startsidan"
 
 msgid "Maximum recent projects"
 msgstr "Maximalt antal nyligen genomförda projekt"
@@ -5555,8 +5658,8 @@ msgstr "Det går inte att skicka utskriftsuppgiften när uppgraderingen pågår"
 msgid "An SD card needs to be inserted before send to printer SD card."
 msgstr "Ett MicroSD-kort måste sättas i innan du skickar till skrivaren."
 
-msgid "The printer is required to be in the same LAN as Bambu Studio."
-msgstr "Skrivaren måste finnas på samma LAN som Bambu Studio."
+msgid "The printer is required to be in the same LAN as GalaxySlicer."
+msgstr ""
 
 msgid "The printer does not support sending to printer SD card."
 msgstr "Skrivaren har inte stöd för att skicka till skrivarens MicroSD kort."
@@ -5874,6 +5977,9 @@ msgstr ""
 "Rekommenderat nozzel temperaturs område för detta filament. 0 betyder inte "
 "fastställt"
 
+msgid "Print chamber temperature"
+msgstr ""
+
 msgid "Print temperature"
 msgstr "Utskrifts temperatur"
 
@@ -6026,6 +6132,9 @@ msgstr ""
 
 msgid "Change filament G-code"
 msgstr "Byta filament G-kod"
+
+msgid "Change extrusion role G-code"
+msgstr ""
 
 msgid "Pause G-code"
 msgstr "Paus G-kod"
@@ -6640,27 +6749,28 @@ msgid "Network plug-in update"
 msgstr "Uppdatering av nätverks plugin"
 
 msgid ""
-"Click OK to update the Network plug-in when Bambu Studio launches next time."
+"Click OK to update the Network plug-in when GalaxySlicer launches next time."
 msgstr ""
-"Klicka på OK för att uppdatera Nätverks plugin programmet nästa gång Bambu "
-"Studio startar."
 
 #, c-format, boost-format
 msgid "A new Network plug-in(%s) available, Do you want to install it?"
 msgstr "En ny nätverksplugin (%s) är tillgänglig. Vill du installera den?"
 
-msgid "New version of Bambu Studio"
-msgstr "Ny version av Bambu Studio"
+msgid "New version of GalaxySlicer"
+msgstr "Ny version av GalaxySlicer"
 
 msgid "Don't remind me of this version again"
 msgstr "Påminn mig inte om den här versionen igen."
+
+msgid "Done"
+msgstr "Klar"
 
 msgid "LAN Connection Failed (Sending print file)"
 msgstr "LAN-anslutning misslyckades (skickar utskriftsfil)"
 
 msgid ""
-"Step 1, please confirm Bambu Studio and your printer are in the same LAN."
-msgstr "Steg 1: Bekräfta att Bambu Studio och din skrivare finns på samma LAN."
+"Step 1, please confirm GalaxySlicer and your printer are in the same LAN."
+msgstr ""
 
 msgid ""
 "Step 2, if the IP and Access Code below are different from the actual values "
@@ -7559,6 +7669,31 @@ msgid ""
 "bridges cannot be anchored. "
 msgstr ""
 
+msgid "Reverse on odd"
+msgstr ""
+
+msgid "Overhang reversal"
+msgstr ""
+
+msgid ""
+"Extrude perimeters that have a part over an overhang in the reverse "
+"direction on odd layers. This alternating pattern can drastically improve "
+"steep overhang."
+msgstr ""
+
+msgid "Reverse threshold"
+msgstr ""
+
+msgid "Overhang reversal threshold"
+msgstr ""
+
+#, c-format, boost-format
+msgid ""
+"Number of mm the overhang need to be for the reversal to be considered "
+"useful. Can be a % of the perimeter width.\n"
+"Value 0 enables reversal on every odd layers regardless."
+msgstr ""
+
 msgid "Classic mode"
 msgstr ""
 
@@ -7716,11 +7851,8 @@ msgstr "Standard process profil vid byte till denna maskinens profil"
 msgid "Activate air filtration"
 msgstr ""
 
-msgid "Activate for better air filtration"
+msgid "Activate for better air filtration. G-code command: M106 P3 S(0-255)"
 msgstr ""
-
-msgid "Fan speed"
-msgstr "Fläkt hastighet"
 
 msgid ""
 "Speed of exhuast fan during printing.This speed will overwrite the speed in "
@@ -8189,15 +8321,14 @@ msgstr ""
 "Support material används ofta för att skriva ut support och stödja "
 "gränssnittet"
 
-msgid "Temperature of vitrificaiton"
-msgstr "Kristalliserings temperatur"
+msgid "Softening temperature"
+msgstr ""
 
 msgid ""
-"Material becomes soft at this temperature. Thus the heatbed cannot be hotter "
-"than this tempature"
+"The material softens at this temperature, so when the bed temperature is "
+"equal to or greater than it, it's highly recommended to open the front door "
+"and/or remove the upper glass to avoid cloggings."
 msgstr ""
-"Materialet mjuknar vid denna temperatur. Därför får inte byggplattan vara "
-"varmare än denna temperatur"
 
 msgid "Price"
 msgstr "Pris"
@@ -8230,10 +8361,11 @@ msgstr ""
 msgid "Sparse infill density"
 msgstr "Sparsam ifyllnads densitet"
 
-#, c-format
-msgid "Density of internal sparse infill, 100% means solid throughout"
+#, c-format, boost-format
+msgid ""
+"Density of internal sparse infill, 100% turns all sparse infill into solid "
+"infill and internal solid infill pattern will be used"
 msgstr ""
-"Densiteten av ifyllnad. 100%% betyder att objektet blir solid rakt igenom"
 
 msgid "Sparse infill pattern"
 msgstr "Sparsam ifyllnads mönster"
@@ -8350,7 +8482,7 @@ msgstr ""
 
 msgid ""
 "Acceleration of initial layer. Using a lower value can improve build plate "
-"adhensive"
+"adhesive"
 msgstr ""
 "Utskrifts acceleration för första lager. Ett lägre värde kan förbättra "
 "objektets fäste på byggplattan"
@@ -8503,9 +8635,7 @@ msgstr ""
 msgid "Layers and Perimeters"
 msgstr "Lager och perimetrar"
 
-msgid ""
-"Filter out gaps smaller than the threshold specified. This setting won't "
-"affect top/bottom layers"
+msgid "Filter out gaps smaller than the threshold specified"
 msgstr ""
 
 msgid ""
@@ -8601,8 +8731,18 @@ msgstr ""
 msgid "Best auto arranging position in range [0,1] w.r.t. bed shape."
 msgstr ""
 
-msgid "Enable this option if machine has auxiliary part cooling fan"
-msgstr "Aktivera detta val om maskinen har extra kylfläkt"
+msgid ""
+"Enable this option if machine has auxiliary part cooling fan. G-code "
+"command: M106 P2 S(0-255)."
+msgstr ""
+
+msgid "Exhaust cooling fan"
+msgstr ""
+
+msgid ""
+"Enable this option if machine has exhaust cooling fan. G-code command: M106 "
+"P3 S(0-255)."
+msgstr ""
 
 msgid ""
 "Start the fan this number of seconds earlier than its target start time (you "
@@ -8646,13 +8786,16 @@ msgid "Support control chamber temperature"
 msgstr ""
 
 msgid ""
-"This option is enabled if machine support controlling chamber temperature"
+"This option is enabled if machine support controlling chamber temperature\n"
+"G-code command: M141 S(0-255)"
 msgstr ""
 
 msgid "Support air filtration"
 msgstr ""
 
-msgid "Enable this if printer support air filtration"
+msgid ""
+"Enable this if printer support air filtration\n"
+"G-code command: M106 P3 S(0-255)"
 msgstr ""
 
 msgid "G-code flavor"
@@ -8757,6 +8900,9 @@ msgstr "Alla solida lager"
 msgid "Ironing Pattern"
 msgstr "Mönster för strykning"
 
+msgid "The pattern that will be used when ironing"
+msgstr ""
+
 msgid "Ironing flow"
 msgstr "Strykningsflöde"
 
@@ -8779,6 +8925,14 @@ msgstr "Stryknings hastighet"
 
 msgid "Print speed of ironing lines"
 msgstr "Utskrifts hastighet för strykning"
+
+msgid "Ironing angle"
+msgstr ""
+
+msgid ""
+"The angle ironing is done at. A negative number disables this function and "
+"uses the default method."
+msgstr ""
 
 msgid "This gcode part is inserted at every layer change after lift z"
 msgstr "Denna G-kod infogas vid varje lagerbyte efter lyft av Z axis"
@@ -8908,6 +9062,9 @@ msgstr "Max acceleration för förflyttning"
 msgid "Maximum acceleration for travel (M204 T), it only applies to Marlin 2"
 msgstr ""
 
+msgid "Fan speed"
+msgstr "Fläkt hastighet"
+
 msgid ""
 "Part cooling fan speed may be increased when auto cooling is enabled. This "
 "is the maximum speed limitation of part cooling fan"
@@ -8980,11 +9137,10 @@ msgstr "Min hastighet för del kylfläkten"
 msgid ""
 "Speed of auxiliary part cooling fan. Auxiliary fan will run at this speed "
 "during printing except the first several layers which is defined by no "
-"cooling layers"
+"cooling layers.\n"
+"Please enable auxiliary_fan in printer settings to use this feature. G-code "
+"command: M106 P2 S(0-255)"
 msgstr ""
-"Hastigheten på extra del kylfläkten. Extra fläkten kommer att köras med "
-"denna hastighet under utskrift förutom de lager som definieras som inga kyl "
-"lager"
 
 msgid "Min"
 msgstr "Min"
@@ -8999,8 +9155,11 @@ msgstr ""
 msgid "Min print speed"
 msgstr "Min utskrifts hastighet"
 
-msgid "The minimum printing speed when slow down for cooling"
-msgstr "Min utskrifts hastighet vid nedsänkning för kylning"
+msgid ""
+"The minimum printing speed for the filament when slow down for better layer "
+"cooling is enabled, when printing overhangs and when feature speeds are not "
+"specified explicitly."
+msgstr ""
 
 msgid "Nozzle diameter"
 msgstr "Nozzel diameter"
@@ -9259,22 +9418,6 @@ msgstr ""
 "den förflyttas. Att använda spirallinjer för att lyfta z kan förhindra "
 "strängning"
 
-msgid "Z hop lower boundary"
-msgstr ""
-
-msgid ""
-"Z hop will only come into effect when Z is above this value and is below the "
-"parameter: \"Z hop upper boundary\""
-msgstr ""
-
-msgid "Z hop upper boundary"
-msgstr ""
-
-msgid ""
-"If this value is positive, Z hop will only come into effect when Z is above "
-"the parameter: \"Z hop lower boundary\" and is below this value"
-msgstr ""
-
 msgid "Z hop type"
 msgstr ""
 
@@ -9526,6 +9669,17 @@ msgstr ""
 msgid "Use single nozzle to print multi filament"
 msgstr ""
 
+msgid "Manual Filament Change"
+msgstr ""
+
+msgid ""
+"Enable this option to omit the custom Change filament G-code only at the "
+"beginning of the print. The tool change command (e.g., T0) will be skipped "
+"throughout the entire print. This is useful for manual multi-material "
+"printing, where we use M600/PAUSE to trigger the manual filament change "
+"action."
+msgstr ""
+
 msgid "Purge in prime tower"
 msgstr ""
 
@@ -9583,6 +9737,16 @@ msgstr "Jämnt-udda"
 
 msgid "Close holes"
 msgstr "Stäng hål"
+
+msgid "Z offset"
+msgstr ""
+
+msgid ""
+"This value will be added (or subtracted) from all the Z coordinates in the "
+"output G-code. It is used to compensate for bad Z endstop position: for "
+"example, if your endstop zero actually leaves the nozzle 0.3mm far from the "
+"print bed, set this to -0.3 (or fix your endstop)."
+msgstr ""
 
 msgid "Enable support"
 msgstr "Aktivera support"
@@ -9923,6 +10087,15 @@ msgstr ""
 "Inställningen bestämmer om det ska läggas till ifyllnad i stora hålrum av "
 "tree support"
 
+msgid "Activate temperature control"
+msgstr ""
+
+msgid ""
+"Enable this option for chamber temperature control. An M191 command will be "
+"added before \"machine_start_gcode\"\n"
+"G-code commands: M141/M191 S(0-255)"
+msgstr ""
+
 msgid "Chamber temperature"
 msgstr ""
 
@@ -9956,6 +10129,9 @@ msgid ""
 msgstr ""
 "G-koden sätts in vid filament byte, inklusive T kommando som aktiverar "
 "verktygs byte"
+
+msgid "This gcode is inserted when the extrusion role is changed"
+msgstr ""
 
 msgid ""
 "Line width for top surfaces. If expressed as a %, it will be computed over "
@@ -10152,12 +10328,48 @@ msgstr ""
 "Denna funktion används för att justera storleken något när det finns "
 "monterings svårigheter"
 
+msgid "Convert holes to polyholes"
+msgstr ""
+
+msgid ""
+"Search for almost-circular holes that span more than one layer and convert "
+"the geometry to polyholes. Use the nozzle size and the (biggest) diameter to "
+"compute the polyhole.\n"
+"See http://hydraraptor.blogspot.com/2011/02/polyholes.html"
+msgstr ""
+
+msgid "Polyhole detection margin"
+msgstr ""
+
+#, c-format, boost-format
+msgid ""
+"Maximum defection of a point to the estimated radius of the circle.\n"
+"As cylinders are often exported as triangles of varying size, points may not "
+"be on the circle circumference. This setting allows you some leway to "
+"broaden the detection.\n"
+"In mm or in % of the radius."
+msgstr ""
+
+msgid "Polyhole twist"
+msgstr ""
+
+msgid "Rotate the polyhole every layer."
+msgstr ""
+
 msgid "G-code thumbnails"
 msgstr ""
 
 msgid ""
 "Picture sizes to be stored into a .gcode and .sl1 / .sl1s files, in the "
 "following format: \"XxY, XxY, ...\""
+msgstr ""
+
+msgid "Format of G-code thumbnails"
+msgstr ""
+
+msgid ""
+"Format of G-code thumbnails: PNG for best quality, JPG for smallest size, "
+"QOI for low memory firmware"
 msgstr ""
 
 msgid "Use relative E distances"
@@ -10296,10 +10508,6 @@ msgstr ""
 
 msgid "invalid value "
 msgstr "ogiltigt värde "
-
-#, c-format, boost-format
-msgid " doesn't work at 100%% density "
-msgstr " fungerar inte vid 100%% densitet "
 
 msgid "Invalid value when spiral vase mode is enabled: "
 msgstr "Ogiltigt värde när spiralvas läget är aktiverat: "
@@ -10551,12 +10759,6 @@ msgstr ""
 
 msgid "Optimizing toolpath"
 msgstr "Optimerar verktygsbanan"
-
-msgid "Empty layers around bottom are replaced by nearest normal layers."
-msgstr "Tomma lager runt botten ersätts med närmast normala lager."
-
-msgid "The model has too many empty layers."
-msgstr "Modellen har för många tomma lager."
 
 msgid "Slicing mesh"
 msgstr "Bereder mesh"
@@ -11171,9 +11373,6 @@ msgstr ""
 msgid "Filename"
 msgstr ""
 
-msgid "Message"
-msgstr ""
-
 msgid "Cancel selected"
 msgstr ""
 
@@ -11584,7 +11783,7 @@ msgstr ""
 msgid ""
 "Brim for better adhesion\n"
 "Did you know that when printing models have a small contact interface with "
-"the printing surface, it's recommended to use a brim?"
+"the printing surface, it is recommended to use a brim?"
 msgstr ""
 "Brim för bättre vidhäftning\n"
 "Visste du att när printade modeller har ett litet kontakt område med "
@@ -11627,6 +11826,202 @@ msgstr ""
 "Förbättra styrkan\n"
 "Visste du att du kan använda fler väggslingor och högre gles fyllningstäthet "
 "för att förbättra modellens styrka?"
+
+#: resources/data/hints.ini: [hint:When need to print with the printer door
+#: opened]
+msgid ""
+"When need to print with the printer door opened\n"
+"Opening the printer door can reduce the probability of extruder/hotend "
+"clogging when printing lower temperature filament with a higher enclosure "
+"temperature. More info about this in the Wiki."
+msgstr ""
+
+#~ msgid "Tool-Lay on Face"
+#~ msgstr "Ytplacerings verktyg"
+
+#, boost-format
+#~ msgid "%1% infill pattern doesn't support 100%% density."
+#~ msgstr "%1% ifyllnads mönster stöds ej 100%% densitet."
+
+#~ msgid ""
+#~ "Switch to rectilinear pattern?\n"
+#~ "Yes - switch to rectilinear pattern automaticlly\n"
+#~ "No  - reset density to default non 100% value automaticlly"
+#~ msgstr ""
+#~ "Byta till rätlinjigt mönster?\n"
+#~ "Ja - Växla automatiskt till rätlinjigt mönster\n"
+#~ "Nej - Återställ automatiskt densiteten till standardvärdet som inte är "
+#~ "100 %."
+
+#, c-format
+#~ msgid "Density of internal sparse infill, 100% means solid throughout"
+#~ msgstr ""
+#~ "Densiteten av ifyllnad. 100%% betyder att objektet blir solid rakt igenom"
+
+#, c-format, boost-format
+#~ msgid " doesn't work at 100%% density "
+#~ msgstr " fungerar inte vid 100%% densitet "
+
+#~ msgid "Embeded"
+#~ msgstr "Inbäddad"
+
+#~ msgid "Online Models"
+#~ msgstr "Online modeller"
+
+#~ msgid "Show online staff-picked models on the home page"
+#~ msgstr "Visa personalens utvalda modeller online på startsidan"
+
+#~ msgid ""
+#~ "Another virtual camera is running.\n"
+#~ "Orca Slicer supports only a single virtual camera.\n"
+#~ "Do you want to stop this virtual camera?"
+#~ msgstr ""
+#~ "En annan virtuell kamera körs.\n"
+#~ "Orca Slicer stöder endast en virtuell kamera.\n"
+#~ "Vill du stoppa den här virtuella kameran?"
+
+#~ msgid "The printer is required to be in the same LAN as Orca Slicer."
+#~ msgstr "Skrivaren måste finnas på samma LAN som Orca Slicer."
+
+#~ msgid ""
+#~ "Click OK to update the Network plug-in when Orca Slicer launches next "
+#~ "time."
+#~ msgstr ""
+#~ "Klicka på OK för att uppdatera Nätverks plugin programmet nästa gång "
+#~ "Bambu Studio startar."
+
+#~ msgid "New version of Orca Slicer"
+#~ msgstr "Ny version av Orca Slicer"
+
+#~ msgid ""
+#~ "Step 1, please confirm Orca Slicer and your printer are in the same LAN."
+#~ msgstr ""
+#~ "Steg 1: Bekräfta att Orca Slicer och din skrivare finns på samma LAN."
+
+#~ msgid ""
+#~ "Another virtual camera is running.\n"
+#~ "Bambu Studio supports only a single virtual camera.\n"
+#~ "Do you want to stop this virtual camera?"
+#~ msgstr ""
+#~ "En annan virtuell kamera körs.\n"
+#~ "Bambu Studio stöder endast en virtuell kamera.\n"
+#~ "Vill du stoppa den här virtuella kameran?"
+
+#~ msgid "The printer is required to be in the same LAN as Bambu Studio."
+#~ msgstr "Skrivaren måste finnas på samma LAN som Bambu Studio."
+
+#~ msgid ""
+#~ "Click OK to update the Network plug-in when Bambu Studio launches next "
+#~ "time."
+#~ msgstr ""
+#~ "Klicka på OK för att uppdatera Nätverks plugin programmet nästa gång "
+#~ "Bambu Studio startar."
+
+#~ msgid "New version of Bambu Studio"
+#~ msgstr "Ny version av Bambu Studio"
+
+#~ msgid ""
+#~ "Step 1, please confirm Bambu Studio and your printer are in the same LAN."
+#~ msgstr ""
+#~ "Steg 1: Bekräfta att Bambu Studio och din skrivare finns på samma LAN."
+
+#~ msgid ""
+#~ "Acceleration of initial layer. Using a lower value can improve build "
+#~ "plate adhensive"
+#~ msgstr ""
+#~ "Utskrifts acceleration för första lager. Ett lägre värde kan förbättra "
+#~ "objektets fäste på byggplattan"
+
+#~ msgid "The minimum printing speed when slow down for cooling"
+#~ msgstr "Min utskrifts hastighet vid nedsänkning för kylning"
+
+#~ msgid ""
+#~ "The bed temperature exceeds filament's vitrification temperature. Please "
+#~ "open the front door of printer before printing to avoid nozzle clog."
+#~ msgstr ""
+#~ "Byggplattans temperatur överskrider filamentens förglasningstemperatur. "
+#~ "Öppna skrivarens främre dörr innan du skriver ut för att undvika att "
+#~ "nozzeln täpps till."
+
+#~ msgid "Temperature of vitrificaiton"
+#~ msgstr "Kristalliserings temperatur"
+
+#~ msgid ""
+#~ "Material becomes soft at this temperature. Thus the heatbed cannot be "
+#~ "hotter than this tempature"
+#~ msgstr ""
+#~ "Materialet mjuknar vid denna temperatur. Därför får inte byggplattan vara "
+#~ "varmare än denna temperatur"
+
+#~ msgid "Enable this option if machine has auxiliary part cooling fan"
+#~ msgstr "Aktivera detta val om maskinen har extra kylfläkt"
+
+#~ msgid ""
+#~ "Speed of auxiliary part cooling fan. Auxiliary fan will run at this speed "
+#~ "during printing except the first several layers which is defined by no "
+#~ "cooling layers"
+#~ msgstr ""
+#~ "Hastigheten på extra del kylfläkten. Extra fläkten kommer att köras med "
+#~ "denna hastighet under utskrift förutom de lager som definieras som inga "
+#~ "kyl lager"
+
+#~ msgid "Empty layers around bottom are replaced by nearest normal layers."
+#~ msgstr "Tomma lager runt botten ersätts med närmast normala lager."
+
+#~ msgid "The model has too many empty layers."
+#~ msgstr "Modellen har för många tomma lager."
+
+#~ msgid "The Orca Slicer needs an upgrade"
+#~ msgstr "Orca Slicer behöver uppdateras"
+
+#~ msgid ""
+#~ "The version of Orca Slicer is too low and needs to be updated to the "
+#~ "latest version before it can be used normally"
+#~ msgstr ""
+#~ "Versionen av Orca Slicer är för låg och behöver uppdateras till den "
+#~ "senaste versionen innan den kan användas normalt"
+
+#~ msgid "Orca Slicer GUI initialization failed"
+#~ msgstr "Orca Slicer GUI-initiering misslyckades"
+
+#~ msgid "Orca Slicer is licensed under "
+#~ msgstr "Orca Slicer är licensierad under "
+
+#~ msgid "The 3mf is not supported by OrcaSlicer, load geometry data only."
+#~ msgstr "3mf kommer inte från Orca Slicer, laddar endast geometri data."
+
+#~ msgid "Associate files to OrcaSlicer"
+#~ msgstr "Associerade filer till Orca Slicer"
+
+#~ msgid "Associate .3mf files to OrcaSlicer"
+#~ msgstr "Associerade .3mf files till Orca Slicer"
+
+#~ msgid ""
+#~ "If enabled, sets OrcaSlicer as default application to open .3mf files"
+#~ msgstr "Om aktiverad, väljs Orca Slicer som standard att öppna .3mf filer"
+
+#~ msgid "Associate .stl files to OrcaSlicer"
+#~ msgstr "Associerade .stl filer till Orca Slicer"
+
+#~ msgid ""
+#~ "If enabled, sets OrcaSlicer as default application to open .stl files"
+#~ msgstr "Om aktiverad, väljs Orca Slicer som standard att öppna .stl filer"
+
+#~ msgid "Associate .step/.stp files to OrcaSlicer"
+#~ msgstr "Associera .step/.stp-filer till OrcaSlicer"
+
+#~ msgid ""
+#~ "If enabled, sets OrcaSlicer as default application to open .step files"
+#~ msgstr "Om aktiverad, väljs Orca Slicer som standard att öppna .step filer"
+
+#~ msgid ""
+#~ "Brim for better adhesion\n"
+#~ "Did you know that when printing models have a small contact interface "
+#~ "with the printing surface, it's recommended to use a brim?"
+#~ msgstr ""
+#~ "Brim för bättre vidhäftning\n"
+#~ "Visste du att när printade modeller har ett litet kontakt område med "
+#~ "byggplattan rekommenderas det att använda en Brim?"
 
 #~ msgid "Cali"
 #~ msgstr "Kalib"
@@ -11857,9 +12252,6 @@ msgstr ""
 
 #~ msgid "Flow Calibration"
 #~ msgstr "Flödes Kalibrering"
-
-#~ msgid "New version of GalaxySlicer"
-#~ msgstr "Ny version av GalaxySlicer"
 
 #~ msgid ""
 #~ "The configuration may be generated by a newer version of BambuStudio."
@@ -12885,9 +13277,6 @@ msgstr ""
 #~ msgid "Edit plate setitngs"
 #~ msgstr "Redigera byggplattans inställningar"
 
-#~ msgid "Entering Seam painting"
-#~ msgstr "Inmatning söm målning"
-
 #~ msgid "Export."
 #~ msgstr "Exportera."
 
@@ -13012,9 +13401,6 @@ msgstr ""
 #~ msgid "Layers: N/A"
 #~ msgstr "Lager: N/A"
 
-#~ msgid "Leaving Seam painting"
-#~ msgstr "Lämnar söm målning"
-
 #~ msgid "Loading user presets..."
 #~ msgstr "Laddar användar inställningarna..."
 
@@ -13033,9 +13419,6 @@ msgstr ""
 
 #~ msgid "P1P General Settings - WLAN in the sidebar of the main screen"
 #~ msgstr "P1P Allmänna inställningar - WLAN i sidofältet på huvudskärmen"
-
-#~ msgid "Paint-on seam editing"
-#~ msgstr "Redigering av måla på sömmen"
 
 #~ msgid "Plate %d: %s does not support filament %s (%s)."
 #~ msgstr "Plattan %d: %s stöder inte filamentet %s (%s)."

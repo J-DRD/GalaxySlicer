@@ -2,6 +2,8 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/Utils/MacDarkMode.hpp"
 
+#include <boost/log/trivial.hpp>
+
 #include <wx/webviewarchivehandler.h>
 #include <wx/webviewfshandler.h>
 #if wxUSE_WEBVIEW_EDGE
@@ -251,7 +253,7 @@ wxWebView* WebView::CreateWebView(wxWindow * parent, wxString const & url)
     url2.Replace("\\", "/");
 #endif
     if (!url2.empty()) { url2 = wxURI(url2).BuildURI(); }
-    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ": " << url2.ToUTF8();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << ": " << url2.ToUTF8();
 
 #ifdef __WIN32__
     wxWebView* webView = new WebViewEdge;
@@ -317,7 +319,6 @@ wxWebView* WebView::CreateWebView(wxWindow * parent, wxString const & url)
     g_webviews.push_back(webView);
     return webView;
 }
-
 #if wxUSE_WEBVIEW_EDGE
 bool WebView::CheckWebViewRuntime()
 {
@@ -331,7 +332,6 @@ bool WebView::DownloadAndInstallWebViewRuntime()
     return DownloadAndInstallWV2RT() == 0;
 }
 #endif
-
 void WebView::LoadUrl(wxWebView * webView, wxString const &url)
 {
     auto url2  = url;
@@ -339,7 +339,7 @@ void WebView::LoadUrl(wxWebView * webView, wxString const &url)
     url2.Replace("\\", "/");
 #endif
     if (!url2.empty()) { url2 = wxURI(url2).BuildURI(); }
-    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << url2.ToUTF8();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << url2.ToUTF8();
     webView->LoadURL(url2);
 }
 

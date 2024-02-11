@@ -23,6 +23,7 @@
 #include "GCode/ExtrusionProcessor.hpp"
 
 #include "GCode/PressureEqualizer.hpp"
+#include "GCode/SmallAreaInfillFlowCompensator.hpp"
 
 #include <memory>
 #include <map>
@@ -55,11 +56,16 @@ class Wipe {
 public:
     bool enable;
     Polyline path;
+    struct RetractionValues{
+        double retractLengthBeforeWipe;
+        double retractLengthDuringWipe;
+    };
 
     Wipe() : enable(false) {}
     bool has_path() const { return !this->path.points.empty(); }
     void reset_path() { this->path = Polyline(); }
-    std::string wipe(GCode &gcodegen, bool toolchange = false, bool is_last = false);
+    std::string wipe(GCode &gcodegen, double length, bool toolchange = false, bool is_last = false);
+    RetractionValues calculateWipeRetractionLengths(GCode& gcodegen, bool toolchange);
 };
 
 class WipeTowerIntegration {
@@ -152,6 +158,7 @@ struct LayerResult {
 };
 
 class GCode {
+
 public:
     GCode() :
     	m_origin(Vec2d::Zero()),
@@ -216,7 +223,7 @@ public:
     bool            needs_retraction(const Polyline& travel, ExtrusionRole role, LiftType& lift_type);
     std::string     retract(bool toolchange = false, bool is_last_retraction = false, LiftType lift_type = LiftType::NormalLift);
     std::string     unretract() { return m_writer.unlift() + m_writer.unretract(); }
-    std::string     set_extruder(unsigned int extruder_id, double print_z);
+    std::string     set_extruder(unsigned int extruder_id, double print_z, bool by_object=false);
     bool is_BBL_Printer();
 
     // SoftFever
@@ -342,8 +349,12 @@ private:
     std::string     preamble();
     // BBS
     std::string     change_layer(coordf_t print_z);
-    std::string     extrude_entity(const ExtrusionEntity &entity, std::string description = "", double speed = -1.);
-    std::string     extrude_loop(ExtrusionLoop loop, std::string description, double speed = -1.);
+    // Orca: pass the complete collection of region perimeters to the extrude loop to check whether the wipe before external loop
+    // should be executed
+    std::string     extrude_entity(const ExtrusionEntity &entity, std::string description = "", double speed = -1., const ExtrusionEntitiesPtr& region_perimeters = ExtrusionEntitiesPtr());
+    // Orca: pass the complete collection of region perimeters to the extrude loop to check whether the wipe before external loop
+    // should be executed
+    std::string     extrude_loop(ExtrusionLoop loop, std::string description, double speed = -1., const ExtrusionEntitiesPtr& region_perimeters = ExtrusionEntitiesPtr());
     std::string     extrude_multi_path(ExtrusionMultiPath multipath, std::string description = "", double speed = -1.);
     std::string     extrude_path(ExtrusionPath path, std::string description = "", double speed = -1.);
 
@@ -480,7 +491,7 @@ private:
     bool m_enable_exclude_object;
     std::vector<size_t> m_label_objects_ids;
     std::string _encode_label_ids_to_base64(std::vector<size_t> ids);
-    // Orca
+    // Galaxy
     bool m_is_overhang_fan_on;
     bool m_is_supp_interface_fan_on;
     // Markers for the Pressure Equalizer to recognize the extrusion type.
@@ -512,6 +523,15 @@ private:
     double                              m_last_mm3_per_mm;
 #endif // ENABLE_GCODE_VIEWER_DATA_CHECKING
 
+    // Always check gcode placeholders when building in debug mode.
+#if !defined(NDEBUG)
+#define ORCA_CHECK_GCODE_PLACEHOLDERS 1
+#endif
+    
+#if ORCA_CHECK_GCODE_PLACEHOLDERS
+    std::map<std::string, std::vector<std::string>> m_placeholder_error_messages;
+#endif
+
     Point                               m_last_pos;
     bool                                m_last_pos_defined;
 
@@ -521,6 +541,8 @@ private:
     std::unique_ptr<PressureEqualizer>  m_pressure_equalizer;
 
     std::unique_ptr<WipeTowerIntegration> m_wipe_tower;
+
+    std::unique_ptr<SmallAreaInfillFlowCompensator> m_small_area_infill_flow_compensator;
 
     // Heights (print_z) at which the skirt has already been extruded.
     std::vector<coordf_t>               m_skirt_done;
@@ -549,6 +571,7 @@ private:
     bool m_need_change_layer_lift_z = false;
     int m_start_gcode_filament = -1;
 
+    std::set<unsigned int>                  m_initial_layer_extruders;
     // BBS
     int get_bed_temperature(const int extruder_id, const bool is_first_layer, const BedType bed_type) const;
 
@@ -583,6 +606,7 @@ private:
     friend class WipeTowerIntegration;
     friend class PressureEqualizer;
     friend class Print;
+    friend class SmallAreaInfillFlowCompensator;
 };
 
 std::vector<const PrintInstance*> sort_object_instances_by_model_order(const Print& print, bool init_order = false);

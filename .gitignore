@@ -1,7 +1,7 @@
 Build
 Build.bat
 /build*/
-deps/build
+deps/build*
 MYMETA.json
 MYMETA.yml
 _build
@@ -30,3 +30,10 @@ error.txt
 gefundene_wxcolor_werte.txt
 merge_inh*.py
 
+*.mo
+**/process_full/
+**/machine_full/
+**/filament_full/
+/deps/DL_CACHE/
+*error.*
+/deps/DL_CACHE

@@ -6,6 +6,7 @@
 #ifndef slic3r_Utils_hpp_
 #define slic3r_Utils_hpp_
 
+#include <iomanip>
 #include <locale>
 #include <utility>
 #include <functional>
@@ -48,6 +49,7 @@
 #define CLI_PRINTABLE_SIZE_REDUCED     -20
 #define CLI_OBJECT_ARRANGE_FAILED      -21
 #define CLI_OBJECT_ORIENT_FAILED       -22
+#define CLI_MODIFIED_PARAMS_TO_PRINTER -23
 
 
 #define CLI_NO_SUITABLE_OBJECTS     -50
@@ -136,8 +138,11 @@ inline std::string convert_to_full_version(std::string short_version)
     }
     return result;
 }
-
-
+template<typename DataType>
+inline DataType round_divide(DataType dividend, DataType divisor) //!< Return dividend divided by divisor rounded to the nearest integer
+{
+    return (dividend + divisor / 2) / divisor;
+}
 
 // Set a path with GUI localization files.
 void set_local_dir(const std::string &path);
@@ -151,6 +156,11 @@ const std::string& sys_shapes_dir();
 
 // Return a full path to the custom shapes gallery directory.
 std::string custom_shapes_dir();
+
+// Set a path with shapes gallery files.
+void set_custom_gcodes_dir(const std::string &path);
+// Return a full path to the system shapes gallery directory.
+const std::string& custom_gcodes_dir();
 
 // Set a path with preset files.
 void set_data_dir(const std::string &path);
@@ -380,6 +390,7 @@ inline typename CONTAINER_TYPE::value_type& next_value_modulo(typename CONTAINER
 }
 
 extern std::string xml_escape(std::string text, bool is_marked = false);
+extern std::string xml_escape_double_quotes_attribute_value(std::string text);
 extern std::string xml_unescape(std::string text);
 
 
@@ -657,6 +668,9 @@ inline std::string filter_characters(const std::string& str, const std::string& 
 
 void copy_directory_recursively(const boost::filesystem::path &source, const boost::filesystem::path &target);
 
+// Orca: Since 1.7.9 Boost deprecated save_string_file and load_string_file, copy and modified from boost 1.7.8
+void save_string_file(const boost::filesystem::path& p, const std::string& str);
+void load_string_file(const boost::filesystem::path& p, std::string& str);
 
 } // namespace Slic3r
 

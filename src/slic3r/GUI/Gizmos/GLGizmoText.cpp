@@ -6,13 +6,15 @@
 #include "slic3r/GUI/ImGuiWrapper.hpp"
 #include "slic3r/GUI/GUI_ObjectList.hpp"
 #include "slic3r/GUI/Plater.hpp"
-
+#include "libslic3r/ClipperUtils.hpp"
 #include "libslic3r/Geometry/ConvexHull.hpp"
 #include "libslic3r/Model.hpp"
 
 #include "libslic3r/Shape/TextShape.hpp"
 
 #include <numeric>
+
+#include <boost/log/trivial.hpp>
 
 #include <GL/glew.h>
 
@@ -1507,9 +1509,7 @@ void GLGizmoText::generate_text_volume(bool is_temp)
         new_model_volume->set_text_info(text_info);
         new_model_volume->name = model_volume->name;
         new_model_volume->set_type(model_volume->type());
-        if (model_volume->config.option("extruder"))
-            new_model_volume->config.set("extruder", model_volume->config.extruder());
-
+        new_model_volume->config.apply(model_volume->config);
         std::swap(model_object->volumes[m_volume_idx], model_object->volumes.back());
         model_object->delete_volume(model_object->volumes.size() - 1);
         plater->update();

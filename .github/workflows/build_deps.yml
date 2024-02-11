@@ -61,7 +61,7 @@ jobs:
         run: |
             choco install strawberryperl
             mkdir ${{ github.workspace }}/deps/build
-            mkdir ${{ github.workspace }}/deps/build/OrcaSlicer_dep
+            mkdir ${{ github.workspace }}/deps/build/GalaxySlicer_dep
             .\build_release_vs2022.bat deps
             .\build_release_vs2022.bat pack
             cd ${{ github.workspace }}/deps/build
@@ -78,6 +78,11 @@ jobs:
             ./build_release_macos.sh -dp -a ${{ inputs.arch }} -t 10.15
             brew install zstd
 
+            brew install cmake git gettext automake
+            brew list
+            mkdir -p ${{ github.workspace }}/deps/build_${{ inputs.arch }}
+            mkdir -p ${{ github.workspace }}/deps/build_${{ inputs.arch }}/GalaxySlicer_dep_${{ inputs.arch }}
+            ./build_release_macos.sh -dp -a ${{ inputs.arch }}
 
       - name: Build on Ubuntu
         if: inputs.os == 'ubuntu-20.04'
@@ -95,7 +100,7 @@ jobs:
             sudo chown $USER -R ./
             ./BuildLinux.sh -dr
             cd deps/build
-            tar -czvf OrcaSlicer_dep_ubuntu_$(date +"%Y%m%d").tar.gz destdir
+            tar -czvf GalaxySlicer_dep_ubuntu_$(date +"%Y%m%d").tar.gz destdir
       
             
       # Upload Artifacts
@@ -103,15 +108,15 @@ jobs:
         if: inputs.os == 'macos-12'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_dep_mac_${{ inputs.arch }}_${{ env.date }}
-          path: ${{ github.workspace }}/deps/build_${{ inputs.arch }}/OrcaSlicer_dep*.tar.gz
+          name: GalaxySlicer_dep_mac_${{ inputs.arch }}_${{ env.date }}
+          path: ${{ github.workspace }}/deps/build_${{ inputs.arch }}/GalaxySlicer_dep*.tar.gz
 
       - name: Upload Windows artifacts
         if: inputs.os == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_dep_win64_${{ env.date }}
-          path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep*.zip
+          name: GalaxySlicer_dep_win64_${{ env.date }}
+          path: ${{ github.workspace }}/deps/build/GalaxySlicer_dep*.zip
 
       - name: Upload Ubuntu artifacts
         if: inputs.os == 'ubuntu-20.04'
@@ -131,4 +136,18 @@ jobs:
       os: ${{ inputs.os }}
       arch: ${{ inputs.arch }}
     secrets: inherit
+          name: GalaxySlicer_dep_ubuntu_${{ env.date }}
+          path: ${{ github.workspace }}/deps/build/GalaxySlicer_dep_ubuntu_*.tar.gz
+          
+#  build_orca:
+#    name: Build GalaxySlicer
+#    needs: [build_deps]
+#    if: ${{ !cancelled() && !inputs.build-deps-only && (inputs.valid-cache == true && needs.build_deps.result == 'skipped') || (inputs.valid-cache != true && success()) }}
+#    uses: ./.github/workflows/build_orca.yml
+#    with:
+#      cache-key: ${{ inputs.cache-key }}
+#      cache-path: ${{ inputs.cache-path }}
+#      os: ${{ inputs.os }}
+#      arch: ${{ inputs.arch }}
+#    secrets: inherit
         

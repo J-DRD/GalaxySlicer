@@ -7,6 +7,7 @@ on:
        - main
        - dev_9
        - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
+       - 1-0-0-head-rel
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'

@@ -178,7 +178,7 @@ void AppConfig::set_defaults()
 #endif
 
     if (get("zoom_to_mouse").empty())
-        set_bool("zoom_to_mouse", false);
+        set_bool("zoom_to_mouse", true);
 
 //#ifdef SUPPORT_SHOW_HINTS
     if (get("show_hints").empty())
@@ -186,7 +186,7 @@ void AppConfig::set_defaults()
 //#endif
 
     if (get("show_gcode_window").empty())
-        set_bool("show_gcode_window", true);
+        set_bool("show_gcode_window", false);
 
 
 #ifdef _WIN32
@@ -208,20 +208,20 @@ void AppConfig::set_defaults()
 #endif // _WIN32
 
     // BBS
-    /*if (get("3mf_include_gcode").empty())
-        set_bool("3mf_include_gcode", true);*/
+    if (get("3mf_include_gcode").empty())
+        set_bool("3mf_include_gcode", true);
 
     if (get("developer_mode").empty())
         set_bool("developer_mode", false);
 
     if (get("enable_ssl_for_mqtt").empty())
-        set_bool("enable_ssl_for_mqtt", true);
+        set_bool("enable_ssl_for_mqtt", false);
 
     if (get("enable_ssl_for_ftp").empty())
-        set_bool("enable_ssl_for_ftp", true);
+        set_bool("enable_ssl_for_ftp", false);
 
     if (get("severity_level").empty())
-        set("severity_level", "info");
+        set("severity_level", "error");
 
     if (get("internal_developer_mode").empty())
         set_bool("internal_developer_mode", false);
@@ -251,11 +251,11 @@ void AppConfig::set_defaults()
     }
 
     if (get("show_model_mesh").empty()) {
-        set_bool("show_model_mesh", false);
+        set_bool("show_model_mesh", true);
     }
 
     if (get("show_model_shadow").empty()) {
-        set_bool("show_model_shadow", true);
+        set_bool("show_model_shadow", false);
     }
 
     if (get("show_build_edges").empty()) {
@@ -263,7 +263,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("show_daily_tips").empty()) {
-        set_bool("show_daily_tips", true);
+        set_bool("show_daily_tips", false);
     }
     //true is auto calculate
     if (get("auto_calculate").empty()) {
@@ -323,7 +323,7 @@ void AppConfig::set_defaults()
     }
     
     if (get("max_recent_count").empty()) {
-        set("max_recent_count", "18");
+        set("max_recent_count", "10");
     }
 
     // if (get("staff_pick_switch").empty()) {
@@ -339,7 +339,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("backup_interval").empty()) {
-        set("backup_interval", "10");
+        set("backup_interval", "20");
     }
 
     if (get("curr_bed_type").empty()) {
@@ -370,7 +370,7 @@ void AppConfig::set_defaults()
         set_str("print", "flow_cali", "1");
     }
     if (get("print", "timelapse").empty()) {
-        set_str("print", "timelapse", "1");
+        set_str("print", "timelapse", "0");
     }
 
     // Remove legacy window positions/sizes

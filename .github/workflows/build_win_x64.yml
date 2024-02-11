@@ -1,9 +1,12 @@
 name: Build Win x64
 
+
 on: 
     push:
       branches: 
        - main
+       - dev_9
+       - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'
@@ -14,6 +17,8 @@ on:
     pull_request:
       branches: 
        - main 
+       - dev_9
+       - codespace-opulent-parakeet-r64rrvrvw7jhx5vp
       paths:
        - 'src/**'
        - '**/CMakeLists.txt'

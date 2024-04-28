@@ -238,19 +238,19 @@ then
     echo "done"
 fi
 
-if [[ -e /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh ]]; then
+if [[ -e "$ROOT/GalaxySlicer/build/src/BuildLinuxImage.sh" ]]; then
 # Give proper permissions to script
-chmod 755 /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh
+chmod 755 $ROOT/GalaxySlicer/build/src/BuildLinuxImage.sh
 #chmod 755 $ROOT/build/src/BuildLinuxImage.sh
 
 echo "[9/9] Generating Linux app..."
     pushd build
         if [[ -n "$BUILD_IMAGE" ]]
         then
-            bash /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh -i
+            bash $ROOT/GalaxySlicer/build/src/BuildLinuxImage.sh -i
             #$ROOT/build/src/BuildLinuxImage.sh -i
         else
-            bash /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh
+            bash $ROOT/GalaxySlicer/build/src/BuildLinuxImage.sh
             #$ROOT/build/src/BuildLinuxImage.sh
         fi
     popd

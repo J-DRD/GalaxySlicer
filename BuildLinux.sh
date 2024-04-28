@@ -155,54 +155,53 @@ fi
 
 if [[ -n "$BUILD_DEPS" ]]
 then
-    echo "[3/9] Configuring dependencies..."
-    BUILD_ARGS=""
-    if [[ -n "$FOUND_GTK3_DEV" ]]
-    then
-        BUILD_ARGS="-DDEP_WX_GTK3=ON"
-    fi
-    if [[ -n "$BUILD_DEBUG" ]]
-    then
-        # have to build deps with debug & release or the cmake won't find everything it needs
-        mkdir deps/build/release
-        pushd deps/build/release
-            echo -e "cmake ../.. -DDESTDIR=\"../destdir\" $BUILD_ARGS"
-            cmake ../.. -DDESTDIR="../destdir" $BUILD_ARGS
-            make -j$NCORES
-        popd
-        BUILD_ARGS="${BUILD_ARGS} -DCMAKE_BUILD_TYPE=Debug"
-    fi
-    
-    # cmake deps
-    pushd deps/build
-        echo "cmake .. $BUILD_ARGS"
-        cmake .. $BUILD_ARGS
-        echo "done"
-        
-        # make deps
-        echo "[4/9] Building dependencies..."
-        make deps -j$NCORES
-        echo "done"
-
-        # rename wxscintilla # TODO: DeftDawg: Does GalaxySlicer need this?
-         echo "[5/9] Renaming wxscintilla library..."
-         pushd destdir/usr/local/lib
-             if [[ -z "$FOUND_GTK3_DEV" ]]
-             then
-                 cp libwxscintilla-3.1.a libwx_gtk2u_scintilla-3.1.a
-             else
-                 cp libwxscintilla-3.1.a libwx_gtk3u_scintilla-3.1.a
-             fi
-         popd
-         echo "done"
-
-        # FIXME: only clean deps if compiling succeeds; otherwise reruns waste tonnes of time!
-        # clean deps
-        # echo "[6/9] Cleaning dependencies..."
-        # rm -rf dep_*
-    popd
-    echo "done"
+echo "[3/9] Configuring dependencies..."
+BUILD_ARGS=""
+if [[ -n "$FOUND_GTK3_DEV" ]]
+then
+    BUILD_ARGS="-DDEP_WX_GTK3=ON"
 fi
+if [[ -n "$BUILD_DEBUG" ]]
+then
+    # have to build deps with debug & release or the cmake won't find everything it needs
+    mkdir deps/build/release
+    pushd deps/build/release
+        echo -e "cmake../.. -DDESTDIR=\"../destdir\" $BUILD_ARGS"
+        cmake../.. -DDESTDIR="../destdir" $BUILD_ARGS -Wno-dev
+        make -j$NCORES
+    popd
+    BUILD_ARGS="${BUILD_ARGS} -DCMAKE_BUILD_TYPE=Debug"
+fi
+
+# cmake deps
+pushd deps/build
+    echo "cmake.. $BUILD_ARGS"
+    cmake.. $BUILD_ARGS -Wno-dev
+    echo "done"
+
+    # make deps
+    echo "[4/9] Building dependencies..."
+    make deps -j$NCORES
+    echo "done"
+
+    # rename wxscintilla # TODO: DeftDawg: Does GalaxySlicer need this?
+     echo "[5/9] Renaming wxscintilla library..."
+     pushd destdir/usr/local/lib
+         if [[ -z "$FOUND_GTK3_DEV" ]]
+         then
+             cp libwxscintilla-3.1.a libwx_gtk2u_scintilla-3.1.a
+         else
+             cp libwxscintilla-3.1.a libwx_gtk3u_scintilla-3.1.a
+         fi
+     popd
+     echo "done"
+
+    # FIXME: only clean deps if compiling succeeds; otherwise reruns waste tonnes of time!
+    # clean deps
+    # echo "[6/9] Cleaning dependencies..."
+    # rm -rf dep_*
+popd
+echo "done"
 
 # Create main "build" directory
 if [ ! -d "build" ]

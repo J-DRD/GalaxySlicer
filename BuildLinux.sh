@@ -185,16 +185,16 @@ then
         echo "done"
 
         # rename wxscintilla # TODO: DeftDawg: Does GalaxySlicer need this?
-        # echo "[5/9] Renaming wxscintilla library..."
-        # pushd destdir/usr/local/lib
-        #     if [[ -z "$FOUND_GTK3_DEV" ]]
-        #     then
-        #         cp libwxscintilla-3.1.a libwx_gtk2u_scintilla-3.1.a
-        #     else
-        #         cp libwxscintilla-3.1.a libwx_gtk3u_scintilla-3.1.a
-        #     fi
-        # popd
-        # echo "done"
+         echo "[5/9] Renaming wxscintilla library..."
+         pushd destdir/usr/local/lib
+             if [[ -z "$FOUND_GTK3_DEV" ]]
+             then
+                 cp libwxscintilla-3.1.a libwx_gtk2u_scintilla-3.1.a
+             else
+                 cp libwxscintilla-3.1.a libwx_gtk3u_scintilla-3.1.a
+             fi
+         popd
+         echo "done"
 
         # FIXME: only clean deps if compiling succeeds; otherwise reruns waste tonnes of time!
         # clean deps
@@ -239,17 +239,20 @@ then
     echo "done"
 fi
 
-if [[ -e $ROOT/build/src/BuildLinuxImage.sh ]]; then
+if [[ -e /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh ]]; then
 # Give proper permissions to script
-chmod 755 $ROOT/build/src/BuildLinuxImage.sh
+chmod 755 /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh
+#chmod 755 $ROOT/build/src/BuildLinuxImage.sh
 
 echo "[9/9] Generating Linux app..."
     pushd build
         if [[ -n "$BUILD_IMAGE" ]]
         then
-            $ROOT/build/src/BuildLinuxImage.sh -i
+            bash /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh -i
+            #$ROOT/build/src/BuildLinuxImage.sh -i
         else
-            $ROOT/build/src/BuildLinuxImage.sh
+            bash /workspaces/GalaxySlicer/build/src/BuildLinuxImage.sh
+            #$ROOT/build/src/BuildLinuxImage.sh
         fi
     popd
 echo "done"

@@ -185,25 +185,25 @@ pushd deps/build
     echo "done"
 
     # rename wxscintilla # TODO: DeftDawg: Does GalaxySlicer need this?
-     echo "[5/9] Renaming wxscintilla library..."
-     pushd destdir/usr/local/lib
-         if [[ -z "$FOUND_GTK3_DEV" ]]
-         then
-             cp libwxscintilla-3.1.a libwx_gtk2u_scintilla-3.1.a
-         else
-             cp libwxscintilla-3.1.a libwx_gtk3u_scintilla-3.1.a
-         fi
-     popd
-     echo "done"
+    # echo "[5/9] Renaming wxscintilla library..."
+    # pushd destdir/usr/local/lib
+    #     if [[ -z "$FOUND_GTK3_DEV" ]]
+    #     then
+    #         cp libwxscintilla-3.1.a libwx_gtk2u_scintilla-3.1.a
+    #     else
+    #         cp libwxscintilla-3.1.a libwx_gtk3u_scintilla-3.1.a
+    #     fi
+    # popd
+     #echo "done"
 fi    
 
     # FIXME: only clean deps if compiling succeeds; otherwise reruns waste tonnes of time!
     # clean deps
     # echo "[6/9] Cleaning dependencies..."
     # rm -rf dep_*
-popd
-echo "done"
-fi
+#popd
+#echo "done"
+#fi
 
 # Create main "build" directory
 if [ ! -d "build" ]

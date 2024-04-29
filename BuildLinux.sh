@@ -166,8 +166,8 @@ then
     # have to build deps with debug & release or the cmake won't find everything it needs
     mkdir deps/build/release
     pushd deps/build/release
-        echo -e "cmake../.. -DDESTDIR=\"../destdir\" $BUILD_ARGS"
-        cmake../.. -DDESTDIR="../destdir" $BUILD_ARGS -Wno-dev
+        echo -e "cmake ../.. -DDESTDIR=\"../destdir\" $BUILD_ARGS"
+        cmake ../.. -DDESTDIR="../destdir" $BUILD_ARGS -Wno-dev
         make -j$NCORES
     popd
     BUILD_ARGS="${BUILD_ARGS} -DCMAKE_BUILD_TYPE=Debug"
@@ -175,8 +175,8 @@ fi
 
 # cmake deps
 pushd deps/build
-    echo "cmake.. $BUILD_ARGS"
-    cmake.. $BUILD_ARGS -Wno-dev
+    echo "cmake .. $BUILD_ARGS"
+    cmake .. $BUILD_ARGS -Wno-dev
     echo "done"
 
     # make deps

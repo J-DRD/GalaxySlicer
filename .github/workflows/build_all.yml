@@ -40,7 +40,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
 
@@ -135,8 +135,24 @@ jobs:
           - os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
+    
       - name: Checkout
         uses: actions/checkout@v3
+            
+      - name: Prepare the system
+        run: |
+          sudo apt-get update
+          sudo apt-get upgrade -y
+          sudo apt-get install -y cmake git build-essential libunwind-dev libgstreamer1.0-dev
+
+      - name: Install additional dependencies
+        run: |
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-dev wayland-protocols extra-cmake-modules pkgconf libgtk-3-dev libsoup2.4-dev libwebkit2gtk-4.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev gstreamer1.0-plugins-bad
+
+      - name: Fix and clean up broken installations
+        run: |
+          sudo apt-get -f install
+          sudo apt-get autoremove
 
       - name: Build on Ubuntu
         if: matrix.os == 'ubuntu-latest'

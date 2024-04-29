@@ -1,27 +1,15 @@
 on:
-    workflow_call:
-      inputs:
-        cache-key:
-          required: true
-          type: string
-        cache-path:
-          required: true
-          type: string
-        os:
-          required: true
-          type: string
-        arch:
-          required: false
-          type: string
+push:
+    - master
 
 jobs:
   build_orca:
     name: Build GalaxySlicer
     runs-on: ${{ inputs.os }}
     env:
-      date:
-      ver:
-      ver_pure:
+      date: '20240429'
+      ver: 0.1
+      ver_pure: 100
 
     steps:
       - name: Checkout

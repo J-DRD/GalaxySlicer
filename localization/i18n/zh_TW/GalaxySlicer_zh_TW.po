@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-23 16:42+0100\n"
+"POT-Creation-Date: 2024-01-28 12:43+0100\n"
 "PO-Revision-Date: 2023-11-06 14:37+0800\n"
 "Last-Translator: ablegods <ablegods@gmail.com>\n"
 "Language-Team: \n"
@@ -217,6 +217,9 @@ msgstr "mm"
 msgid "Position"
 msgstr "位置"
 
+#. TRN - Input label. Be short as possible
+#. Angle between Y axis and text line direction.
+#. TRN - Input label. Be short as possible
 msgid "Rotation"
 msgstr "旋轉"
 
@@ -256,6 +259,7 @@ msgstr "世界坐標"
 msgid "°"
 msgstr "°"
 
+#. TRN - Input label. Be short as possible
 msgid "Size"
 msgstr "尺寸"
 
@@ -264,6 +268,114 @@ msgstr "%"
 
 msgid "uniform scale"
 msgstr "等比例縮放"
+
+msgid "Planar"
+msgstr ""
+
+msgid "Dovetail"
+msgstr ""
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Manual"
+msgstr ""
+
+msgid "Plug"
+msgstr "插銷"
+
+msgid "Dowel"
+msgstr "銷釘"
+
+msgid "Snap"
+msgstr ""
+
+msgid "Prism"
+msgstr ""
+
+msgid "Frustum"
+msgstr "錐體"
+
+msgid "Square"
+msgstr "正方形"
+
+msgid "Hexagon"
+msgstr "六邊形"
+
+msgid "Keep orientation"
+msgstr ""
+
+#, fuzzy
+msgid "Place on cut"
+msgstr "切割面放置到列印板上"
+
+msgid "Flip upside down"
+msgstr ""
+
+msgid "Connectors"
+msgstr "連接件"
+
+msgid "Type"
+msgstr "類型"
+
+msgid "Style"
+msgstr "樣式"
+
+msgid "Shape"
+msgstr "形狀"
+
+#. TRN - Input label. Be short as possible
+#. Size in emboss direction
+#. TRN - Input label. Be short as possible
+msgid "Depth"
+msgstr ""
+
+msgid "Groove"
+msgstr ""
+
+msgid "Width"
+msgstr "寬度"
+
+msgid "Flap Angle"
+msgstr ""
+
+msgid "Groove Angle"
+msgstr ""
+
+msgid "Part"
+msgstr "零件"
+
+msgid "Object"
+msgstr "物件"
+
+msgid ""
+"Click to flip the cut plane\n"
+"Drag to move the cut plane"
+msgstr ""
+
+msgid ""
+"Click to flip the cut plane\n"
+"Drag to move the cut plane\n"
+"Right-click a part to assign it to the other side"
+msgstr ""
+
+msgid "Move cut plane"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Change cut mode"
+msgstr ""
+
+msgid "Tolerance"
+msgstr "公差"
+
+msgid "Drag"
+msgstr "拖拉"
+
+msgid "Draw cut line"
+msgstr ""
 
 msgid "Left click"
 msgstr "左擊"
@@ -276,9 +388,6 @@ msgstr "右擊"
 
 msgid "Remove connector"
 msgstr "刪除連接件"
-
-msgid "Drag"
-msgstr "拖拉"
 
 msgid "Move connector"
 msgstr "移動連接件"
@@ -295,29 +404,63 @@ msgstr "選擇所有連接件"
 msgid "Cut"
 msgstr "剪下"
 
-msgid "non-mainifold edges be caused by cut tool, do you want to fix it now?"
+msgid "Rotate cut plane"
 msgstr ""
 
-msgid "Repairing model object"
-msgstr "修復模型物件"
+msgid "Remove connectors"
+msgstr "刪除所有連接件"
 
-msgid "Connector"
-msgstr "連接件"
+msgid "Bulge"
+msgstr ""
 
-msgid "Movement:"
-msgstr "移動："
+msgid "Bulge proportion related to radius"
+msgstr ""
 
-msgid "Movement"
-msgstr "移動"
+msgid "Space"
+msgstr "空格鍵"
 
-msgid "Height"
-msgstr "高度"
+msgid "Space proportion related to radius"
+msgstr ""
+
+msgid "Confirm connectors"
+msgstr "確認"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Build Volume"
+msgstr ""
+
+msgid "Flip cut plane"
+msgstr ""
+
+msgid "Groove change"
+msgstr ""
+
+msgid "Reset"
+msgstr "重設"
+
+#. TRN: This is an entry in the Undo/Redo stack. The whole line will be 'Edited: (name of whatever was edited)'.
+msgid "Edited"
+msgstr ""
+
+msgid "Cut position"
+msgstr ""
+
+msgid "Reset cutting plane"
+msgstr ""
 
 msgid "Edit connectors"
 msgstr "編輯連接件"
 
 msgid "Add connectors"
 msgstr "新增連接件"
+
+msgid "Reset cut"
+msgstr ""
+
+msgid "Reset cutting plane and remove connectors"
+msgstr ""
 
 msgid "Upper part"
 msgstr "上半部分"
@@ -328,9 +471,6 @@ msgstr "下半部分"
 msgid "Keep"
 msgstr "保持"
 
-msgid "Place on cut"
-msgstr "切割面放置到熱床"
-
 msgid "Flip"
 msgstr "翻轉"
 
@@ -340,50 +480,8 @@ msgstr "切割後"
 msgid "Cut to parts"
 msgstr "切割為零件"
 
-msgid "Auto Segment"
-msgstr "自動分割"
-
 msgid "Perform cut"
 msgstr "執行切割"
-
-msgid "Reset"
-msgstr "重設"
-
-msgid "Connectors"
-msgstr "連接件"
-
-msgid "Type"
-msgstr "類型"
-
-msgid "Style"
-msgstr "樣式"
-
-msgid "Shape"
-msgstr "形狀"
-
-msgid "Depth ratio"
-msgstr "深度"
-
-msgid "Remove connectors"
-msgstr "刪除所有連接件"
-
-msgid "Prizm"
-msgstr "稜柱"
-
-msgid "Frustum"
-msgstr "錐體"
-
-msgid "Square"
-msgstr "正方形"
-
-msgid "Hexagon"
-msgstr "六邊形"
-
-msgid "Confirm connectors"
-msgstr "確認"
-
-msgid "Cancel"
-msgstr "取消"
 
 msgid "Warning"
 msgstr "警告"
@@ -391,36 +489,47 @@ msgstr "警告"
 msgid "Invalid connectors detected"
 msgstr "檢測到無效連接件"
 
-msgid "connector is out of cut contour"
-msgstr "個連接件超出了切割面範圍"
+#, c-format, boost-format
+msgid "%1$d connector is out of cut contour"
+msgid_plural "%1$d connectors are out of cut contour"
+msgstr[0] ""
 
-msgid "connectors are out of cut contour"
-msgstr "個連接件超出了切割面範圍"
-
-msgid "connector is out of object"
-msgstr "個連接件穿透了模型"
-
-msgid "connectors is out of object"
-msgstr "個連接件穿透了模型"
+#, c-format, boost-format
+msgid "%1$d connector is out of object"
+msgid_plural "%1$d connectors are out of object"
+msgstr[0] ""
 
 msgid "Some connectors are overlapped"
 msgstr "存在連接件相互重疊"
 
-msgid ""
-"Invalid state. \n"
-"No one part is selected for keep after cut"
+msgid "Select at least one object to keep after cutting."
 msgstr ""
 "無效狀態。\n"
 "切割後沒有選中要保留的部分"
 
-msgid "Plug"
-msgstr "插銷"
+msgid "Cut plane is placed out of object"
+msgstr ""
 
-msgid "Dowel"
-msgstr "銷釘"
+msgid "Cut plane with groove is invalid"
+msgstr ""
 
-msgid "Tolerance"
-msgstr "容差"
+msgid "Connector"
+msgstr "連接件"
+
+msgid "Cut by Plane"
+msgstr ""
+
+msgid "non-manifold edges be caused by cut tool, do you want to fix it now?"
+msgstr ""
+
+msgid "Repairing model object"
+msgstr "修復模型物件"
+
+msgid "Cut by line"
+msgstr ""
+
+msgid "Delete connector"
+msgstr ""
 
 msgid "Mesh name"
 msgstr "Mesh名"
@@ -514,6 +623,8 @@ msgstr "退出Z縫繪製"
 msgid "Paint-on seam editing"
 msgstr "編輯手繪填縫"
 
+#. TRN - Input label. Be short as possible
+#. Select look of letter shape
 msgid "Font"
 msgstr "字體"
 
@@ -548,6 +659,655 @@ msgstr "旋轉文字"
 
 msgid "Text shape"
 msgstr "文字形狀"
+
+msgid "Set Mirror"
+msgstr ""
+
+msgid "Embossed text"
+msgstr ""
+
+msgid "Enter emboss gizmo"
+msgstr ""
+
+msgid "Leave emboss gizmo"
+msgstr ""
+
+msgid "Embossing actions"
+msgstr ""
+
+msgid "Emboss"
+msgstr ""
+
+msgid "Text-Rotate"
+msgstr ""
+
+msgid "NORMAL"
+msgstr ""
+
+msgid "SMALL"
+msgstr ""
+
+msgid "ITALIC"
+msgstr ""
+
+msgid "SWISS"
+msgstr ""
+
+msgid "MODERN"
+msgstr ""
+
+msgid "First font"
+msgstr ""
+
+msgid "Default font"
+msgstr ""
+
+msgid "Advanced"
+msgstr "高級"
+
+msgid ""
+"The text cannot be written using the selected font. Please try choosing a "
+"different font."
+msgstr ""
+
+msgid "Embossed text cannot contain only white spaces."
+msgstr ""
+
+msgid "Text contains character glyph (represented by '?') unknown by font."
+msgstr ""
+
+msgid "Text input doesn't show font skew."
+msgstr ""
+
+msgid "Text input doesn't show font boldness."
+msgstr ""
+
+msgid "Text input doesn't show gap between lines."
+msgstr ""
+
+msgid "Too tall, diminished font height inside text input."
+msgstr ""
+
+msgid "Too small, enlarged font height inside text input."
+msgstr ""
+
+msgid "Text doesn't show current horizontal alignment."
+msgstr ""
+
+msgid "Revert font changes."
+msgstr ""
+
+#, boost-format
+msgid "Font \"%1%\" can't be selected."
+msgstr ""
+
+msgid "Operation"
+msgstr ""
+
+msgid "Join"
+msgstr ""
+
+msgid "Click to change text into object part."
+msgstr ""
+
+msgid "You can't change a type of the last solid part of the object."
+msgstr ""
+
+msgctxt "EmbossOperation"
+msgid "Cut"
+msgstr ""
+
+msgid "Click to change part type into negative volume."
+msgstr ""
+
+msgid "Modifier"
+msgstr "修改器"
+
+msgid "Click to change part type into modifier."
+msgstr ""
+
+msgid "Change Text Type"
+msgstr ""
+
+#, boost-format
+msgid "Rename style(%1%) for embossing text"
+msgstr ""
+
+msgid "Name can't be empty."
+msgstr ""
+
+msgid "Name has to be unique."
+msgstr ""
+
+msgid "OK"
+msgstr "確認"
+
+msgid "Rename style"
+msgstr ""
+
+msgid "Rename current style."
+msgstr ""
+
+msgid "Can't rename temporary style."
+msgstr ""
+
+msgid "First Add style to list."
+msgstr ""
+
+#, boost-format
+msgid "Save %1% style"
+msgstr ""
+
+msgid "No changes to save."
+msgstr ""
+
+msgid "New name of style"
+msgstr ""
+
+msgid "Save as new style"
+msgstr ""
+
+msgid "Only valid font can be added to style."
+msgstr ""
+
+msgid "Add style to my list."
+msgstr ""
+
+msgid "Save as new style."
+msgstr ""
+
+msgid "Remove style"
+msgstr ""
+
+msgid "Can't remove the last existing style."
+msgstr ""
+
+#, boost-format
+msgid "Are you sure you want to permanently remove the \"%1%\" style?"
+msgstr ""
+
+#, boost-format
+msgid "Delete \"%1%\" style."
+msgstr ""
+
+#, boost-format
+msgid "Can't delete \"%1%\". It is last style."
+msgstr ""
+
+#, boost-format
+msgid "Can't delete temporary style \"%1%\"."
+msgstr ""
+
+#, boost-format
+msgid "Modified style \"%1%\""
+msgstr ""
+
+#, boost-format
+msgid "Current style is \"%1%\""
+msgstr ""
+
+#, boost-format
+msgid ""
+"Changing style to \"%1%\" will discard current style modification.\n"
+"\n"
+"Would you like to continue anyway?"
+msgstr ""
+
+msgid "Not valid style."
+msgstr ""
+
+#, boost-format
+msgid "Style \"%1%\" can't be used and will be removed from a list."
+msgstr ""
+
+msgid "Unset italic"
+msgstr ""
+
+msgid "Set italic"
+msgstr ""
+
+msgid "Unset bold"
+msgstr ""
+
+msgid "Set bold"
+msgstr ""
+
+msgid "Revert text size."
+msgstr ""
+
+msgid "Revert embossed depth."
+msgstr ""
+
+msgid ""
+"Advanced options cannot be changed for the selected font.\n"
+"Select another font."
+msgstr ""
+
+msgid "Revert using of model surface."
+msgstr ""
+
+msgid "Revert Transformation per glyph."
+msgstr ""
+
+msgid "Set global orientation for whole text."
+msgstr ""
+
+msgid "Set position and orientation per glyph."
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Left"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Center"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Right"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Top"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Middle"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Bottom"
+msgstr ""
+
+msgid "Revert alignment."
+msgstr ""
+
+#. TRN EmbossGizmo: font units
+msgid "points"
+msgstr ""
+
+msgid "Revert gap between characters"
+msgstr ""
+
+msgid "Distance between characters"
+msgstr ""
+
+msgid "Revert gap between lines"
+msgstr ""
+
+msgid "Distance between lines"
+msgstr ""
+
+msgid "Undo boldness"
+msgstr ""
+
+msgid "Tiny / Wide glyphs"
+msgstr ""
+
+msgid "Undo letter's skew"
+msgstr ""
+
+msgid "Italic strength ratio"
+msgstr ""
+
+msgid "Undo translation"
+msgstr ""
+
+msgid "Distance of the center of the text to the model surface."
+msgstr ""
+
+msgid "Undo rotation"
+msgstr ""
+
+msgid "Rotate text Clock-wise."
+msgstr ""
+
+msgid "Unlock the text's rotation when moving text along the object's surface."
+msgstr ""
+
+msgid "Lock the text's rotation when moving text along the object's surface."
+msgstr ""
+
+msgid "Select from True Type Collection."
+msgstr ""
+
+msgid "Set text to face camera"
+msgstr ""
+
+msgid "Orient the text towards the camera."
+msgstr ""
+
+#, boost-format
+msgid ""
+"Can't load exactly same font(\"%1%\"). Aplication selected a similar "
+"one(\"%2%\"). You have to specify font for enable edit text."
+msgstr ""
+
+msgid "No symbol"
+msgstr ""
+
+msgid "Loading"
+msgstr "載入中"
+
+msgid "In queue"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Height of one text line - Font Ascent
+msgid "Height"
+msgstr "高度"
+
+#. TRN - Input label. Be short as possible
+#. Copy surface of model on surface of the embossed text
+#. TRN - Input label. Be short as possible
+msgid "Use surface"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Option to change projection on curved surface
+#. for each character(glyph) in text separately
+msgid "Per glyph"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Align Top|Middle|Bottom and Left|Center|Right
+msgid "Alignment"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Char gap"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Line gap"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Boldness"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Like Font italic
+msgid "Skew ratio"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Distance from model surface to be able
+#. move text as part fully into not flat surface
+#. move text as modifier fully out of not flat surface
+#. TRN - Input label. Be short as possible
+msgid "From surface"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Keep vector from bottom to top of text aligned with printer Y axis
+msgid "Keep up"
+msgstr ""
+
+#. TRN - Input label. Be short as possible.
+#. Some Font file contain multiple fonts inside and
+#. this is numerical selector of font inside font collections
+msgid "Collection"
+msgstr ""
+
+msgid "Enter SVG gizmo"
+msgstr ""
+
+msgid "Leave SVG gizmo"
+msgstr ""
+
+msgid "SVG actions"
+msgstr ""
+
+msgid "SVG"
+msgstr ""
+
+#. TRN This is an item label in the undo-redo stack.
+msgid "SVG-Rotate"
+msgstr ""
+
+#, boost-format
+msgid "Opacity (%1%)"
+msgstr ""
+
+#, boost-format
+msgid "Color gradient (%1%)"
+msgstr ""
+
+msgid "Undefined fill type"
+msgstr ""
+
+msgid "Linear gradient"
+msgstr ""
+
+msgid "Radial gradient"
+msgstr ""
+
+msgid "Open filled path"
+msgstr ""
+
+msgid "Undefined stroke type"
+msgstr ""
+
+msgid "Path can't be healed from selfintersection and multiple points."
+msgstr ""
+
+msgid ""
+"Final shape constains selfintersection or multiple points with same "
+"coordinate."
+msgstr ""
+
+#, boost-format
+msgid "Shape is marked as invisible (%1%)."
+msgstr ""
+
+#. TRN: The first placeholder is shape identifier, the second one is text describing the problem.
+#, boost-format
+msgid "Fill of shape (%1%) contains unsupported: %2%."
+msgstr ""
+
+#, boost-format
+msgid "Stroke of shape (%1%) is too thin (minimal width is %2% mm)."
+msgstr ""
+
+#, boost-format
+msgid "Stroke of shape (%1%) contains unsupported: %2%."
+msgstr ""
+
+msgid "Face the camera"
+msgstr ""
+
+#. TRN - Preview of filename after clear local filepath.
+msgid "Unknown filename"
+msgstr ""
+
+#, boost-format
+msgid "SVG file path is \"%1%\""
+msgstr ""
+
+msgid "Reload SVG file from disk."
+msgstr ""
+
+msgid "Change file"
+msgstr ""
+
+msgid "Change to another .svg file"
+msgstr ""
+
+msgid "Forget the file path"
+msgstr ""
+
+msgid ""
+"Do NOT save local path to 3MF file.\n"
+"Also disables 'reload from disk' option."
+msgstr ""
+
+#. TRN: An menu option to convert the SVG into an unmodifiable model part.
+msgid "Bake"
+msgstr ""
+
+#. TRN: Tooltip for the menu item.
+msgid "Bake into model as uneditable part"
+msgstr ""
+
+msgid "Save as"
+msgstr ""
+
+msgid "Save SVG file"
+msgstr ""
+
+msgid "Save as '.svg' file"
+msgstr ""
+
+msgid "Size in emboss direction."
+msgstr ""
+
+#. TRN: The placeholder contains a number.
+#, boost-format
+msgid "Scale also changes amount of curve samples (%1%)"
+msgstr ""
+
+msgid "Width of SVG."
+msgstr ""
+
+msgid "Height of SVG."
+msgstr ""
+
+msgid "Lock/unlock the aspect ratio of the SVG."
+msgstr ""
+
+msgid "Reset scale"
+msgstr ""
+
+msgid "Resize"
+msgstr ""
+
+msgid "Distance of the center of the SVG to the model surface."
+msgstr ""
+
+msgid "Reset distance"
+msgstr ""
+
+msgid "Reset rotation"
+msgstr ""
+
+msgid "Lock/unlock rotation angle when dragging above the surface."
+msgstr ""
+
+msgid "Mirror vertically"
+msgstr ""
+
+msgid "Mirror horizontally"
+msgstr ""
+
+#. TRN: This is the name of the action that shows in undo/redo stack (changing part type from SVG to something else).
+msgid "Change SVG Type"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Mirror"
+msgstr "鏡像"
+
+msgid "Choose SVG file for emboss:"
+msgstr ""
+
+#, boost-format
+msgid "File does NOT exist (%1%)."
+msgstr ""
+
+#, boost-format
+msgid "Filename has to end with \".svg\" but you selected %1%"
+msgstr ""
+
+#, boost-format
+msgid "Nano SVG parser can't load from file (%1%)."
+msgstr ""
+
+#, boost-format
+msgid "SVG file does NOT contain a single path to be embossed (%1%)."
+msgstr ""
+
+msgid "Vertex"
+msgstr ""
+
+msgid "Edge"
+msgstr ""
+
+msgid "Plane"
+msgstr ""
+
+msgid "Point on edge"
+msgstr ""
+
+msgid "Point on circle"
+msgstr ""
+
+msgid "Point on plane"
+msgstr ""
+
+msgid "Center of edge"
+msgstr ""
+
+msgid "Center of circle"
+msgstr ""
+
+msgid "ShiftLeft mouse button"
+msgstr ""
+
+msgid "Select feature"
+msgstr ""
+
+msgid "Select point"
+msgstr ""
+
+msgid "Delete"
+msgstr "刪除"
+
+msgid "Restart selection"
+msgstr ""
+
+msgid "Esc"
+msgstr ""
+
+msgid "Unselect"
+msgstr ""
+
+msgid "Measure"
+msgstr ""
+
+msgid "Edit to scale"
+msgstr ""
+
+msgctxt "Verb"
+msgid "Scale"
+msgstr ""
+
+msgid "None"
+msgstr "無"
+
+msgid "Diameter"
+msgstr "直徑"
+
+msgid "Length"
+msgstr "長度"
+
+msgid "Selection"
+msgstr ""
+
+msgid "Copy to clipboard"
+msgstr "複製到剪貼簿"
+
+msgid "Perpendicular distance"
+msgstr ""
+
+msgid "Distance"
+msgstr ""
+
+msgid "Direct distance"
+msgstr ""
+
+msgid "Distance XYZ"
+msgstr ""
 
 msgid "Ctrl+"
 msgstr "Ctrl+"
@@ -614,6 +1374,9 @@ msgstr "嚴重錯誤"
 #, boost-format
 msgid "GalaxySlicer got an unhandled exception: %1%"
 msgstr "GalaxySlicer 捕捉到一個未處理的異常：%1%"
+
+msgid "Untitled"
+msgstr "未命名"
 
 msgid "Downloading Bambu Network Plug-in"
 msgstr "正在下載Bambu網路插件"
@@ -725,9 +1488,6 @@ msgstr ""
 msgid "Sync user presets"
 msgstr ""
 
-msgid "Loading"
-msgstr "載入中"
-
 msgid "Loading user preset"
 msgstr "正在載入用戶預設"
 
@@ -757,9 +1517,6 @@ msgstr "選擇一個G-code文件："
 
 msgid "Import File"
 msgstr "匯入文件"
-
-msgid "Delete"
-msgstr "刪除"
 
 msgid "Choose files"
 msgstr "選擇文件"
@@ -831,9 +1588,6 @@ msgstr "擦除選項"
 msgid "Bed adhension"
 msgstr "熱床黏接"
 
-msgid "Advanced"
-msgstr "高級"
-
 msgid "Add part"
 msgstr "新增部件"
 
@@ -900,8 +1654,8 @@ msgstr "圓盤"
 msgid "Torus"
 msgstr ""
 
-msgid "Orca Cube"
-msgstr "Orca逆方塊"
+msgid "Galaxy Cube"
+msgstr "Galaxy方塊"
 
 msgid "3DBenchy"
 msgstr "測試小船"
@@ -915,16 +1669,10 @@ msgstr "Voron方塊"
 msgid "Stanford Bunny"
 msgstr ""
 
-msgid "Galaxy Cube"
-msgstr "Galaxy方塊"
-
 msgid "Galaxy Flower"
 msgstr "Galaxy花"
 
 msgid "Text"
-msgstr ""
-
-msgid "SVG"
 msgstr ""
 
 msgid "Height range Modifier"
@@ -1053,9 +1801,6 @@ msgstr "沿 Z 軸"
 
 msgid "Mirror along the Z axis"
 msgstr "沿Z軸鏡像"
-
-msgid "Mirror"
-msgstr "鏡像"
 
 msgid "Mirror object"
 msgstr "鏡像對象"
@@ -1315,12 +2060,6 @@ msgstr "高度範圍"
 msgid "Settings for height range"
 msgstr "高度範圍設定"
 
-msgid "Object"
-msgstr "對象"
-
-msgid "Part"
-msgstr "零件"
-
 msgid "Layer"
 msgstr "層"
 
@@ -1341,9 +2080,6 @@ msgstr "不允許修改對象中最後一個實體零件的類型。"
 
 msgid "Negative Part"
 msgstr "負零件"
-
-msgid "Modifier"
-msgstr "修改器"
 
 msgid "Support Blocker"
 msgstr "支撐去除器"
@@ -1415,9 +2151,6 @@ msgstr "填充密度(%)"
 
 msgid "Auto Brim"
 msgstr "自動Brim"
-
-msgid "Auto"
-msgstr "自動"
 
 msgid "Mouse ear"
 msgstr "圓盤"
@@ -1493,9 +2226,6 @@ msgstr "自訂 G-code"
 
 msgid "Enter Custom G-code used on current layer:"
 msgstr "輸入當前層上使用的自訂G-code："
-
-msgid "OK"
-msgstr "確認"
 
 msgid "Jump to Layer"
 msgstr "跳轉到層"
@@ -2339,9 +3069,6 @@ msgstr "計劃上傳到 `%1%`。請參閱視窗-> 列印主機上傳隊列"
 msgid "Origin"
 msgstr "原點"
 
-msgid "Diameter"
-msgstr "直徑"
-
 msgid "Size in X and Y of the rectangular plate."
 msgstr "矩形框在 X 和 Y 方向的尺寸。"
 
@@ -2882,6 +3609,9 @@ msgstr "時間"
 msgid "Percent"
 msgstr "百分比"
 
+msgid "Used filament"
+msgstr "使用的線材"
+
 msgid "Layer Height (mm)"
 msgstr "層高（mm）"
 
@@ -2899,9 +3629,6 @@ msgstr "溫度（℃）"
 
 msgid "Volumetric flow rate (mm³/s)"
 msgstr "體積流量速度（mm³/s）"
-
-msgid "Used filament"
-msgstr "使用的線材"
 
 msgid "Travel"
 msgstr "空駛"
@@ -3200,6 +3927,15 @@ msgstr "開啟直播"
 
 msgid "Resolution"
 msgstr "解析度"
+
+msgid "Enable"
+msgstr "開啟"
+
+msgid "Hostname or IP"
+msgstr ""
+
+msgid "Custom camera source"
+msgstr ""
 
 msgid "Show \"Live Video\" guide page."
 msgstr "顯示\"直播影片串流\"指南"
@@ -3652,6 +4388,12 @@ msgid_plural ""
 "There are %d configs imported. (Only non-system and compatible configs)"
 msgstr[0] "共匯入 %d 組預設（僅包含非系統且與當前配置相容的預設）"
 
+msgid ""
+"\n"
+"Hint: Make sure you have added the corresponding printer before importing "
+"the configs."
+msgstr ""
+
 msgid "Import result"
 msgstr "匯入結果"
 
@@ -3847,7 +4589,7 @@ msgid ""
 "The .gcode.3mf file contains no G-code data.Please slice it with "
 "GalaxySlicer and export a new .gcode.3mf file."
 msgstr ""
-".gcode.3mf文件中不包含 G-code 數據。請使用 Bambu Studio 進行切片並匯出新的."
+".gcode.3mf文件中不包含 G-code 數據。請使用 Galaxy Slicer 進行切片並匯出新的."
 "gcode.3mf文件。"
 
 #, c-format, boost-format
@@ -3975,6 +4717,9 @@ msgstr "SD卡"
 
 msgid "Camera Setting"
 msgstr "攝影機設置"
+
+msgid "Switch Camera View"
+msgstr ""
 
 msgid "Control"
 msgstr "控制"
@@ -4423,11 +5168,11 @@ msgstr "解鎖列印板"
 msgid "Lock current plate"
 msgstr "鎖定列印板"
 
+msgid "Edit current plate name"
+msgstr ""
+
 msgid "Customize current plate"
 msgstr "自訂列印板設定"
-
-msgid "Untitled"
-msgstr "未命名"
 
 #, boost-format
 msgid " plate %1%:"
@@ -5032,6 +5777,9 @@ msgstr "登錄區域"
 
 msgid "Stealth Mode"
 msgstr "區域網路模式"
+
+msgid "Check for stable updates only"
+msgstr ""
 
 msgid "Metric"
 msgstr "公制"
@@ -5873,6 +6621,11 @@ msgstr ""
 "0頂層z距離，0接觸層間距，同心圖案，並且禁用獨立支撐層高"
 
 msgid ""
+"Layer height is too small.\n"
+"It will set to min_layer_height\n"
+msgstr ""
+
+msgid ""
 "Layer height exceeds the limit in Printer Settings -> Extruder -> Layer "
 "height limits ,this may cause printing quality issues."
 msgstr ""
@@ -5908,6 +6661,9 @@ msgid "Wall generator"
 msgstr "牆生成器"
 
 msgid "Walls and surfaces"
+msgstr ""
+
+msgid "Small Area Infill Flow Compensation (experimental)"
 msgstr ""
 
 msgid "Bridging"
@@ -6363,11 +7119,29 @@ msgstr "常規"
 msgid "Capabilities"
 msgstr "能力"
 
+msgid "Show all presets (including incompatible)"
+msgstr "顯示所有預設(包括不相容的)"
+
 msgid "Select presets to compare"
 msgstr "選擇要比較的預設"
 
-msgid "Show all presets (including incompatible)"
-msgstr "顯示所有預設(包括不相容的)"
+msgid ""
+"You can only transfer to current active profile because it has been modified."
+msgstr ""
+
+msgid ""
+"Transfer the selected options from left preset to the right.\n"
+"Note: New modified presets will be selected in settings tabs after close "
+"this dialog."
+msgstr ""
+
+msgid "Transfer values from left to right"
+msgstr ""
+
+msgid ""
+"If enabled, this dialog can be used for transver selected values from left "
+"to right preset."
+msgstr ""
 
 msgid "Add File"
 msgstr "新增文件"
@@ -6381,6 +7155,9 @@ msgstr "封面"
 #, boost-format
 msgid "The name \"%1%\" already exists."
 msgstr "名字\"%1%\"已經存在。"
+
+msgid "Back"
+msgstr "背面"
 
 msgid "Basic Info"
 msgstr "基本資訊"
@@ -6492,8 +7269,8 @@ msgid "Flushing volumes for filament change"
 msgstr "線材更換時的沖刷體積"
 
 msgid ""
-"Studio would re-calculate your flushing volumes everytime the filaments "
-"color changed. You could disable the auto-calculate in Bambu Studio > "
+"Galaxy would re-calculate your flushing volumes everytime the filaments "
+"color changed. You could disable the auto-calculate in GalaxySlicer  > "
 "Preferences"
 msgstr ""
 
@@ -6555,9 +7332,6 @@ msgstr ""
 
 msgid "Ctrl+Shift+G"
 msgstr ""
-
-msgid "Copy to clipboard"
-msgstr "複製到剪貼板"
 
 msgid "Paste from clipboard"
 msgstr "從剪切板黏貼"
@@ -6669,9 +7443,6 @@ msgstr "Shift+方向鍵"
 msgid "Movement step set to 1 mm"
 msgstr "沿X、Y軸以1mm為步進移動對象"
 
-msgid "Esc"
-msgstr ""
-
 msgid "keyboard 1-9: set filament for object/part"
 msgstr "按鍵1-9：設置對象/零件的線材"
 
@@ -6720,7 +7491,16 @@ msgstr "SLA支撐點"
 msgid "Gizmo FDM paint-on seam"
 msgstr "FDM塗裝接縫"
 
-msgid "Swtich between Prepare/Prewview"
+msgid "Gizmo Text emboss / engrave"
+msgstr ""
+
+msgid "Zoom in"
+msgstr ""
+
+msgid "Zoom out"
+msgstr ""
+
+msgid "Switch between Prepare/Preview"
 msgstr "在準備/預覽模式之中切換"
 
 msgid "Plater"
@@ -6755,9 +7535,6 @@ msgstr "設置對象、零件使用的擠出機編號"
 
 msgid "Delete objects, parts, modifiers  "
 msgstr "刪除對象、零件、修改器"
-
-msgid "Space"
-msgstr "空格鍵"
 
 msgid "Select the object/part and press space to change the name"
 msgstr "選中對象、零件，按空格可修改名稱"
@@ -6913,7 +7690,7 @@ msgstr ""
 msgid ""
 "The firmware version is abnormal. Repairing and updating are required before "
 "printing. Do you want to update now? You can also update later on printer or "
-"update next time starting the studio."
+"update next time starting the GalaxySlicer."
 msgstr ""
 "當前韌體版本異常，需要進行修復升級，否則無法繼續列印。你想現在就開始升級嗎？"
 "你也可以稍後在３Ｄ列印機上升級，或者下一次啟動studio再升級。"
@@ -7411,11 +8188,11 @@ msgid "Hostname, IP or URL"
 msgstr "主機名，IP或者URL"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field should contain "
-"the hostname, IP address or URL of the printer host instance. Print host "
-"behind HAProxy with basic auth enabled can be accessed by putting the user "
-"name and password into the URL in the following format: https://username:"
-"password@your-octopi-address/"
+"GalaxySlicer can upload G-code files to a printer host. This field should "
+"contain the hostname, IP address or URL of the printer host instance. Print "
+"host behind HAProxy with basic auth enabled can be accessed by putting the "
+"user name and password into the URL in the following format: https://"
+"username:password@your-octopi-address/"
 msgstr ""
 "Slic3r可以將G-code文件上傳到３Ｄ列印機主機。此欄位應包含３Ｄ列印機主機實例的"
 "主機名、IP位址或URL。啟用基本身份驗證的Print host可以透過將使用者名稱和密碼放"
@@ -7432,8 +8209,8 @@ msgid "API Key / Password"
 msgstr "API Key / 密碼"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field should contain "
-"the API Key or the password required for authentication."
+"GalaxySlicer can upload G-code files to a printer host. This field should "
+"contain the API Key or the password required for authentication."
 msgstr ""
 "Slic3r可以將G-code文件上傳到３Ｄ列印機主機。此欄位應包含用於身份驗證的API金鑰"
 "或密碼。"
@@ -7594,6 +8371,29 @@ msgstr ""
 "這能夠避免當層高很小時，底部殼體過薄。0表示關閉這個設置，同時底部殼體的厚度完"
 "全由底部殼體層數決定"
 
+msgid "Apply gap fill"
+msgstr ""
+
+msgid ""
+"Enables gap fill for the selected surfaces. The minimum gap length that will "
+"be filled can be controlled from the filter out tiny gaps option below.\n"
+"\n"
+"Options:\n"
+"1. Everywhere: Applies gap fill to top, bottom and internal solid surfaces\n"
+"2. Top and Bottom surfaces: Applies gap fill to top and bottom surfaces "
+"only\n"
+"3. Nowhere: Disables gap fill\n"
+msgstr ""
+
+msgid "Everywhere"
+msgstr ""
+
+msgid "Top and bottom surfaces"
+msgstr ""
+
+msgid "Nowhere"
+msgstr ""
+
 msgid "Force cooling for overhang and bridge"
 msgstr "懸垂/橋接強制冷卻"
 
@@ -7701,7 +8501,7 @@ msgid ""
 "value. This can be useful to not let the 'one perimeter on top' trigger on "
 "surface that should be covered only by perimeters. This value can be a mm or "
 "a % of the perimeter extrusion width.\n"
-"Warning: If enabled, artifacts can be created is you have some thin features "
+"Warning: If enabled, artifacts can be created if you have some thin features "
 "on the next layer, like letters. Set this setting to 0 to remove these "
 "artifacts."
 msgstr ""
@@ -7753,6 +8553,23 @@ msgid ""
 "For this setting to be the most effective, it is recomended to set the "
 "Reverse Threshold to 0 so that all internal walls print in alternating "
 "directions on odd layers irrespective of their overhang degree."
+msgstr ""
+
+msgid "Bridge counterbole holes"
+msgstr ""
+
+msgid ""
+"This option creates bridges for counterbore holes, allowing them to be "
+"printed without support. Available modes include:\n"
+"1. None: No bridge is created.\n"
+"2. Partially Bridged: Only a part of the unsupported area will be bridged.\n"
+"3. Sacrificial Layer: A full sacrificial bridge layer is created."
+msgstr ""
+
+msgid "Partially bridged"
+msgstr ""
+
+msgid "Sacrificial layer"
 msgstr ""
 
 msgid "Reverse threshold"
@@ -7886,6 +8703,15 @@ msgstr "逐層"
 msgid "By object"
 msgstr "逐件"
 
+msgid "Intra-layer order"
+msgstr ""
+
+msgid "Print order within a single layer"
+msgstr ""
+
+msgid "As object list"
+msgstr ""
+
 msgid "Slow printing down for better layer cooling"
 msgstr "降低列印速度 以得到更好的冷卻"
 
@@ -7978,6 +8804,47 @@ msgid ""
 "using large nozzles."
 msgstr ""
 
+msgid "Don't filter out small internal bridges (experimental)"
+msgstr ""
+
+msgid ""
+"This option can help reducing pillowing on top surfaces in heavily slanted "
+"or curved models.\n"
+"\n"
+"By default, small internal bridges are filtered out and the internal solid "
+"infill is printed directly over the sparse infill. This works well in most "
+"cases, speeding up printing without too much compromise on top surface "
+"quality. \n"
+"\n"
+"However, in heavily slanted or curved models especially where too low sparse "
+"infill density is used, this may result in curling of the unsupported solid "
+"infill, causing pillowing.\n"
+"\n"
+"Enabling this option will print internal bridge layer over slightly "
+"unsupported internal solid infill. The options below control the amount of "
+"filtering, i.e. the amount of internal bridges created.\n"
+"\n"
+"Disabled - Disables this option. This is the default behaviour and works "
+"well in most cases.\n"
+"\n"
+"Limited filtering - Creates internal bridges on heavily slanted surfaces, "
+"while avoiding creating uncessesary interal bridges. This works well for "
+"most difficult models.\n"
+"\n"
+"No filtering - Creates internal bridges on every potential internal "
+"overhang. This option is useful for heavily slanted top surface models. "
+"However, in most cases it creates too many unecessary bridges."
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Limited filtering"
+msgstr ""
+
+msgid "No filtering"
+msgstr ""
+
 msgid "Max bridge length"
 msgstr "最大橋接長度"
 
@@ -8013,6 +8880,18 @@ msgid ""
 "Add solid infill near sloping surfaces to guarantee the vertical shell "
 "thickness (top+bottom solid layers)"
 msgstr "在斜面表面附近增加實心填充，以保證垂直外殼厚度（頂部+底部實心層）"
+
+msgid "Further reduce solid infill on walls (experimental)"
+msgstr ""
+
+msgid ""
+"Further reduces any solid infill applied to walls. As there will be very "
+"limited infill supporting solid surfaces, make sure that you are using "
+"adequate number of walls to support the part on sloping surfaces.\n"
+"\n"
+"For heavily sloped surfaces this option is not suitable as it will generate "
+"too thin of a top layer and should be disabled."
+msgstr ""
 
 msgid "Top surface pattern"
 msgstr "頂面圖案"
@@ -8522,11 +9401,12 @@ msgstr "稀疏填充錨線長度"
 msgid ""
 "Connect an infill line to an internal perimeter with a short segment of an "
 "additional perimeter. If expressed as percentage (example: 15%) it is "
-"calculated over infill extrusion width. Slic3r tries to connect two close "
-"infill lines to a short perimeter segment. If no such perimeter segment "
-"shorter than infill_anchor_max is found, the infill line is connected to a "
-"perimeter segment at just one side and the length of the perimeter segment "
-"taken is limited to this parameter, but no longer than anchor_length_max. \n"
+"calculated over infill extrusion width. GalaxySlicer tries to connect two "
+"close infill lines to a short perimeter segment. If no such perimeter "
+"segment shorter than infill_anchor_max is found, the infill line is "
+"connected to a perimeter segment at just one side and the length of the "
+"perimeter segment taken is limited to this parameter, but no longer than "
+"anchor_length_max. \n"
 "Set this parameter to zero to disable anchoring perimeters connected to a "
 "single infill line."
 msgstr ""
@@ -8548,11 +9428,12 @@ msgstr "填充錨線的最大長度"
 msgid ""
 "Connect an infill line to an internal perimeter with a short segment of an "
 "additional perimeter. If expressed as percentage (example: 15%) it is "
-"calculated over infill extrusion width. Slic3r tries to connect two close "
-"infill lines to a short perimeter segment. If no such perimeter segment "
-"shorter than this parameter is found, the infill line is connected to a "
-"perimeter segment at just one side and the length of the perimeter segment "
-"taken is limited to infill_anchor, but no longer than this parameter. \n"
+"calculated over infill extrusion width. GalaxySlicer tries to connect two "
+"close infill lines to a short perimeter segment. If no such perimeter "
+"segment shorter than this parameter is found, the infill line is connected "
+"to a perimeter segment at just one side and the length of the perimeter "
+"segment taken is limited to infill_anchor, but no longer than this "
+"parameter. \n"
 "If set to 0, the old algorithm for infill connection will be used, it should "
 "create the same result as with 1000 & 0."
 msgstr ""
@@ -8712,9 +9593,6 @@ msgid ""
 "Randomly jitter while printing the wall, so that the surface has a rough "
 "look. This setting controls the fuzzy position"
 msgstr "列印外牆時隨機抖動，使外表面產生絨效果。這個設置決定適用的位置。"
-
-msgid "None"
-msgstr "無"
 
 msgid "Contour"
 msgstr "輪廓"
@@ -8911,6 +9789,12 @@ msgstr "３Ｄ列印機相容的G-code風格'"
 msgid "Klipper"
 msgstr ""
 
+msgid "Support multi bed types"
+msgstr ""
+
+msgid "Enable this option if you want to use multiple bed types"
+msgstr ""
+
 msgid "Label objects"
 msgstr "標註模型"
 
@@ -9079,6 +9963,22 @@ msgstr "該G-code用於暫停列印。您可以在gcode預覽中插入暫停G-co
 
 msgid "This G-code will be used as a custom code"
 msgstr "該G-code是訂製化指令"
+
+msgid "Enable Flow Compensation"
+msgstr ""
+
+msgid "Enable flow compensation for small infill areas"
+msgstr ""
+
+msgid "Flow Compensation Model"
+msgstr ""
+
+msgid ""
+"Flow Compensation Model, used to adjust the flow for small infill areas. The "
+"model is expressed as a comma separated pair of values for extrusion length "
+"and flow correction factors, one per line, in the following format: "
+"\"1.234,5.678\""
+msgstr ""
 
 msgid "Maximum speed X"
 msgstr "X最大速度"
@@ -9315,8 +10215,8 @@ msgid "Host Type"
 msgstr "主機類型"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field must contain "
-"the kind of the host."
+"GalaxySlicer can upload G-code files to a printer host. This field must "
+"contain the kind of the host."
 msgstr "Slic3r可以將G-code文件上傳到３Ｄ列印機主機。此欄位必須包含主機類型。"
 
 msgid "Nozzle volume"
@@ -9385,9 +10285,6 @@ msgid ""
 msgstr ""
 "當空駛完全在填充區域內時不觸發回抽。這意味著即使漏料也是不可見的。對於複雜模"
 "型，該設置能夠減少回抽次數以及列印時長，但是會造成G-code生成變慢"
-
-msgid "Enable"
-msgstr "開啟"
 
 msgid "Filename format"
 msgstr "檔案名格式"
@@ -9464,7 +10361,7 @@ msgid ""
 "If you want to process the output G-code through custom scripts, just list "
 "their absolute paths here. Separate multiple scripts with a semicolon. "
 "Scripts will be passed the absolute path to the G-code file as the first "
-"argument, and they can access the Slic3r config settings by reading "
+"argument, and they can access the GalaxySlicer config settings by reading "
 "environment variables."
 msgstr ""
 "如果您想透過自訂腳本處理輸出的 G-code，只需在此處列出它們的絕對路徑即可。 用"
@@ -9538,9 +10435,6 @@ msgstr "換層時回抽"
 
 msgid "Force a retraction when changes layer"
 msgstr "強制在換層時回抽。"
-
-msgid "Length"
-msgstr "長度"
 
 msgid "Retraction Length"
 msgstr "回抽長度"
@@ -9680,9 +10574,6 @@ msgstr "最近"
 msgid "Aligned"
 msgstr "對齊"
 
-msgid "Back"
-msgstr "背面"
-
 msgid "Random"
 msgstr "隨機"
 
@@ -9722,6 +10613,21 @@ msgid ""
 msgstr ""
 "為了最大限度地減少閉環擠出中接縫的可見性，在擠出機離開環之前，會向內執行一個"
 "小小的移動。"
+
+msgid "Wipe before external loop"
+msgstr ""
+
+msgid ""
+"To minimise visibility of potential overextrusion at the start of an "
+"external perimeter when printing with Outer/Inner or Inner/Outer/Inner wall "
+"print order, the deretraction is performed slightly on the inside from the "
+"start of the external perimeter. That way any potential over extrusion is "
+"hidden from the outside surface. \n"
+"\n"
+"This is useful when printing with Outer/Inner or Inner/Outer/Inner wall "
+"print order as in these modes it is more likely an external perimeter is "
+"printed immediately after a deretraction move."
+msgstr ""
 
 msgid "Wipe speed"
 msgstr "擦拭速度"
@@ -10404,9 +11310,6 @@ msgstr "清理量"
 msgid "The volume of material to prime extruder on tower."
 msgstr "擦拭塔上的清理量"
 
-msgid "Width"
-msgstr "寬度"
-
 msgid "Width of prime tower"
 msgstr "擦拭塔寬度"
 
@@ -10560,8 +11463,8 @@ msgstr "使用相對E距離"
 msgid ""
 "Relative extrusion is recommended when using \"label_objects\" option.Some "
 "extruders work better with this option unckecked (absolute extrusion mode). "
-"Wipe tower is only compatible with relative mode. It is always enabled on "
-"BambuLab printers. Default is checked"
+"Wipe tower is only compatible with relative mode. It is recommended on most "
+"printers. Default is checked"
 msgstr ""
 
 msgid ""
@@ -10735,6 +11638,242 @@ msgstr "載入自訂 G-code"
 
 msgid "Load custom gcode from json"
 msgstr "從 json 載入自訂 gcode"
+
+msgid "Current z-hop"
+msgstr ""
+
+msgid "Contains z-hop present at the beginning of the custom G-code block."
+msgstr ""
+
+msgid ""
+"Position of the extruder at the beginning of the custom G-code block. If the "
+"custom G-code travels somewhere else, it should write to this variable so "
+"PrusaSlicer knows where it travels from when it gets control back."
+msgstr ""
+
+msgid ""
+"Retraction state at the beginning of the custom G-code block. If the custom "
+"G-code moves the extruder axis, it should write to this variable so "
+"PrusaSlicer deretracts correctly when it gets control back."
+msgstr ""
+
+msgid "Extra deretraction"
+msgstr ""
+
+msgid "Currently planned extra extruder priming after deretraction."
+msgstr ""
+
+msgid "Current extruder"
+msgstr ""
+
+msgid "Zero-based index of currently used extruder."
+msgstr ""
+
+msgid "Current object index"
+msgstr ""
+
+msgid ""
+"Specific for sequential printing. Zero-based index of currently printed "
+"object."
+msgstr ""
+
+msgid "Has wipe tower"
+msgstr ""
+
+msgid "Whether or not wipe tower is being generated in the print."
+msgstr ""
+
+msgid "Initial extruder"
+msgstr ""
+
+msgid ""
+"Zero-based index of the first extruder used in the print. Same as "
+"initial_tool."
+msgstr ""
+
+msgid "Initial tool"
+msgstr ""
+
+msgid ""
+"Zero-based index of the first extruder used in the print. Same as "
+"initial_extruder."
+msgstr ""
+
+msgid "Is extruder used?"
+msgstr ""
+
+msgid "Vector of bools stating whether a given extruder is used in the print."
+msgstr ""
+
+msgid "Volume per extruder"
+msgstr ""
+
+msgid "Total filament volume extruded per extruder during the entire print."
+msgstr ""
+
+msgid "Total toolchanges"
+msgstr ""
+
+msgid "Number of toolchanges during the print."
+msgstr ""
+
+msgid "Total volume"
+msgstr ""
+
+msgid "Total volume of filament used during the entire print."
+msgstr ""
+
+msgid "Weight per extruder"
+msgstr ""
+
+msgid ""
+"Weight per extruder extruded during the entire print. Calculated from "
+"filament_density value in Filament Settings."
+msgstr ""
+
+msgid "Total weight"
+msgstr ""
+
+msgid ""
+"Total weight of the print. Calculated from filament_density value in "
+"Filament Settings."
+msgstr ""
+
+msgid "Total layer count"
+msgstr ""
+
+msgid "Number of layers in the entire print."
+msgstr ""
+
+msgid "Number of objects"
+msgstr ""
+
+msgid "Total number of objects in the print."
+msgstr ""
+
+msgid "Number of instances"
+msgstr ""
+
+msgid "Total number of object instances in the print, summed over all objects."
+msgstr ""
+
+msgid "Scale per object"
+msgstr ""
+
+msgid ""
+"Contains a string with the information about what scaling was applied to the "
+"individual objects. Indexing of the objects is zero-based (first object has "
+"index 0).\n"
+"Example: 'x:100% y:50% z:100'."
+msgstr ""
+
+msgid "Input filename without extension"
+msgstr ""
+
+msgid "Source filename of the first object, without extension."
+msgstr ""
+
+msgid ""
+"The vector has two elements: x and y coordinate of the point. Values in mm."
+msgstr ""
+
+msgid ""
+"The vector has two elements: x and y dimension of the bounding box. Values "
+"in mm."
+msgstr ""
+
+msgid "First layer convex hull"
+msgstr ""
+
+msgid ""
+"Vector of points of the first layer convex hull. Each element has the "
+"following format:'[x, y]' (x and y are floating-point numbers in mm)."
+msgstr ""
+
+msgid "Bottom-left corner of first layer bounding box"
+msgstr ""
+
+msgid "Top-right corner of first layer bounding box"
+msgstr ""
+
+msgid "Size of the first layer bounding box"
+msgstr ""
+
+msgid "Bottom-left corner of print bed bounding box"
+msgstr ""
+
+msgid "Top-right corner of print bed bounding box"
+msgstr ""
+
+msgid "Size of the print bed bounding box"
+msgstr ""
+
+msgid "Timestamp"
+msgstr ""
+
+msgid "String containing current time in yyyyMMdd-hhmmss format."
+msgstr ""
+
+msgid "Day"
+msgstr ""
+
+msgid "Hour"
+msgstr ""
+
+msgid "Minute"
+msgstr ""
+
+msgid "Print preset name"
+msgstr ""
+
+msgid "Name of the print preset used for slicing."
+msgstr ""
+
+msgid "Filament preset name"
+msgstr ""
+
+msgid ""
+"Names of the filament presets used for slicing. The variable is a vector "
+"containing one name for each extruder."
+msgstr ""
+
+msgid "Printer preset name"
+msgstr ""
+
+msgid "Name of the printer preset used for slicing."
+msgstr ""
+
+msgid "Physical printer name"
+msgstr ""
+
+msgid "Name of the physical printer used for slicing."
+msgstr ""
+
+msgid "Layer number"
+msgstr ""
+
+msgid "Index of the current layer. One-based (i.e. first layer is number 1)."
+msgstr ""
+
+msgid "Layer z"
+msgstr ""
+
+msgid ""
+"Height of the current layer above the print bed, measured to the top of the "
+"layer."
+msgstr ""
+
+msgid "Maximal layer z"
+msgstr ""
+
+msgid "Height of the last layer above the print bed."
+msgstr ""
+
+msgid "Filament extruder ID"
+msgstr ""
+
+msgid "The current extruder ID. The same as current_extruder."
+msgstr ""
 
 msgid "Error in zip archive"
 msgstr "zip文件中存在錯誤"
@@ -11737,7 +12876,7 @@ msgstr ""
 msgid ""
 "We would rename the presets as \"Vendor Type Serial @printer you "
 "selected\". \n"
-"To add preset for more prinetrs, Please go to printer selection"
+"To add preset for more printers, Please go to printer selection"
 msgstr ""
 
 msgid "Create Printer/Nozzle"
@@ -11753,9 +12892,6 @@ msgid "Create from Template"
 msgstr ""
 
 msgid "Create Based on Current Printer"
-msgstr ""
-
-msgid "wiki"
 msgstr ""
 
 msgid "Import Preset"
@@ -11930,10 +13066,10 @@ msgstr ""
 msgid "Export Configs"
 msgstr ""
 
-msgid "Printer config bundle(.bbscfg)"
+msgid "Printer config bundle(.galaxy_printer)"
 msgstr ""
 
-msgid "Filament bundle(.bbsflmt)"
+msgid "Filament bundle(.galaxy_filament)"
 msgstr ""
 
 msgid "Printer presets(.zip)"
@@ -11972,7 +13108,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Printer and all the filament&process presets that belongs to the printer. \n"
+"Printer and all the filament&&process presets that belongs to the printer. \n"
 "Can be shared with others."
 msgstr ""
 
@@ -12064,6 +13200,9 @@ msgid "Copy preset from filament"
 msgstr ""
 
 msgid "The filament choice not find filament preset, please reselect it"
+msgstr ""
+
+msgid "[Delete Required]"
 msgstr ""
 
 msgid "Edit Preset"
@@ -12292,11 +13431,31 @@ msgid ""
 "Did you know that GalaxySlicer can support Air filtration/Exhuast Fan?"
 msgstr ""
 
+#: resources/data/hints.ini: [hint:G-code window]
+msgid ""
+"G-code window\n"
+"You can turn on/off the G-code window by pressing the <b>C</b> key."
+msgstr ""
+
+#: resources/data/hints.ini: [hint:Switch workspaces]
+msgid ""
+"Switch workspaces\n"
+"You can switch between <b>Prepare</b> and <b>Preview</b> workspaces by "
+"pressing the <b>Tab</b> key."
+msgstr ""
+
 #: resources/data/hints.ini: [hint:How to use keyboard shortcuts]
 msgid ""
 "How to use keyboard shortcuts\n"
 "Did you know that Galaxy Slicer offers a wide range of keyboard shortcuts "
 "and 3D scene operations."
+msgstr ""
+
+#: resources/data/hints.ini: [hint:Reverse on odd]
+msgid ""
+"Reverse on odd\n"
+"Did you know that <b>Reverse on odd</b> feature can significantly improve "
+"the surface quality of your overhangs?"
 msgstr ""
 
 #: resources/data/hints.ini: [hint:Cut Tool]
@@ -12546,6 +13705,46 @@ msgid ""
 "ABS, appropriately increasing the heatbed temperature can reduce the "
 "probability of warping."
 msgstr ""
+
+#~ msgid "Orca Cube"
+#~ msgstr "Orca逆方塊"
+
+#~ msgid "Movement:"
+#~ msgstr "移動："
+
+#~ msgid "Movement"
+#~ msgstr "移動"
+
+#~ msgid "Auto Segment"
+#~ msgstr "自動分割"
+
+#~ msgid "Depth ratio"
+#~ msgstr "深度"
+
+#~ msgid "Prizm"
+#~ msgstr "稜柱"
+
+#~ msgid "connector is out of cut contour"
+#~ msgstr "個連接件超出了切割面範圍"
+
+#~ msgid "connectors are out of cut contour"
+#~ msgstr "個連接件超出了切割面範圍"
+
+#~ msgid "connector is out of object"
+#~ msgstr "個連接件穿透了模型"
+
+#~ msgid "connectors is out of object"
+#~ msgstr "個連接件穿透了模型"
+
+#~ msgid ""
+#~ "Invalid state. \n"
+#~ "No one part is selected for keep after cut"
+#~ msgstr ""
+#~ "無效狀態。\n"
+#~ "切割後沒有選取要保留的部分"
+
+#~ msgid "Edit Text"
+#~ msgstr "編輯文字"
 
 #~ msgid "Orca Tolerance Test"
 #~ msgstr "Galaxy 誤差測試"

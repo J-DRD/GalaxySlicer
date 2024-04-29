@@ -160,7 +160,8 @@ void GLCanvas3D::LayersEditing::select_object(const Model& model, int object_id)
     // Maximum height of an object changes when the object gets rotated or scaled.
     // Changing maximum height of an object will invalidate the layer heigth editing profile.
     // m_model_object->bounding_box() is cached, therefore it is cheap even if this method is called frequently.
-    const float new_max_z = (model_object_new == nullptr) ? 0.0f : static_cast<float>(model_object_new->bounding_box().max.z());
+    const float new_max_z = (model_object_new == nullptr) ? 0.0f : static_cast<float>(model_object_new->max_z());
+
     if (m_model_object != model_object_new || this->last_object_id != object_id || m_object_max_z != new_max_z ||
         (model_object_new != nullptr && m_model_object->id() != model_object_new->id())) {
         m_layer_height_profile.clear();
@@ -2013,7 +2014,11 @@ void GLCanvas3D::render_thumbnail(ThumbnailData& thumbnail_data, unsigned int w,
 void GLCanvas3D::render_thumbnail(ThumbnailData& thumbnail_data, unsigned int w, unsigned int h, const ThumbnailsParams& thumbnail_params,
     const GLVolumeCollection& volumes, Camera::EType camera_type, bool use_top_view, bool for_picking)
 {
-    GLShaderProgram* shader = wxGetApp().get_shader("thumbnail");
+    GLShaderProgram* shader = nullptr;
+    if (for_picking)
+        shader = wxGetApp().get_shader("flat");
+    else
+        shader = wxGetApp().get_shader("thumbnail");
     ModelObjectPtrs& model_objects = GUI::wxGetApp().model().objects;
     std::vector<ColorRGBA> colors = ::get_extruders_colors();
     switch (OpenGLManager::get_framebuffers_type())
@@ -3221,8 +3226,8 @@ void GLCanvas3D::on_char(wxKeyEvent& evt)
         //    }
         //    break;
         //}
-        //case 'I':
-        //case 'i': { _update_camera_zoom(1.0); break; }
+        case 'I':
+        case 'i': { _update_camera_zoom(1.0); break; }
         //case 'K':
         //case 'k': { wxGetApp().plater()->get_camera().select_next_type(); m_dirty = true; break; }
         //case 'L':
@@ -3234,8 +3239,8 @@ void GLCanvas3D::on_char(wxKeyEvent& evt)
             //}
             //break;
         //}
-        //case 'O':
-        //case 'o': { _update_camera_zoom(-1.0); break; }
+        case 'O':
+        case 'o': { _update_camera_zoom(-1.0); break; }
         //case 'Z':
         //case 'z': {
         //    if (!m_selection.is_empty())
@@ -5678,6 +5683,7 @@ void GLCanvas3D::render_thumbnail_internal(ThumbnailData& thumbnail_data, const 
         //if (OpenGLManager::can_multisample())
               // This flag is often ignored by NVIDIA drivers if rendering into a screen buffer.
         //    glsafe(::glDisable(GL_MULTISAMPLE));
+        shader->start_using();
 
         glsafe(::glDisable(GL_BLEND));
 
@@ -5709,8 +5715,6 @@ void GLCanvas3D::render_thumbnail_internal(ThumbnailData& thumbnail_data, const 
             const Transform3d model_matrix = vol->world_matrix();
             shader->set_uniform("view_model_matrix", view_matrix * model_matrix);
             shader->set_uniform("projection_matrix", projection_matrix);
-            const Matrix3d view_normal_matrix = view_matrix.matrix().block(0, 0, 3, 3) * model_matrix.matrix().block(0, 0, 3, 3).inverse().transpose();
-            shader->set_uniform("view_normal_matrix", view_normal_matrix); 
             vol->simple_render(shader, model_objects, extruder_colors);
             vol->is_active = is_active;
         }
@@ -6419,7 +6423,17 @@ void GLCanvas3D::_resize(unsigned int w, unsigned int h)
     m_last_w = w;
     m_last_h = h;
 
-    const float font_size = 1.5f * wxGetApp().em_unit();
+    float font_size = wxGetApp().em_unit();
+
+#ifdef _WIN32
+    // On Windows, if manually scaled here, rendering issues can occur when the system's Display
+    // scaling is greater than 300% as the font's size gets to be to large. So, use imgui font
+    // scaling instead (see: ImGuiWrapper::init_font() and issue #3401)
+    font_size *= (font_size > 30.0f) ? 1.0f : 1.5f;
+#else
+    font_size *= 1.5f;
+#endif
+
 #if ENABLE_RETINA_GL
     imgui->set_scaling(font_size, 1.0f, m_retina_helper->get_scale_factor());
 #else
@@ -7291,10 +7305,10 @@ void GLCanvas3D::_render_overlays()
 
 	auto curr_plate = wxGetApp().plater()->get_partplate_list().get_curr_plate();
     auto curr_print_seq = curr_plate->get_real_print_seq();
-    bool sequential_print = (curr_print_seq == PrintSequence::ByObject);
+    const Print* print = fff_print();
+    bool sequential_print = (curr_print_seq == PrintSequence::ByObject) || print->config().print_order == PrintOrder::AsObjectList;
     std::vector<const ModelInstance*> sorted_instances;
     if (sequential_print) {
-        const Print* print = fff_print();
         if (print) {
             for (const PrintObject *print_object : print->objects())
             {
@@ -7623,7 +7637,6 @@ void GLCanvas3D::_render_imgui_select_plate_toolbar()
     ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, scroll_col);
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, button_active);
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, button_hover);
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(128.0f, 128.0f, 128.0f, 0.0f));
 
     ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, 10.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -7665,7 +7678,7 @@ void GLCanvas3D::_render_imgui_select_plate_toolbar()
             }
             else {
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, button_hover);
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.42f, 0.42f, 0.42f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, button_hover);
             }
         }
 

@@ -1,7 +1,7 @@
 Build
 Build.bat
 /build*/
-deps/build
+deps/build*
 MYMETA.json
 MYMETA.yml
 _build
@@ -34,4 +34,6 @@ merge_inh*.py
 **/process_full/
 **/machine_full/
 **/filament_full/
-
+/deps/DL_CACHE/
+*error.*
+/deps/DL_CACHE

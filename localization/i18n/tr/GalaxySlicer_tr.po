@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GalaxySlicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-23 22:15+0800\n"
-"PO-Revision-Date: 2023-12-25 01:15+0300\n"
+"POT-Creation-Date: 2024-01-27 13:20+0800\n"
+"PO-Revision-Date: 2024-01-28 13:16+0300\n"
 "Last-Translator: Olcay ÖREN\n"
 "Language-Team: Türkçe\n"
 "Language: tr_TR\n"
@@ -221,6 +221,9 @@ msgstr "mm"
 msgid "Position"
 msgstr "Konum"
 
+#. TRN - Input label. Be short as possible
+#. Angle between Y axis and text line direction.
+#. TRN - Input label. Be short as possible
 msgid "Rotation"
 msgstr "Döndürme"
 
@@ -260,6 +263,7 @@ msgstr "Dünya koordinatları"
 msgid "°"
 msgstr "°"
 
+#. TRN - Input label. Be short as possible
 msgid "Size"
 msgstr "Boyut"
 
@@ -268,6 +272,118 @@ msgstr "%"
 
 msgid "uniform scale"
 msgstr "düzgün ölçek"
+
+msgid "Planar"
+msgstr "Düzlemsel"
+
+msgid "Dovetail"
+msgstr "Kırlangıç Kuyruğu"
+
+msgid "Auto"
+msgstr "Otomatik"
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Plug"
+msgstr "Tak"
+
+msgid "Dowel"
+msgstr "Dübel"
+
+msgid "Snap"
+msgstr "Çıt Çıt"
+
+msgid "Prism"
+msgstr "Prizma"
+
+msgid "Frustum"
+msgstr "Kesik"
+
+msgid "Square"
+msgstr "Kare"
+
+msgid "Hexagon"
+msgstr "Altıgen"
+
+msgid "Keep orientation"
+msgstr "Oryantasyonu koru"
+
+msgid "Place on cut"
+msgstr "Kesime yerleştirin"
+
+msgid "Flip upside down"
+msgstr "Baş aşağı çevir"
+
+msgid "Connectors"
+msgstr "Konektörler"
+
+msgid "Type"
+msgstr "Tür"
+
+msgid "Style"
+msgstr "Stil"
+
+msgid "Shape"
+msgstr "Şekil"
+
+#. TRN - Input label. Be short as possible
+#. Size in emboss direction
+#. TRN - Input label. Be short as possible
+msgid "Depth"
+msgstr "Derinlik"
+
+msgid "Groove"
+msgstr "Oluk"
+
+msgid "Width"
+msgstr "Genişlik"
+
+msgid "Flap Angle"
+msgstr "Kanat Açısı"
+
+msgid "Groove Angle"
+msgstr "Oluk Açısı"
+
+msgid "Part"
+msgstr "Parça"
+
+msgid "Object"
+msgstr "Nesne"
+
+msgid ""
+"Click to flip the cut plane\n"
+"Drag to move the cut plane"
+msgstr ""
+"Kesim düzlemini çevirmek için tıklayın\n"
+"Kesim düzlemini taşımak için sürükleyin"
+
+msgid ""
+"Click to flip the cut plane\n"
+"Drag to move the cut plane\n"
+"Right-click a part to assign it to the other side"
+msgstr ""
+"Kesim düzlemini çevirmek için tıklayın\n"
+"Kesim düzlemini taşımak için sürükleyin\n"
+"Bir parçayı diğer tarafa atamak için sağ tıklayın"
+
+msgid "Move cut plane"
+msgstr "Kesim düzlemini hareket ettir"
+
+msgid "Mode"
+msgstr "Mod"
+
+msgid "Change cut mode"
+msgstr "Kesme modunu değiştir"
+
+msgid "Tolerance"
+msgstr "Tolerans"
+
+msgid "Drag"
+msgstr "Sürükle"
+
+msgid "Draw cut line"
+msgstr "Kesim çizgisi çiz"
 
 msgid "Left click"
 msgstr "Sol tık"
@@ -280,9 +396,6 @@ msgstr "Sağ tık"
 
 msgid "Remove connector"
 msgstr "Bağlayıcıyı kaldır"
-
-msgid "Drag"
-msgstr "Sürükle"
 
 msgid "Move connector"
 msgstr "Bağlayıcıyı taşı"
@@ -299,29 +412,63 @@ msgstr "Tüm bağlayıcıları seç"
 msgid "Cut"
 msgstr "Kes"
 
-msgid "non-mainifold edges be caused by cut tool, do you want to fix it now?"
-msgstr "Ana kat olmayan kenarlar kesme aletinden kaynaklanıyor, şimdi düzeltmek istiyor musunuz?"
+msgid "Rotate cut plane"
+msgstr "Kesim düzlemini döndür"
 
-msgid "Repairing model object"
-msgstr "Model nesnesini onarma"
+msgid "Remove connectors"
+msgstr "Bağlayıcıları kaldır"
 
-msgid "Connector"
-msgstr "Bağlayıcı"
+msgid "Bulge"
+msgstr "Çıkıntı"
 
-msgid "Movement:"
-msgstr "Hareket:"
+msgid "Bulge proportion related to radius"
+msgstr "Yarıçapla ilgili çıkıntı oranı"
 
-msgid "Movement"
-msgstr "Hareket"
+msgid "Space"
+msgstr "Boşluk"
 
-msgid "Height"
-msgstr "Yükseklik"
+msgid "Space proportion related to radius"
+msgstr "Yarıçapla ilgili alan oranı"
+
+msgid "Confirm connectors"
+msgstr "Bağlayıcıları onayla"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Build Volume"
+msgstr "Birim Oluştur"
+
+msgid "Flip cut plane"
+msgstr "Kesim düzlemini çevir"
+
+msgid "Groove change"
+msgstr "Oluk değişimi"
+
+msgid "Reset"
+msgstr "Sıfırla"
+
+#. TRN: This is an entry in the Undo/Redo stack. The whole line will be 'Edited: (name of whatever was edited)'.
+msgid "Edited"
+msgstr "Düzenlendi"
+
+msgid "Cut position"
+msgstr "Kesim konumu"
+
+msgid "Reset cutting plane"
+msgstr "Kesme düzlemini sıfırla"
 
 msgid "Edit connectors"
 msgstr "Bağlayıcıları düzenle"
 
 msgid "Add connectors"
 msgstr "Bağlayıcı ekle"
+
+msgid "Reset cut"
+msgstr "Kesimi sıfırla"
+
+msgid "Reset cutting plane and remove connectors"
+msgstr "Kesme düzlemini sıfırlayın ve bağlayıcıları çıkarın"
 
 msgid "Upper part"
 msgstr "Üst parça"
@@ -332,9 +479,6 @@ msgstr "Alt kısım"
 msgid "Keep"
 msgstr "Sakla"
 
-msgid "Place on cut"
-msgstr "Kesime yerleştirin"
-
 msgid "Flip"
 msgstr "Çevir"
 
@@ -344,50 +488,8 @@ msgstr "Kesildikten sonra"
 msgid "Cut to parts"
 msgstr "Parçalara ayır"
 
-msgid "Auto Segment"
-msgstr "Otomatik Segment"
-
 msgid "Perform cut"
 msgstr "Kesimi gerçekleştir"
-
-msgid "Reset"
-msgstr "Sıfırla"
-
-msgid "Connectors"
-msgstr "Konektörler"
-
-msgid "Type"
-msgstr "Tür"
-
-msgid "Style"
-msgstr "Stil"
-
-msgid "Shape"
-msgstr "Şekil"
-
-msgid "Depth ratio"
-msgstr "Derinlik oranı"
-
-msgid "Remove connectors"
-msgstr "Konektörleri kaldır"
-
-msgid "Prizm"
-msgstr "Prizma"
-
-msgid "Frustum"
-msgstr "Frustum"
-
-msgid "Square"
-msgstr "Kare"
-
-msgid "Hexagon"
-msgstr "Altıgen"
-
-msgid "Confirm connectors"
-msgstr "Bağlayıcıları onayla"
-
-msgid "Cancel"
-msgstr "İptal"
 
 msgid "Warning"
 msgstr "Uyarı"
@@ -395,36 +497,49 @@ msgstr "Uyarı"
 msgid "Invalid connectors detected"
 msgstr "Geçersiz bağlayıcılar algılandı"
 
-msgid "connector is out of cut contour"
-msgstr "konnektör kesim konturunun dışında"
+#, c-format, boost-format
+msgid "%1$d connector is out of cut contour"
+msgid_plural "%1$d connectors are out of cut contour"
+msgstr[0] ""
+msgstr[1] ""
 
-msgid "connectors are out of cut contour"
-msgstr "konektörler kesim konturunun dışında"
-
-msgid "connector is out of object"
-msgstr "bağlayıcı nesnenin dışında"
-
-msgid "connectors is out of object"
-msgstr "konektörler nesnenin dışında"
+#, c-format, boost-format
+msgid "%1$d connector is out of object"
+msgid_plural "%1$d connectors are out of object"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Some connectors are overlapped"
 msgstr "Bazı konektörler üst üste binmiş"
 
-msgid ""
-"Invalid state. \n"
-"No one part is selected for keep after cut"
+msgid "Select at least one object to keep after cutting."
+msgstr "Kesimden sonra saklanacak en az bir nesne seçin."
+
+msgid "Cut plane is placed out of object"
+msgstr "Kesilen düzlem nesnenin dışına yerleştirilir"
+
+msgid "Cut plane with groove is invalid"
+msgstr "Oluklu kesme düzlemi geçersiz"
+
+msgid "Connector"
+msgstr "Bağlayıcı"
+
+msgid "Cut by Plane"
+msgstr "Düzlemsel Kes"
+
+msgid "non-manifold edges be caused by cut tool, do you want to fix it now?"
 msgstr ""
-"Geçersiz durum.\n"
-"Kesimden sonra tutmak için hiçbir parça seçilmedi"
+"Ana kat olmayan kenarlar kesme aletinden kaynaklanıyor, şimdi düzeltmek "
+"istiyor musunuz?"
 
-msgid "Plug"
-msgstr "Tak"
+msgid "Repairing model object"
+msgstr "Model nesnesini onarma"
 
-msgid "Dowel"
-msgstr "Dübel"
+msgid "Cut by line"
+msgstr "Satıra göre kes"
 
-msgid "Tolerance"
-msgstr "Tolerans"
+msgid "Delete connector"
+msgstr "Bağlayıcıyı sil"
 
 msgid "Mesh name"
 msgstr "Mesh adı"
@@ -521,6 +636,8 @@ msgstr ""
 msgid "Paint-on seam editing"
 msgstr ""
 
+#. TRN - Input label. Be short as possible
+#. Select look of letter shape
 msgid "Font"
 msgstr "Yazı tipi"
 
@@ -557,6 +674,674 @@ msgstr "Metni döndür"
 
 msgid "Text shape"
 msgstr "Metin şekli"
+
+msgid "Set Mirror"
+msgstr "Aynayı Ayarla"
+
+msgid "Embossed text"
+msgstr "Kabartmalı metin"
+
+msgid "Enter emboss gizmo"
+msgstr "Kabartma aletine girin"
+
+msgid "Leave emboss gizmo"
+msgstr "Kabartma aletini bırak"
+
+msgid "Embossing actions"
+msgstr "Kabartma eylemleri"
+
+msgid "Emboss"
+msgstr "Kabartma"
+
+msgid "Text-Rotate"
+msgstr "Metin Döndürme"
+
+msgid "NORMAL"
+msgstr "NORMAL"
+
+msgid "SMALL"
+msgstr "KÜÇÜK"
+
+msgid "ITALIC"
+msgstr "YATIK"
+
+msgid "SWISS"
+msgstr "SWISS"
+
+msgid "MODERN"
+msgstr "MODERN"
+
+msgid "First font"
+msgstr "İlk yazı tipi"
+
+msgid "Default font"
+msgstr "Varsayılan yazı tipi"
+
+msgid "Advanced"
+msgstr "Gelişmiş"
+
+msgid ""
+"The text cannot be written using the selected font. Please try choosing a "
+"different font."
+msgstr ""
+"Metin seçilen yazı tipi kullanılarak yazılamıyor. Lütfen farklı bir yazı "
+"tipi seçmeyi deneyin."
+
+msgid "Embossed text cannot contain only white spaces."
+msgstr "Kabartmalı metin yalnızca beyaz boşluklardan oluşamaz."
+
+msgid "Text contains character glyph (represented by '?') unknown by font."
+msgstr ""
+"Metin, yazı tipi tarafından bilinmeyen karakter glifini ('?' ile temsil "
+"edilir) içeriyor."
+
+msgid "Text input doesn't show font skew."
+msgstr "Metin girişi yazı tipi çarpıklığını göstermiyor."
+
+msgid "Text input doesn't show font boldness."
+msgstr "Metin girişi yazı tipi kalınlığını göstermiyor."
+
+msgid "Text input doesn't show gap between lines."
+msgstr "Metin girişi satırlar arasındaki boşluğu göstermiyor."
+
+msgid "Too tall, diminished font height inside text input."
+msgstr "Çok uzun, metin girişi içindeki yazı tipi yüksekliği azalmış."
+
+msgid "Too small, enlarged font height inside text input."
+msgstr "Metin girişinde çok küçük, büyütülmüş yazı tipi yüksekliği."
+
+msgid "Text doesn't show current horizontal alignment."
+msgstr "Metin geçerli yatay hizalamayı göstermiyor."
+
+msgid "Revert font changes."
+msgstr "Yazı tipi değişikliklerini geri alın."
+
+#, boost-format
+msgid "Font \"%1%\" can't be selected."
+msgstr "\"%1%\" yazı tipi seçilemiyor."
+
+msgid "Operation"
+msgstr "Operasyon"
+
+msgid "Join"
+msgstr "Ekle"
+
+msgid "Click to change text into object part."
+msgstr "Metni nesne kısmına değiştirmek için tıklayın."
+
+msgid "You can't change a type of the last solid part of the object."
+msgstr "Nesnenin son katı kısmının türünü değiştiremezsiniz."
+
+msgctxt "EmbossOperation"
+msgid "Cut"
+msgstr "Kes"
+
+msgid "Click to change part type into negative volume."
+msgstr "Parça tipini negatif hacme değiştirmek için tıklayın."
+
+msgid "Modifier"
+msgstr "Değiştir"
+
+msgid "Click to change part type into modifier."
+msgstr "Parça tipini değiştiriciye değiştirmek için tıklayın."
+
+msgid "Change Text Type"
+msgstr "Metin Türünü Değiştir"
+
+#, boost-format
+msgid "Rename style(%1%) for embossing text"
+msgstr "Kabartma metni için stili yeniden adlandırın (%1%)"
+
+msgid "Name can't be empty."
+msgstr "Ad boş olamaz."
+
+msgid "Name has to be unique."
+msgstr "Adın benzersiz olması gerekiyor."
+
+msgid "OK"
+msgstr "TAMAM"
+
+msgid "Rename style"
+msgstr "Stili yeniden adlandır"
+
+msgid "Rename current style."
+msgstr "Geçerli stili yeniden adlandırın."
+
+msgid "Can't rename temporary style."
+msgstr "Geçici stil yeniden adlandırılamıyor."
+
+msgid "First Add style to list."
+msgstr "İlk önce listeye stil ekleyin."
+
+#, boost-format
+msgid "Save %1% style"
+msgstr "%1% stili kaydet"
+
+msgid "No changes to save."
+msgstr "Kaydedilecek değişiklik yok."
+
+msgid "New name of style"
+msgstr "Stilin yeni adı"
+
+msgid "Save as new style"
+msgstr "Yeni stil olarak kaydet"
+
+msgid "Only valid font can be added to style."
+msgstr "Stile yalnızca geçerli yazı tipi eklenebilir."
+
+msgid "Add style to my list."
+msgstr "Stilimi listeme ekle."
+
+msgid "Save as new style."
+msgstr "Yeni stil olarak kaydet."
+
+msgid "Remove style"
+msgstr "Stili kaldır"
+
+msgid "Can't remove the last existing style."
+msgstr "Mevcut son stil kaldırılamıyor."
+
+#, boost-format
+msgid "Are you sure you want to permanently remove the \"%1%\" style?"
+msgstr "\"%1%\" stilini kalıcı olarak kaldırmak istediğinizden emin misiniz?"
+
+#, boost-format
+msgid "Delete \"%1%\" style."
+msgstr "\"%1%\" stilini silin."
+
+#, boost-format
+msgid "Can't delete \"%1%\". It is last style."
+msgstr "\"%1%\" silinemiyor. Son stildir."
+
+#, boost-format
+msgid "Can't delete temporary style \"%1%\"."
+msgstr "\"%1%\" geçici stili silinemiyor."
+
+#, boost-format
+msgid "Modified style \"%1%\""
+msgstr "Değiştirilen stil \"%1%\""
+
+#, boost-format
+msgid "Current style is \"%1%\""
+msgstr "Şu anki stil \"%1%\""
+
+#, boost-format
+msgid ""
+"Changing style to \"%1%\" will discard current style modification.\n"
+"\n"
+"Would you like to continue anyway?"
+msgstr ""
+"Stilin \"%1%\" olarak değiştirilmesi mevcut stil değişikliğini iptal "
+"edecektir.\n"
+"\n"
+"Yine de devam etmek ister misin?"
+
+msgid "Not valid style."
+msgstr "Geçerli bir stil değil."
+
+#, boost-format
+msgid "Style \"%1%\" can't be used and will be removed from a list."
+msgstr "\"%1%\" stili kullanılamaz ve listeden kaldırılacaktır."
+
+msgid "Unset italic"
+msgstr "Yatık ayarı kaldır"
+
+msgid "Set italic"
+msgstr "Yatık olarak ayarla"
+
+msgid "Unset bold"
+msgstr "Kalın ayarı kaldır"
+
+msgid "Set bold"
+msgstr "Kalın olarak ayarla"
+
+msgid "Revert text size."
+msgstr "Metin boyutunu geri döndür."
+
+msgid "Revert embossed depth."
+msgstr "Kabartma derinliğini geri alın."
+
+msgid ""
+"Advanced options cannot be changed for the selected font.\n"
+"Select another font."
+msgstr ""
+"Seçilen yazı tipi için gelişmiş seçenekler değiştirilemez.\n"
+"Başka bir yazı tipi seçin."
+
+msgid "Revert using of model surface."
+msgstr "Model yüzeyinin kullanımını geri alın."
+
+msgid "Revert Transformation per glyph."
+msgstr "Glif başına Dönüşümü Geri Al."
+
+msgid "Set global orientation for whole text."
+msgstr "Tüm metnin genel yönünü ayarlayın."
+
+msgid "Set position and orientation per glyph."
+msgstr "Glif başına konum ve yönlendirmeyi ayarlayın."
+
+msgctxt "Alignment"
+msgid "Left"
+msgstr "Sol"
+
+msgctxt "Alignment"
+msgid "Center"
+msgstr "Merkez"
+
+msgctxt "Alignment"
+msgid "Right"
+msgstr "Sağ"
+
+msgctxt "Alignment"
+msgid "Top"
+msgstr "Üst"
+
+msgctxt "Alignment"
+msgid "Middle"
+msgstr "Orta"
+
+msgctxt "Alignment"
+msgid "Bottom"
+msgstr "Alt"
+
+msgid "Revert alignment."
+msgstr "Hizalamayı geri al."
+
+#. TRN EmbossGizmo: font units
+msgid "points"
+msgstr "noktalar"
+
+msgid "Revert gap between characters"
+msgstr "Karakterler arasındaki boşluğu geri döndür"
+
+msgid "Distance between characters"
+msgstr "Karakterler arasındaki mesafe"
+
+msgid "Revert gap between lines"
+msgstr "Satırlar arasındaki boşluğu geri döndür"
+
+msgid "Distance between lines"
+msgstr "Çizgiler arası mesafe"
+
+msgid "Undo boldness"
+msgstr "Geri al"
+
+msgid "Tiny / Wide glyphs"
+msgstr "Küçük / Geniş glifler"
+
+msgid "Undo letter's skew"
+msgstr "Harflerin eğrilmesini geri al"
+
+msgid "Italic strength ratio"
+msgstr "Yataylık güç oranı"
+
+msgid "Undo translation"
+msgstr "Çeviriyi geri al"
+
+msgid "Distance of the center of the text to the model surface."
+msgstr "Metnin merkezinin model yüzeyine uzaklığı."
+
+msgid "Undo rotation"
+msgstr "Döndürmeyi geri al"
+
+msgid "Rotate text Clock-wise."
+msgstr "Metni Saat yönünde döndürün."
+
+msgid "Unlock the text's rotation when moving text along the object's surface."
+msgstr ""
+"Metni nesnenin yüzeyi boyunca hareket ettirirken metnin dönüşünün kilidini "
+"açın."
+
+msgid "Lock the text's rotation when moving text along the object's surface."
+msgstr "Metni nesnenin yüzeyi boyunca taşırken metnin dönüşünü kilitleyin."
+
+msgid "Select from True Type Collection."
+msgstr "True Type Koleksiyonundan seçim yapın."
+
+msgid "Set text to face camera"
+msgstr "Metni yüz kamerasına ayarla"
+
+msgid "Orient the text towards the camera."
+msgstr "Metni kameraya doğru yönlendirin."
+
+#, boost-format
+msgid ""
+"Can't load exactly same font(\"%1%\"). Aplication selected a similar "
+"one(\"%2%\"). You have to specify font for enable edit text."
+msgstr ""
+"Tam olarak aynı yazı tipi yüklenemiyor(\"%1%\"). Uygulama benzer bir "
+"uygulama seçti(\"%2%\"). Metni düzenlemeyi etkinleştirmek için yazı tipini "
+"belirtmeniz gerekir."
+
+msgid "No symbol"
+msgstr "No symbol"
+
+msgid "Loading"
+msgstr "Yükleniyor"
+
+msgid "In queue"
+msgstr "Sırada"
+
+#. TRN - Input label. Be short as possible
+#. Height of one text line - Font Ascent
+msgid "Height"
+msgstr "Yükseklik"
+
+#. TRN - Input label. Be short as possible
+#. Copy surface of model on surface of the embossed text
+#. TRN - Input label. Be short as possible
+msgid "Use surface"
+msgstr "Yüzeyi kullan"
+
+#. TRN - Input label. Be short as possible
+#. Option to change projection on curved surface
+#. for each character(glyph) in text separately
+msgid "Per glyph"
+msgstr "Glif başına"
+
+#. TRN - Input label. Be short as possible
+#. Align Top|Middle|Bottom and Left|Center|Right
+msgid "Alignment"
+msgstr "Hizalama"
+
+#. TRN - Input label. Be short as possible
+msgid "Char gap"
+msgstr "Karakter boşluğu"
+
+#. TRN - Input label. Be short as possible
+msgid "Line gap"
+msgstr "Satır boşluğu"
+
+#. TRN - Input label. Be short as possible
+msgid "Boldness"
+msgstr "Boldness"
+
+#. TRN - Input label. Be short as possible
+#. Like Font italic
+msgid "Skew ratio"
+msgstr "Eğrilik oranı"
+
+#. TRN - Input label. Be short as possible
+#. Distance from model surface to be able
+#. move text as part fully into not flat surface
+#. move text as modifier fully out of not flat surface
+#. TRN - Input label. Be short as possible
+msgid "From surface"
+msgstr "Yüzeyden"
+
+#. TRN - Input label. Be short as possible
+#. Keep vector from bottom to top of text aligned with printer Y axis
+msgid "Keep up"
+msgstr "Sürdür"
+
+#. TRN - Input label. Be short as possible.
+#. Some Font file contain multiple fonts inside and
+#. this is numerical selector of font inside font collections
+msgid "Collection"
+msgstr "Koleksiyon"
+
+msgid "Enter SVG gizmo"
+msgstr "SVG aletine girin"
+
+msgid "Leave SVG gizmo"
+msgstr "SVG aletinden ayrıl"
+
+msgid "SVG actions"
+msgstr "SVG eylemleri"
+
+msgid "SVG"
+msgstr "SVG"
+
+#. TRN This is an item label in the undo-redo stack.
+msgid "SVG-Rotate"
+msgstr "SVG-Döndürme"
+
+#, fuzzy, boost-format
+msgid "Opacity (%1%)"
+msgstr "Opaklık (%1)"
+
+#, fuzzy, boost-format
+msgid "Color gradient (%1%)"
+msgstr "Renk gradyanı (%1)"
+
+msgid "Undefined fill type"
+msgstr "Tanımsız dolgu türü"
+
+msgid "Linear gradient"
+msgstr "Doğrusal degrade"
+
+msgid "Radial gradient"
+msgstr "Radyal degrade"
+
+msgid "Open filled path"
+msgstr "Doldurulmuş yolu aç"
+
+msgid "Undefined stroke type"
+msgstr "Tanımlanmamış vuruş türü"
+
+msgid "Path can't be healed from selfintersection and multiple points."
+msgstr "Yol kendi kendine kesişmeden ve birden fazla noktadan iyileştirilemez."
+
+msgid ""
+"Final shape constains selfintersection or multiple points with same "
+"coordinate."
+msgstr ""
+"Son şekil, aynı koordinata sahip birden fazla noktanın kendi kendine "
+"kesişimini içerir."
+
+#, fuzzy, boost-format
+msgid "Shape is marked as invisible (%1%)."
+msgstr "Şekil görünmez (%1) olarak işaretlendi."
+
+#. TRN: The first placeholder is shape identifier, the second one is text describing the problem.
+#, fuzzy, boost-format
+msgid "Fill of shape (%1%) contains unsupported: %2%."
+msgstr "Şeklin dolgusu (%1) desteklenmeyenleri içeriyor: %2%."
+
+#, fuzzy, boost-format
+msgid "Stroke of shape (%1%) is too thin (minimal width is %2% mm)."
+msgstr "Şeklin konturu (%1) çok ince (minimum genişlik %2 mm'dir)."
+
+#, fuzzy, boost-format
+msgid "Stroke of shape (%1%) contains unsupported: %2%."
+msgstr "Şeklin konturu (%1) desteklenmeyenleri içeriyor: %2%."
+
+msgid "Face the camera"
+msgstr "Kameraya bak"
+
+#. TRN - Preview of filename after clear local filepath.
+msgid "Unknown filename"
+msgstr "Bilinmeyen dosya adı"
+
+#, boost-format
+msgid "SVG file path is \"%1%\""
+msgstr "SVG dosya yolu \"%1%\""
+
+msgid "Reload SVG file from disk."
+msgstr "SVG dosyasını diskten yeniden yükleyin."
+
+msgid "Change file"
+msgstr "Dosyayı değiştir"
+
+msgid "Change to another .svg file"
+msgstr "Başka bir .svg dosyasına geçin"
+
+msgid "Forget the file path"
+msgstr "Dosya yolunu unut"
+
+msgid ""
+"Do NOT save local path to 3MF file.\n"
+"Also disables 'reload from disk' option."
+msgstr ""
+"Yerel yolu 3MF dosyasına kaydetmeyin.\n"
+"Ayrıca 'diskten yeniden yükle' seçeneğini de devre dışı bırakır."
+
+#. TRN: An menu option to convert the SVG into an unmodifiable model part.
+msgid "Bake"
+msgstr ""
+
+#. TRN: Tooltip for the menu item.
+msgid "Bake into model as uneditable part"
+msgstr "Düzenlenemez parça olarak modele dönüştürün"
+
+msgid "Save as"
+msgstr "Farklı kaydet"
+
+msgid "Save SVG file"
+msgstr "SVG dosyasını kaydet"
+
+msgid "Save as '.svg' file"
+msgstr "'.svg' dosyası olarak kaydet"
+
+msgid "Size in emboss direction."
+msgstr "Kabartma yönünde boyut."
+
+#. TRN: The placeholder contains a number.
+#, fuzzy, boost-format
+msgid "Scale also changes amount of curve samples (%1%)"
+msgstr "Ölçek ayrıca eğri örneklerinin miktarını da değiştirir (%1)"
+
+msgid "Width of SVG."
+msgstr "SVG'nin genişliği."
+
+msgid "Height of SVG."
+msgstr "SVG'nin yüksekliği."
+
+msgid "Lock/unlock the aspect ratio of the SVG."
+msgstr "SVG'nin en boy oranını kilitleyin/kilidini açın."
+
+msgid "Reset scale"
+msgstr "Ölçeği sıfırla"
+
+msgid "Resize"
+msgstr "Boyutlandır"
+
+msgid "Distance of the center of the SVG to the model surface."
+msgstr "SVG merkezinin model yüzeyine uzaklığı."
+
+msgid "Reset distance"
+msgstr "Mesafeyi sıfırla"
+
+msgid "Reset rotation"
+msgstr "Döndürmeyi sıfırla"
+
+msgid "Lock/unlock rotation angle when dragging above the surface."
+msgstr "Yüzeyin üzerinde sürüklerken dönüş açısını kilitleyin/kilidini açın."
+
+msgid "Mirror vertically"
+msgstr "Dikey olarak yansıt"
+
+msgid "Mirror horizontally"
+msgstr "Yatay olarak yansıt"
+
+#. TRN: This is the name of the action that shows in undo/redo stack (changing part type from SVG to something else).
+msgid "Change SVG Type"
+msgstr "SVG Türünü Değiştir"
+
+#. TRN - Input label. Be short as possible
+msgid "Mirror"
+msgstr "Ayna"
+
+msgid "Choose SVG file for emboss:"
+msgstr "Kabartma için SVG dosyasını seçin:"
+
+#, fuzzy, boost-format
+msgid "File does NOT exist (%1%)."
+msgstr "Dosya mevcut DEĞİL (%1)."
+
+#, boost-format
+msgid "Filename has to end with \".svg\" but you selected %1%"
+msgstr "Dosya adının \".svg\" ile bitmesi gerekiyor ancak siz %1%'i seçtiniz"
+
+#, fuzzy, boost-format
+msgid "Nano SVG parser can't load from file (%1%)."
+msgstr "Nano SVG ayrıştırıcı dosyadan (%1) yüklenemiyor."
+
+#, fuzzy, boost-format
+msgid "SVG file does NOT contain a single path to be embossed (%1%)."
+msgstr "SVG dosyası kabartma yapılacak tek bir yol İÇERMEZ (%1)."
+
+msgid "Vertex"
+msgstr "Tepe noktası"
+
+msgid "Edge"
+msgstr "Edge"
+
+msgid "Plane"
+msgstr "Düzlem"
+
+msgid "Point on edge"
+msgstr "Kenarın noktası"
+
+msgid "Point on circle"
+msgstr "Çemberin noktası"
+
+msgid "Point on plane"
+msgstr "Düzlemin noktası"
+
+msgid "Center of edge"
+msgstr "Kenarın merkezi"
+
+msgid "Center of circle"
+msgstr "Çemberin merkezi"
+
+msgid "ShiftLeft mouse button"
+msgstr "Shift Sol fare düğmesi"
+
+msgid "Select feature"
+msgstr "Özellik seçin"
+
+msgid "Select point"
+msgstr "Nokta seç"
+
+msgid "Delete"
+msgstr "Sil"
+
+msgid "Restart selection"
+msgstr "Seçimi yeniden başlat"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "Unselect"
+msgstr "Seçimi kaldır"
+
+msgid "Measure"
+msgstr "Ölçüm"
+
+msgid "Edit to scale"
+msgstr "Ölçeğe göre düzenleyin"
+
+msgctxt "Verb"
+msgid "Scale"
+msgstr "Ölçek"
+
+msgid "None"
+msgstr "Hiçbiri"
+
+msgid "Diameter"
+msgstr "Çap"
+
+msgid "Length"
+msgstr "Uzunluk"
+
+msgid "Selection"
+msgstr "Seçim"
+
+msgid "Copy to clipboard"
+msgstr "Panoya kopyala"
+
+msgid "Perpendicular distance"
+msgstr "Dikey mesafe"
+
+msgid "Distance"
+msgstr "Mesafe"
+
+msgid "Direct distance"
+msgstr "Doğrudan mesafe"
+
+msgid "Distance XYZ"
+msgstr "Uzaklık XYZ"
 
 msgid "Ctrl+"
 msgstr "Ctrl+"
@@ -625,6 +1410,9 @@ msgstr "Kritik hata"
 #, boost-format
 msgid "GalaxySlicer got an unhandled exception: %1%"
 msgstr "GalaxySlicer elde edilmemiş bir istisna aldı: %1%"
+
+msgid "Untitled"
+msgstr "İsimsiz"
 
 msgid "Downloading Bambu Network Plug-in"
 msgstr "Bambu Ağ Eklentisini İndirme"
@@ -741,14 +1529,11 @@ msgid ""
 "The number of user presets cached in the cloud has exceeded the upper limit, "
 "newly created user presets can only be used locally."
 msgstr ""
-"Bulutta önbelleğe alınan kullanıcı ön ayarlarının sayısı üst sınırı aştı; yeni "
-"oluşturulan kullanıcı ön ayarları yalnızca yerel olarak kullanılabilir."
+"Bulutta önbelleğe alınan kullanıcı ön ayarlarının sayısı üst sınırı aştı; "
+"yeni oluşturulan kullanıcı ön ayarları yalnızca yerel olarak kullanılabilir."
 
 msgid "Sync user presets"
 msgstr ""
-
-msgid "Loading"
-msgstr "Yükleniyor"
 
 msgid "Loading user preset"
 msgstr "Kullanıcı ön ayarı yükleniyor"
@@ -779,9 +1564,6 @@ msgstr "G kodu dosyası seçin:"
 
 msgid "Import File"
 msgstr "Dosya İçe Aktar"
-
-msgid "Delete"
-msgstr "Sil"
 
 msgid "Choose files"
 msgstr "Dosyaları seç"
@@ -853,14 +1635,11 @@ msgstr "Temizleme seçenekleri"
 msgid "Bed adhension"
 msgstr "Etek"
 
-msgid "Advanced"
-msgstr "Gelişmiş"
-
 msgid "Add part"
 msgstr "Parça ekle"
 
 msgid "Add negative part"
-msgstr "Negatif kısım ekle"
+msgstr "Negatif parça ekle"
 
 msgid "Add modifier"
 msgstr "Değiştirici ekle"
@@ -922,8 +1701,8 @@ msgstr "Disk"
 msgid "Torus"
 msgstr "Simit"
 
-msgid "Orca Cube"
-msgstr "Orca Küpü"
+msgid "Galaxy Cube"
+msgstr ""
 
 msgid "3DBenchy"
 msgstr "3DBenchy"
@@ -937,16 +1716,10 @@ msgstr "Voron Küpü"
 msgid "Stanford Bunny"
 msgstr "Stanford Tavşanı"
 
-msgid "Galaxy Cube"
-msgstr ""
-
 msgid "Galaxy Flower"
 msgstr ""
 
 msgid "Text"
-msgstr ""
-
-msgid "SVG"
 msgstr ""
 
 msgid "Height range Modifier"
@@ -1076,9 +1849,6 @@ msgstr "Z ekseni boyunca"
 msgid "Mirror along the Z axis"
 msgstr "Z ekseni boyunca aynalama"
 
-msgid "Mirror"
-msgstr "Ayna"
-
 msgid "Mirror object"
 msgstr "Nesneyi aynala"
 
@@ -1098,7 +1868,7 @@ msgid "Invalidate cut info"
 msgstr "Kesim bilgisini geçersiz kıl"
 
 msgid "Add Primitive"
-msgstr "Primitif Ekle"
+msgstr "Şekil Ekle"
 
 msgid "Add Handy models"
 msgstr "Pratik Modeller Ekle"
@@ -1346,12 +2116,6 @@ msgstr "Yükseklik aralıkları"
 msgid "Settings for height range"
 msgstr "Yükseklik aralığı ayarları"
 
-msgid "Object"
-msgstr "Nesne"
-
-msgid "Part"
-msgstr "Parça"
-
 msgid "Layer"
 msgstr "Katman"
 
@@ -1372,10 +2136,7 @@ msgid "The type of the last solid object part is not to be changed."
 msgstr "Son katı nesne parçasının tipi değiştirilNozullidir."
 
 msgid "Negative Part"
-msgstr "Negatif Kısım"
-
-msgid "Modifier"
-msgstr "Değiştirici"
+msgstr "Negatif Parça"
 
 msgid "Support Blocker"
 msgstr "Destek Engelleyici"
@@ -1451,9 +2212,6 @@ msgstr "Dolgu yoğunluğu (%)"
 msgid "Auto Brim"
 msgstr "Otomatik Kenar"
 
-msgid "Auto"
-msgstr "Otomatik"
-
 msgid "Mouse ear"
 msgstr "Fare Kulağı"
 
@@ -1528,9 +2286,6 @@ msgstr "Özel G kodu"
 
 msgid "Enter Custom G-code used on current layer:"
 msgstr "Geçerli katmanda kullanılan Özel G kodunu girin:"
-
-msgid "OK"
-msgstr "TAMAM"
 
 msgid "Jump to Layer"
 msgstr "Katmana Atla"
@@ -2436,9 +3191,6 @@ msgstr ""
 msgid "Origin"
 msgstr "Menşei"
 
-msgid "Diameter"
-msgstr "Çap"
-
 msgid "Size in X and Y of the rectangular plate."
 msgstr "Dikdörtgen plakanın X ve Y boyutları."
 
@@ -2612,6 +3364,8 @@ msgid ""
 "Alternate extra wall only works with ensure vertical shell thickness "
 "disabled. "
 msgstr ""
+"Alternatif ekstra duvar yalnızca dikey kabuk kalınlığının devre dışı "
+"bırakılmasıyla çalışır. "
 
 msgid ""
 "Change these settings automatically? \n"
@@ -2619,6 +3373,10 @@ msgid ""
 "wall\n"
 "No  - Dont use alternate extra wall"
 msgstr ""
+"Bu ayarlar otomatik olarak değiştirilsin mi?\n"
+"Evet - Dikey kabuk kalınlığını sağlamayı devre dışı bırakın ve alternatif "
+"ekstra duvarı etkinleştirin\n"
+"Hayır - Alternatif ekstra duvar kullanmayın"
 
 msgid ""
 "Prime tower does not work when Adaptive Layer Height or Independent Support "
@@ -3003,6 +3761,9 @@ msgstr "Zaman"
 msgid "Percent"
 msgstr "Yüzde"
 
+msgid "Used filament"
+msgstr "Kullanılan filament"
+
 msgid "Layer Height (mm)"
 msgstr "Katman Yüksekliği (mm)"
 
@@ -3020,9 +3781,6 @@ msgstr "Sıcaklık (°C)"
 
 msgid "Volumetric flow rate (mm³/s)"
 msgstr "Hacimsel akış hızı (mm³/s)"
-
-msgid "Used filament"
-msgstr "Kullanılan filament"
 
 msgid "Travel"
 msgstr "Seyahat"
@@ -3322,6 +4080,15 @@ msgstr "Canlı Yayına Geçin"
 
 msgid "Resolution"
 msgstr "Çözünürlük"
+
+msgid "Enable"
+msgstr "Aktifle"
+
+msgid "Hostname or IP"
+msgstr "Ana bilgisayar adı veya IP"
+
+msgid "Custom camera source"
+msgstr "Özel kamera kaynağı"
 
 msgid "Show \"Live Video\" guide page."
 msgstr "\"Canlı Video\" kılavuz sayfasını gösterin."
@@ -3782,6 +4549,15 @@ msgstr[1] ""
 "İçe aktarılan %d yapılandırma var. (Yalnızca sistem dışı ve uyumlu "
 "yapılandırmalar)"
 
+msgid ""
+"\n"
+"Hint: Make sure you have added the corresponding printer before importing "
+"the configs."
+msgstr ""
+"\n"
+"İpucu: Yapılandırmaları içe aktarmadan önce ilgili yazıcıyı eklediğinizden "
+"emin olun."
+
 msgid "Import result"
 msgstr "Sonucu içe aktar"
 
@@ -4111,6 +4887,9 @@ msgstr "Hafıza kartı"
 
 msgid "Camera Setting"
 msgstr "Kamera Ayarı"
+
+msgid "Switch Camera View"
+msgstr "Kamera Görünümünü Değiştir"
 
 msgid "Control"
 msgstr "Kontrol"
@@ -4575,11 +5354,11 @@ msgstr ""
 msgid "Lock current plate"
 msgstr ""
 
+msgid "Edit current plate name"
+msgstr "Mevcut tabla adını düzenle"
+
 msgid "Customize current plate"
 msgstr ""
-
-msgid "Untitled"
-msgstr "İsimsiz"
 
 #, boost-format
 msgid " plate %1%:"
@@ -5212,6 +5991,9 @@ msgstr "Giriş Bölgesi"
 
 msgid "Stealth Mode"
 msgstr "Gizli mod"
+
+msgid "Check for stable updates only"
+msgstr "Yalnızca kararlı güncellemeleri kontrol edin"
 
 msgid "Metric"
 msgstr "Metrik"
@@ -6098,6 +6880,13 @@ msgstr ""
 "katmanı yüksekliğini devre dışı bırakma"
 
 msgid ""
+"Layer height is too small.\n"
+"It will set to min_layer_height\n"
+msgstr ""
+"Katman yüksekliği çok küçük.\n"
+"min_layer_height olarak ayarlanacak\n"
+
+msgid ""
 "Layer height exceeds the limit in Printer Settings -> Extruder -> Layer "
 "height limits ,this may cause printing quality issues."
 msgstr ""
@@ -6136,6 +6925,9 @@ msgstr "Duvar Türü"
 
 msgid "Walls and surfaces"
 msgstr ""
+
+msgid "Small Area Infill Flow Compensation (experimental)"
+msgstr "Küçük Alan Dolgusu Akış Telafisi (deneysel)"
 
 msgid "Bridging"
 msgstr ""
@@ -6234,13 +7026,13 @@ msgid "Setting Overrides"
 msgstr "Ayarların Üzerine Yazma"
 
 msgid "Retraction"
-msgstr "Geri çekme"
+msgstr "Geri Çekme"
 
 msgid "Basic information"
 msgstr "Temel Bilgiler"
 
 msgid "Recommended nozzle temperature"
-msgstr "Önerilen Nozul sıcaklığı"
+msgstr "Önerilen nozul sıcaklığı"
 
 msgid "Recommended nozzle temperature range of this filament. 0 means no set"
 msgstr ""
@@ -6618,11 +7410,35 @@ msgstr "Genel"
 msgid "Capabilities"
 msgstr "Yetenekler"
 
+msgid "Show all presets (including incompatible)"
+msgstr "Tüm ön ayarları göster (uyumsuz olanlar dahil)"
+
 msgid "Select presets to compare"
 msgstr "Karşılaştırılacak ön ayarları seçin"
 
-msgid "Show all presets (including incompatible)"
-msgstr "Tüm ön ayarları göster (uyumsuz olanlar dahil)"
+msgid ""
+"You can only transfer to current active profile because it has been modified."
+msgstr ""
+"Değiştirildiği için yalnızca mevcut etkin profile aktarım yapabilirsiniz."
+
+msgid ""
+"Transfer the selected options from left preset to the right.\n"
+"Note: New modified presets will be selected in settings tabs after close "
+"this dialog."
+msgstr ""
+"Seçilen seçenekleri sol ön ayardan sağa aktarın.\n"
+"Not: Bu iletişim kutusunu kapattıktan sonra ayarlar sekmelerinde değiştirilen "
+"yeni ön ayarlar seçilecektir."
+
+msgid "Transfer values from left to right"
+msgstr "Değerleri soldan sağa aktarın"
+
+msgid ""
+"If enabled, this dialog can be used for transver selected values from left "
+"to right preset."
+msgstr ""
+"Etkinleştirilirse, bu iletişim kutusu seçilen değerleri soldan sağa ön ayara "
+"aktarmak için kullanılabilir."
 
 msgid "Add File"
 msgstr "Dosya Ekle"
@@ -6636,6 +7452,9 @@ msgstr "Kapak"
 #, boost-format
 msgid "The name \"%1%\" already exists."
 msgstr "\"%1%\" adı zaten mevcut."
+
+msgid "Back"
+msgstr "Arka"
 
 msgid "Basic Info"
 msgstr "Temel bilgi"
@@ -6751,13 +7570,10 @@ msgid "Flushing volumes for filament change"
 msgstr "Filament değişimi için temizleme hacmi"
 
 msgid ""
-"Studio would re-calculate your flushing volumes everytime the filaments "
-"color changed. You could disable the auto-calculate in Bambu Studio > "
+"Galaxy would re-calculate your flushing volumes everytime the filaments "
+"color changed. You could disable the auto-calculate in GalaxySlicer  > "
 "Preferences"
 msgstr ""
-"Studio, filamentlerin rengi her değiştiğinde yıkama hacimlerinizi yeniden "
-"hesaplar. Otomatik hesaplamayı Bambu Studio > Tercihler bölümünden devre "
-"dışı bırakabilirsiniz."
 
 msgid "Flushing volume (mm³) for each filament pair."
 msgstr "Her filament çifti için yıkama hacmi (mm³)."
@@ -6817,9 +7633,6 @@ msgstr "⌘+Shift+G"
 
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
-
-msgid "Copy to clipboard"
-msgstr "Panoya kopyala"
 
 msgid "Paste from clipboard"
 msgstr "Panodan yapıştır"
@@ -6932,9 +7745,6 @@ msgstr "Shift+Herhangi bir ok tuşu"
 msgid "Movement step set to 1 mm"
 msgstr "Hareket adımı 1 mm'ye ayarlandı"
 
-msgid "Esc"
-msgstr "Esc"
-
 msgid "keyboard 1-9: set filament for object/part"
 msgstr "klavye 1-9: nesne/parça için filamanı ayarlayın"
 
@@ -6983,7 +7793,16 @@ msgstr "Gizmo SLA destek noktaları"
 msgid "Gizmo FDM paint-on seam"
 msgstr "Gizmo FDM boyalı dikiş"
 
-msgid "Swtich between Prepare/Prewview"
+msgid "Gizmo Text emboss / engrave"
+msgstr "Gizmo Metin kabartma / kazıma"
+
+msgid "Zoom in"
+msgstr "Yakınlaştır"
+
+msgid "Zoom out"
+msgstr "Uzaklaştır"
+
+msgid "Switch between Prepare/Preview"
 msgstr "Hazırlama/Önizleme arasında geçiş yap"
 
 msgid "Plater"
@@ -7018,9 +7837,6 @@ msgstr "Nesneler ve parçalar için ekstruder numarasını ayarlayın"
 
 msgid "Delete objects, parts, modifiers  "
 msgstr "Nesneleri, parçaları, değiştiricileri silin "
-
-msgid "Space"
-msgstr "Boşluk"
 
 msgid "Select the object/part and press space to change the name"
 msgstr "Nesneyi/parçayı seçin ve adını değiştirmek için boşluk tuşuna basın"
@@ -7180,7 +7996,7 @@ msgstr ""
 msgid ""
 "The firmware version is abnormal. Repairing and updating are required before "
 "printing. Do you want to update now? You can also update later on printer or "
-"update next time starting the studio."
+"update next time starting the GalaxySlicer."
 msgstr ""
 "Ürün yazılımı sürümü anormal. Yazdırmadan önce onarım ve güncelleme "
 "yapılması gerekir. Şimdi güncellemek istiyor musunuz? Ayrıca daha sonra "
@@ -7727,11 +8543,11 @@ msgid "Hostname, IP or URL"
 msgstr "Ana bilgisayar adı, IP veya URL"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field should contain "
-"the hostname, IP address or URL of the printer host instance. Print host "
-"behind HAProxy with basic auth enabled can be accessed by putting the user "
-"name and password into the URL in the following format: https://username:"
-"password@your-octopi-address/"
+"GalaxySlicer can upload G-code files to a printer host. This field should "
+"contain the hostname, IP address or URL of the printer host instance. Print "
+"host behind HAProxy with basic auth enabled can be accessed by putting the "
+"user name and password into the URL in the following format: https://"
+"username:password@your-octopi-address/"
 msgstr ""
 "Slic3r, G kodu dosyalarını bir yazıcı ana bilgisayarına yükleyebilir. Bu "
 "alan, yazıcı ana bilgisayar örneğinin ana bilgisayar adını, IP adresini veya "
@@ -7753,8 +8569,8 @@ msgid "API Key / Password"
 msgstr "API Anahtarı / Şifre"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field should contain "
-"the API Key or the password required for authentication."
+"GalaxySlicer can upload G-code files to a printer host. This field should "
+"contain the API Key or the password required for authentication."
 msgstr ""
 "Slic3r, G kodu dosyalarını bir yazıcı ana bilgisayarına yükleyebilir. Bu "
 "alan, kimlik doğrulama için gereken API Anahtarını veya şifreyi içermelidir."
@@ -7811,7 +8627,7 @@ msgid "Detour and avoid to travel across wall which may cause blob on surface"
 msgstr "Yüzeyde lekelenmeye neden olabilecek duvar boyunca ilerlemekten kaçın"
 
 msgid "Avoid crossing wall - Max detour length"
-msgstr "Duvarı geçmekten kaçının - Maksimum servis yolu uzunluğu"
+msgstr "Duvarı geçmekten kaçının - maksimum servis yolu uzunluğu"
 
 msgid ""
 "Maximum detour distance for avoiding crossing wall. Don't detour if the "
@@ -7938,6 +8754,37 @@ msgstr ""
 "ayarın devre dışı olduğu ve alt kabuğun kalınlığının mutlaka alt kabuk "
 "katmanları tarafından belirlendiği anlamına gelir"
 
+msgid "Apply gap fill"
+msgstr "Boşluk doldurmayı uygula"
+
+msgid ""
+"Enables gap fill for the selected surfaces. The minimum gap length that will "
+"be filled can be controlled from the filter out tiny gaps option below.\n"
+"\n"
+"Options:\n"
+"1. Everywhere: Applies gap fill to top, bottom and internal solid surfaces\n"
+"2. Top and Bottom surfaces: Applies gap fill to top and bottom surfaces "
+"only\n"
+"3. Nowhere: Disables gap fill\n"
+msgstr ""
+"Seçilen yüzeyler için boşluk doldurmayı etkinleştirir. Doldurulacak minimum "
+"boşluk uzunluğu aşağıdaki küçük boşlukları filtrele seçeneğinden kontrol edilebilir.\n"
+"\n"
+"Seçenekler:\n"
+"1. Her Yerde: Üst, alt ve iç katı yüzeylere boşluk doldurma uygular\n"
+"2. Üst ve Alt yüzeyler: Boşluk doldurmayı yalnızca üst ve alt yüzeylere "
+"uygular\n"
+"3. Hiçbir Yerde: Boşluk doldurmayı devre dışı bırakır\n"
+
+msgid "Everywhere"
+msgstr "Her yerde"
+
+msgid "Top and bottom surfaces"
+msgstr "Üst ve alt yüzeyler"
+
+msgid "Nowhere"
+msgstr "Hiçbir yerde"
+
 msgid "Force cooling for overhang and bridge"
 msgstr "Çıkıntı ve köprüler için soğutmayı zorla"
 
@@ -8060,7 +8907,7 @@ msgid ""
 "value. This can be useful to not let the 'one perimeter on top' trigger on "
 "surface that should be covered only by perimeters. This value can be a mm or "
 "a % of the perimeter extrusion width.\n"
-"Warning: If enabled, artifacts can be created is you have some thin features "
+"Warning: If enabled, artifacts can be created if you have some thin features "
 "on the next layer, like letters. Set this setting to 0 to remove these "
 "artifacts."
 msgstr ""
@@ -8069,7 +8916,7 @@ msgstr ""
 "value. This can be useful to not let the 'one perimeter on top' trigger on "
 "surface that should be covered only by perimeters. This value can be a mm or "
 "a % of the perimeter extrusion width.\n"
-"Warning: If enabled, artifacts can be created is you have some thin features "
+"Warning: If enabled, artifacts can be created if you have some thin features "
 "on the next layer, like letters. Set this setting to 0 to remove these "
 "artifacts."
 
@@ -8124,6 +8971,23 @@ msgid ""
 "For this setting to be the most effective, it is recomended to set the "
 "Reverse Threshold to 0 so that all internal walls print in alternating "
 "directions on odd layers irrespective of their overhang degree."
+msgstr ""
+
+msgid "Bridge counterbole holes"
+msgstr ""
+
+msgid ""
+"This option creates bridges for counterbore holes, allowing them to be "
+"printed without support. Available modes include:\n"
+"1. None: No bridge is created.\n"
+"2. Partially Bridged: Only a part of the unsupported area will be bridged.\n"
+"3. Sacrificial Layer: A full sacrificial bridge layer is created."
+msgstr ""
+
+msgid "Partially bridged"
+msgstr ""
+
+msgid "Sacrificial layer"
 msgstr ""
 
 msgid "Reverse threshold"
@@ -8266,6 +9130,15 @@ msgstr "Katmana göre"
 msgid "By object"
 msgstr "Nesneye göre"
 
+msgid "Intra-layer order"
+msgstr "Katman içi sipariş"
+
+msgid "Print order within a single layer"
+msgstr "Tek bir katmanda yazdırma sırası"
+
+msgid "As object list"
+msgstr "Nesne listesi olarak"
+
 msgid "Slow printing down for better layer cooling"
 msgstr "Daha iyi katman soğutması için baskıyı yavaşlat"
 
@@ -8366,6 +9239,71 @@ msgid ""
 "using large nozzles."
 msgstr ""
 
+msgid "Don't filter out small internal bridges (experimental)"
+msgstr "Küçük iç köprüleri filtrelemeyin (deneysel)"
+
+msgid ""
+"This option can help reducing pillowing on top surfaces in heavily slanted "
+"or curved models.\n"
+"\n"
+"By default, small internal bridges are filtered out and the internal solid "
+"infill is printed directly over the sparse infill. This works well in most "
+"cases, speeding up printing without too much compromise on top surface "
+"quality. \n"
+"\n"
+"However, in heavily slanted or curved models especially where too low sparse "
+"infill density is used, this may result in curling of the unsupported solid "
+"infill, causing pillowing.\n"
+"\n"
+"Enabling this option will print internal bridge layer over slightly "
+"unsupported internal solid infill. The options below control the amount of "
+"filtering, i.e. the amount of internal bridges created.\n"
+"\n"
+"Disabled - Disables this option. This is the default behaviour and works "
+"well in most cases.\n"
+"\n"
+"Limited filtering - Creates internal bridges on heavily slanted surfaces, "
+"while avoiding creating uncessesary interal bridges. This works well for "
+"most difficult models.\n"
+"\n"
+"No filtering - Creates internal bridges on every potential internal "
+"overhang. This option is useful for heavily slanted top surface models. "
+"However, in most cases it creates too many unecessary bridges."
+msgstr ""
+"Bu seçenek, aşırı eğimli veya kavisli modellerde üst yüzeylerdeki "
+"yastıklamanın azaltılmasına yardımcı olabilir.\n"
+"\n"
+"Varsayılan olarak küçük iç köprüler filtrelenir ve iç katı dolgu doğrudan "
+"seyrek dolgunun üzerine yazdırılır. Bu çoğu durumda işe yarar ve üstün yüzey "
+"kalitesinden çok fazla ödün vermeden yazdırmayı hızlandırır. \n"
+"\n"
+"Bununla birlikte, özellikle çok düşük seyrek dolgu yoğunluğunun kullanıldığı "
+"aşırı eğimli veya kavisli modellerde, bu durum desteklenmeyen katı dolgunun "
+"kıvrılmasına ve yastıklanmaya neden olmasına neden olabilir.\n"
+"\n"
+"Bu seçeneğin etkinleştirilmesi, iç köprü katmanını hafif desteklenmeyen "
+"dahili katı dolgu üzerine yazdıracaktır. Aşağıdaki seçenekler filtreleme "
+"miktarını, yani oluşturulan dahili köprülerin miktarını kontrol eder.\n"
+"\n"
+"Devre Dışı - Bu seçeneği devre dışı bırakır. Bu varsayılan davranıştır ve "
+"çoğu durumda iyi çalışır.\n"
+"\n"
+"Sınırlı filtreleme - Aşırı eğimli yüzeylerde iç köprüler oluştururken "
+"gereksiz iç köprülerin oluşmasını da önler. Bu, çoğu zor modelde işe yarar.\n"
+"\n"
+"Filtreleme yok - Her potansiyel dahili çıkıntıda dahili köprüler oluşturur. "
+"Bu seçenek, aşırı eğimli üst yüzey modelleri için kullanışlıdır. Ancak çoğu "
+"durumda çok fazla gereksiz köprü oluşturur."
+
+msgid "Disabled"
+msgstr "Devredışı"
+
+msgid "Limited filtering"
+msgstr "Sınırlı filtreleme"
+
+msgid "No filtering"
+msgstr "Filtresiz"
+
 msgid "Max bridge length"
 msgstr "Maksimum köprü uzunluğu"
 
@@ -8404,6 +9342,24 @@ msgid ""
 msgstr ""
 "Dikey kabuk kalınlığını garanti etmek için eğimli yüzeylerin yakınına katı "
 "dolgu ekleyin (üst + alt katı katmanlar)"
+
+msgid "Further reduce solid infill on walls (experimental)"
+msgstr "Duvarlardaki katı dolguyu daha da azaltın (deneysel)"
+
+msgid ""
+"Further reduces any solid infill applied to walls. As there will be very "
+"limited infill supporting solid surfaces, make sure that you are using "
+"adequate number of walls to support the part on sloping surfaces.\n"
+"\n"
+"For heavily sloped surfaces this option is not suitable as it will generate "
+"too thin of a top layer and should be disabled."
+msgstr ""
+"Duvarlara uygulanan katı dolguları daha da azaltır. Dolguyu destekleyen katı "
+"yüzeyler çok sınırlı olacağından, eğimli yüzeylerde parçayı desteklemek için "
+"yeterli sayıda duvar kullandığınızdan emin olun.\n"
+"\n"
+"Çok eğimli yüzeyler için bu seçenek çok ince bir üst katman oluşturacağından "
+"ve devre dışı bırakılması gerektiğinden uygun değildir."
 
 msgid "Top surface pattern"
 msgstr "Üst yüzey deseni"
@@ -8571,7 +9527,7 @@ msgid "Only used as a visual help on UI"
 msgstr "Yalnızca kullanıcı arayüzünde görsel yardım olarak kullanılır"
 
 msgid "Extruder offset"
-msgstr "Ekstruder Konum"
+msgstr "Ekstruder konum"
 
 msgid "Flow ratio"
 msgstr "Akış oranı"
@@ -8960,11 +9916,12 @@ msgstr "Dolgu uzunluğu"
 msgid ""
 "Connect an infill line to an internal perimeter with a short segment of an "
 "additional perimeter. If expressed as percentage (example: 15%) it is "
-"calculated over infill extrusion width. Slic3r tries to connect two close "
-"infill lines to a short perimeter segment. If no such perimeter segment "
-"shorter than infill_anchor_max is found, the infill line is connected to a "
-"perimeter segment at just one side and the length of the perimeter segment "
-"taken is limited to this parameter, but no longer than anchor_length_max. \n"
+"calculated over infill extrusion width. GalaxySlicer tries to connect two "
+"close infill lines to a short perimeter segment. If no such perimeter "
+"segment shorter than infill_anchor_max is found, the infill line is "
+"connected to a perimeter segment at just one side and the length of the "
+"perimeter segment taken is limited to this parameter, but no longer than "
+"anchor_length_max. \n"
 "Set this parameter to zero to disable anchoring perimeters connected to a "
 "single infill line."
 msgstr ""
@@ -8990,11 +9947,12 @@ msgstr "Dolgu maksimum uzunluk"
 msgid ""
 "Connect an infill line to an internal perimeter with a short segment of an "
 "additional perimeter. If expressed as percentage (example: 15%) it is "
-"calculated over infill extrusion width. Slic3r tries to connect two close "
-"infill lines to a short perimeter segment. If no such perimeter segment "
-"shorter than this parameter is found, the infill line is connected to a "
-"perimeter segment at just one side and the length of the perimeter segment "
-"taken is limited to infill_anchor, but no longer than this parameter. \n"
+"calculated over infill extrusion width. GalaxySlicer tries to connect two "
+"close infill lines to a short perimeter segment. If no such perimeter "
+"segment shorter than this parameter is found, the infill line is connected "
+"to a perimeter segment at just one side and the length of the perimeter "
+"segment taken is limited to infill_anchor, but no longer than this "
+"parameter. \n"
 "If set to 0, the old algorithm for infill connection will be used, it should "
 "create the same result as with 1000 & 0."
 msgstr ""
@@ -9180,9 +10138,6 @@ msgid ""
 msgstr ""
 "Duvara baskı yaparken rastgele titreme, böylece yüzeyin pürüzlü bir görünüme "
 "sahip olması. Bu ayar bulanık konumu kontrol eder"
-
-msgid "None"
-msgstr "Hiçbiri"
 
 msgid "Contour"
 msgstr "Kontur"
@@ -9402,6 +10357,13 @@ msgstr "Yazıcının ne tür bir gcode ile uyumlu olduğu"
 msgid "Klipper"
 msgstr "Klipper"
 
+msgid "Support multi bed types"
+msgstr "Çoklu tabla"
+
+msgid "Enable this option if you want to use multiple bed types"
+msgstr ""
+"Birden fazla tabla tipi kullanmak istiyorsanız bu seçeneği etkinleştirin"
+
 msgid "Label objects"
 msgstr "Nesneleri etiketle"
 
@@ -9588,6 +10550,26 @@ msgstr ""
 
 msgid "This G-code will be used as a custom code"
 msgstr "Bu G kodu özel kod olarak kullanılacak"
+
+msgid "Enable Flow Compensation"
+msgstr "Akış telafisi'ni etkinleştir"
+
+msgid "Enable flow compensation for small infill areas"
+msgstr "Küçük dolgu alanları için akış telafisini etkinleştirin"
+
+msgid "Flow Compensation Model"
+msgstr "Akış telafisi modeli"
+
+msgid ""
+"Flow Compensation Model, used to adjust the flow for small infill areas. The "
+"model is expressed as a comma separated pair of values for extrusion length "
+"and flow correction factors, one per line, in the following format: "
+"\"1.234,5.678\""
+msgstr ""
+"Akış Telafisi Modeli, küçük dolgu alanları için akışı ayarlamak için kullanılır. Model, "
+"ekstrüzyon uzunluğu ve akış düzeltme faktörleri için virgülle ayrılmış değer çifti "
+"olarak, her satıra bir tane olmak üzere aşağıdaki formatta ifade edilir: "
+"\"1.234,5.678\""
 
 msgid "Maximum speed X"
 msgstr "Maksimum hız X"
@@ -9844,8 +10826,8 @@ msgid "Host Type"
 msgstr "Bağlantı Türü"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field must contain "
-"the kind of the host."
+"GalaxySlicer can upload G-code files to a printer host. This field must "
+"contain the kind of the host."
 msgstr ""
 "Slic3r, G kodu dosyalarını bir yazıcı ana bilgisayarına yükleyebilir. Bu "
 "alan ana bilgisayarın türünü içermelidir."
@@ -9925,9 +10907,6 @@ msgstr ""
 "azaltabilir ve yazdırma süresinden tasarruf sağlayabilir, ancak dilimlemeyi "
 "ve G kodu oluşturmayı yavaşlatır"
 
-msgid "Enable"
-msgstr "Aktifle"
-
 msgid "Filename format"
 msgstr "Dosya adı formatı"
 
@@ -10004,8 +10983,8 @@ msgid ""
 "Using lightning infill together with this option is not recommended as there "
 "is limited infill to anchor the extra perimeters to."
 msgstr ""
-"Bu ayar her iki katmana ekstra bir duvar ekler. Bu şekilde dolgu "
-"duvarlar arasında dikey olarak sıkışır ve daha güçlü baskılar elde edilir.\n"
+"Bu ayar her iki katmana ekstra bir duvar ekler. Bu şekilde dolgu duvarlar "
+"arasında dikey olarak sıkışır ve daha güçlü baskılar elde edilir.\n"
 "\n"
 "Bu seçenek etkinleştirildiğinde dikey kabuk kalınlığını sağla seçeneğinin "
 "devre dışı bırakılması gerekir. \n"
@@ -10017,7 +10996,7 @@ msgid ""
 "If you want to process the output G-code through custom scripts, just list "
 "their absolute paths here. Separate multiple scripts with a semicolon. "
 "Scripts will be passed the absolute path to the G-code file as the first "
-"argument, and they can access the Slic3r config settings by reading "
+"argument, and they can access the GalaxySlicer config settings by reading "
 "environment variables."
 msgstr ""
 "Çıktı G-kodunu özel komut dosyaları aracılığıyla işlemek istiyorsanız, "
@@ -10101,9 +11080,6 @@ msgstr "Katman değişiminde geri çek"
 
 msgid "Force a retraction when changes layer"
 msgstr "Katmanı değiştirdiğinde geri çekilmeyi zorla"
-
-msgid "Length"
-msgstr "Uzunluk"
 
 msgid "Retraction Length"
 msgstr "Geri Çekme Uzunluğu"
@@ -10262,9 +11238,6 @@ msgstr "En yakın"
 msgid "Aligned"
 msgstr "Hizalı"
 
-msgid "Back"
-msgstr "Arka"
-
 msgid "Random"
 msgstr "Rastgele"
 
@@ -10314,6 +11287,30 @@ msgstr ""
 "Kapalı döngü ekstrüzyonda dikişin görünürlüğünü en aza indirmek için, "
 "ekstrüder döngüden ayrılmadan önce içeriye doğru küçük bir hareket "
 "gerçekleştirilir."
+
+msgid "Wipe before external loop"
+msgstr "Harici döngüden önce silin"
+
+msgid ""
+"To minimise visibility of potential overextrusion at the start of an "
+"external perimeter when printing with Outer/Inner or Inner/Outer/Inner wall "
+"print order, the deretraction is performed slightly on the inside from the "
+"start of the external perimeter. That way any potential over extrusion is "
+"hidden from the outside surface. \n"
+"\n"
+"This is useful when printing with Outer/Inner or Inner/Outer/Inner wall "
+"print order as in these modes it is more likely an external perimeter is "
+"printed immediately after a deretraction move."
+msgstr ""
+"Dış/İç veya İç/Dış/İç duvar baskı sırası ile yazdırırken, dış çevrenin "
+"başlangıcında olası aşırı çıkıntının görünürlüğünü en aza indirmek için, "
+"kaldırma işlemi dış çevrenin başlangıcından itibaren biraz içeride "
+"gerçekleştirilir. Bu şekilde herhangi bir aşırı ekstrüzyon potansiyeli dış "
+"yüzeyden gizlenir. \n"
+"\n"
+"Bu, Dış/İç veya İç/Dış/İç duvar yazdırma sırası ile yazdırırken "
+"kullanışlıdır, çünkü bu modlarda, bir geri çekilme hareketinin hemen "
+"ardından bir dış çevrenin yazdırılması daha olasıdır."
 
 msgid "Wipe speed"
 msgstr "Temizleme hızı"
@@ -10396,7 +11393,7 @@ msgstr ""
 "son modelde dikiş yok."
 
 msgid "Smooth Spiral"
-msgstr "Pürüzsüz Spiral"
+msgstr "Pürüzsüz spiral"
 
 msgid ""
 "Smooth Spiral smoothes out X and Y moves as wellresulting in no visible seam "
@@ -10406,7 +11403,7 @@ msgstr ""
 "duvarlarda XY yönlerinde bile hiçbir görünür ek yeri oluşmamasını sağlar."
 
 msgid "Max XY Smoothing"
-msgstr "Maksimum XY Yumuşatma"
+msgstr "Maksimum xy yumuşatma"
 
 msgid ""
 "Maximum distance to move points in XY to try to achieve a smooth spiralIf "
@@ -10450,13 +11447,13 @@ msgid "Start G-code when start the printing of this filament"
 msgstr "Bu filament ile baskı başladığında çalıştırılacak G-Kod"
 
 msgid "Single Extruder Multi Material"
-msgstr "Tek Ekstruder Çoklu Malzeme"
+msgstr "Tek ekstruder çoklu malzeme"
 
 msgid "Use single nozzle to print multi filament"
 msgstr "Çoklu filament basmak için tek nozul kullan"
 
 msgid "Manual Filament Change"
-msgstr ""
+msgstr "Manuel filament değişimi"
 
 msgid ""
 "Enable this option to omit the custom Change filament G-code only at the "
@@ -10467,7 +11464,7 @@ msgid ""
 msgstr ""
 
 msgid "Purge in prime tower"
-msgstr "Prime Tower'da temizlik"
+msgstr "Prime tower'da temizlik"
 
 msgid "Purge remaining filament into prime tower"
 msgstr "Kalan filamenti Prime Tower'da boşalt"
@@ -10556,16 +11553,16 @@ msgstr ""
 "uygulayıcıları oluşturulur"
 
 msgid "normal(auto)"
-msgstr "normal(otomatik)"
+msgstr "Normal(Otomatik)"
 
 msgid "tree(auto)"
-msgstr "ağaç(otomatik)"
+msgstr "Ağaç(Otomatik)"
 
 msgid "normal(manual)"
-msgstr "normal(manuel)"
+msgstr "Normal(Manuel)"
 
 msgid "tree(manual)"
-msgstr "ağaç(manuel)"
+msgstr "Ağaç(Manuel)"
 
 msgid "Support/object xy distance"
 msgstr "Destek/nesne xy mesafesi"
@@ -11015,7 +12012,7 @@ msgstr ""
 "damlamayı en aza indirebilir"
 
 msgid "Wipe Distance"
-msgstr "Temizleme Mesafesi"
+msgstr "Temizleme mesafesi"
 
 msgid ""
 "Discribe how long the nozzle will move along the last path when "
@@ -11056,9 +12053,6 @@ msgstr "Ana hacim"
 
 msgid "The volume of material to prime extruder on tower."
 msgstr "Kule üzerindeki ana ekstrüder malzeme hacmi."
-
-msgid "Width"
-msgstr "Genişlik"
 
 msgid "Width of prime tower"
 msgstr "Prime tower genişliği"
@@ -11226,13 +12220,13 @@ msgstr "Göreceli (relative) E mesafelerini kullan"
 msgid ""
 "Relative extrusion is recommended when using \"label_objects\" option.Some "
 "extruders work better with this option unckecked (absolute extrusion mode). "
-"Wipe tower is only compatible with relative mode. It is always enabled on "
-"BambuLab printers. Default is checked"
+"Wipe tower is only compatible with relative mode. It is recommended on most "
+"printers. Default is checked"
 msgstr ""
 "\"label_objects\" seçeneği kullanılırken göreceli ekstrüzyon önerilir. Bazı "
-"ekstrüderler bu seçeneğin işareti kaldırıldığında (mutlak ekstrüzyon modu) "
-"daha iyi çalışır. Temizleme kulesi yalnızca göreceli modla uyumludur. "
-"BambuLab yazıcılarında her zaman etkindir. Varsayılan olarak işaretlendi"
+"ekstrüderler bu seçenek işaretlenmediğinde daha iyi çalışır (mutlak "
+"ekstrüzyon modu). Silme kulesi yalnızca göreceli modla uyumludur. Çoğu "
+"yazıcıda önerilir. Varsayılan işaretlendi."
 
 msgid ""
 "Classic wall generator produces walls with constant extrusion width and for "
@@ -11429,6 +12423,269 @@ msgstr "Özel gcode yükle"
 
 msgid "Load custom gcode from json"
 msgstr "Json'dan özel gcode yükleyin"
+
+msgid "Current z-hop"
+msgstr "Mevcut z-hop"
+
+msgid "Contains z-hop present at the beginning of the custom G-code block."
+msgstr "Özel G kodu bloğunun başında bulunan z-hop'u içerir."
+
+msgid ""
+"Position of the extruder at the beginning of the custom G-code block. If the "
+"custom G-code travels somewhere else, it should write to this variable so "
+"PrusaSlicer knows where it travels from when it gets control back."
+msgstr ""
+"Ekstruderin özel G kodu bloğunun başlangıcındaki konumu. Özel G kodu başka "
+"bir yere seyahat ederse, Slicer'ın kontrolü geri aldığında nereden seyahat "
+"ettiğini bilmesi için bu değişkene yazması gerekir."
+
+msgid ""
+"Retraction state at the beginning of the custom G-code block. If the custom "
+"G-code moves the extruder axis, it should write to this variable so "
+"PrusaSlicer deretracts correctly when it gets control back."
+msgstr ""
+"Özel G kodu bloğunun başlangıcındaki geri çekilme durumu. Özel G kodu ekstruder "
+"eksenini hareket ettirirse, Slicer'ın kontrolü geri aldığında doğru şekilde "
+"geri çekme yapması için bu değişkene yazması gerekir."
+
+msgid "Extra deretraction"
+msgstr "Ekstra deretraksiyon"
+
+msgid "Currently planned extra extruder priming after deretraction."
+msgstr "Şu anda, geri çekilmeden sonra ekstra ekstruder hazırlaması planlanıyor."
+
+msgid "Current extruder"
+msgstr "Mevcut ekstruder"
+
+msgid "Zero-based index of currently used extruder."
+msgstr "Şu anda kullanılan ekstruderin sıfır tabanlı indeksi."
+
+msgid "Current object index"
+msgstr "Geçerli nesne dizini"
+
+msgid ""
+"Specific for sequential printing. Zero-based index of currently printed "
+"object."
+msgstr ""
+"Sıralı yazdırmaya özel. Şu anda yazdırılan nesnenin sıfır tabanlı dizini."
+
+msgid "Has wipe tower"
+msgstr "Has wipe tower"
+
+msgid "Whether or not wipe tower is being generated in the print."
+msgstr "Yazdırmada silme kulesinin oluşturulup oluşturulmayacağı."
+
+msgid "Initial extruder"
+msgstr "İlk ekstruder"
+
+msgid ""
+"Zero-based index of the first extruder used in the print. Same as "
+"initial_tool."
+msgstr ""
+"Baskıda kullanılan ilk ekstruderin sıfır bazlı indeksi. "
+"başlangıç_aracı ile aynı."
+
+msgid "Initial tool"
+msgstr "Başlangıç ​​aracı"
+
+msgid ""
+"Zero-based index of the first extruder used in the print. Same as "
+"initial_extruder."
+msgstr ""
+"Baskıda kullanılan ilk ekstruderin sıfır bazlı indeksi. "
+"İlk ekstruder ile aynı."
+
+msgid "Is extruder used?"
+msgstr "Ekstruder kullanılıyor mu?"
+
+msgid "Vector of bools stating whether a given extruder is used in the print."
+msgstr "Belirli bir ekstruderin baskıda kullanılıp kullanılmadığını belirten bool vektörü."
+
+msgid "Volume per extruder"
+msgstr "Ekstruder başına hacim"
+
+msgid "Total filament volume extruded per extruder during the entire print."
+msgstr "Baskının tamamı boyunca ekstruder başına ekstrüzyona tabi tutulan toplam filament hacmi."
+
+msgid "Total toolchanges"
+msgstr "Toplam takım değişiklikleri"
+
+msgid "Number of toolchanges during the print."
+msgstr "Number of toolchanges during the print."
+
+msgid "Total volume"
+msgstr "Toplam hacim"
+
+msgid "Total volume of filament used during the entire print."
+msgstr "Baskının tamamı boyunca kullanılan filamentin toplam hacmi."
+
+msgid "Weight per extruder"
+msgstr "Ekstruder başına ağırlık"
+
+msgid ""
+"Weight per extruder extruded during the entire print. Calculated from "
+"filament_density value in Filament Settings."
+msgstr ""
+"Baskının tamamı boyunca ekstrüzyon yapılan ekstruder başına ağırlık. "
+"Filament Ayarlarındaki filaman yoğunluğu değerinden hesaplanır."
+
+msgid "Total weight"
+msgstr "Toplam ağırlık"
+
+msgid ""
+"Total weight of the print. Calculated from filament_density value in "
+"Filament Settings."
+msgstr ""
+"Baskının toplam ağırlığı. Filament Ayarlarındaki filaman yoğunluğu "
+"değerinden hesaplanır."
+
+msgid "Total layer count"
+msgstr "Toplam katman sayısı"
+
+msgid "Number of layers in the entire print."
+msgstr "Baskının tamamındaki katman sayısı."
+
+msgid "Number of objects"
+msgstr "Nesne sayısı"
+
+msgid "Total number of objects in the print."
+msgstr "Baskıdaki toplam nesne sayısı."
+
+msgid "Number of instances"
+msgstr "Örnek sayısı"
+
+msgid "Total number of object instances in the print, summed over all objects."
+msgstr "Tüm nesneler üzerinden toplanan, yazdırmadaki nesne örneklerinin toplam sayısı."
+
+msgid "Scale per object"
+msgstr "Nesne başına ölçeklendirme"
+
+msgid ""
+"Contains a string with the information about what scaling was applied to the "
+"individual objects. Indexing of the objects is zero-based (first object has "
+"index 0).\n"
+"Example: 'x:100% y:50% z:100'."
+msgstr ""
+"Bireysel nesnelere hangi ölçeklendirmenin uygulandığına ilişkin bilgileri içeren bir dize "
+"içerir. Nesnelerin indekslenmesi sıfır tabanlıdır (ilk nesnenin indeksi 0'dır).\n"
+"Örnek: 'x:100% y:50% z:100'."
+
+msgid "Input filename without extension"
+msgstr "Uzantı olmadan dosya adını girin"
+
+msgid "Source filename of the first object, without extension."
+msgstr "İlk nesnenin kaynak dosya adı, uzantısız."
+
+msgid ""
+"The vector has two elements: x and y coordinate of the point. Values in mm."
+msgstr ""
+"Vektörün iki öğesi vardır: noktanın x ve y koordinatı. Değerler mm cinsindendir."
+
+msgid ""
+"The vector has two elements: x and y dimension of the bounding box. Values "
+"in mm."
+msgstr ""
+"Vektörün iki öğesi vardır: sınırlayıcı kutunun x ve y boyutu. "
+"Değerler mm cinsindendir."
+
+msgid "First layer convex hull"
+msgstr "İlk katman dışbükey gövde"
+
+msgid ""
+"Vector of points of the first layer convex hull. Each element has the "
+"following format:'[x, y]' (x and y are floating-point numbers in mm)."
+msgstr ""
+"Birinci katmanın dışbükey gövdesinin noktalarının vektörü. Her öğe şu formata "
+"sahiptir:'[x, y]' (x ve y, mm cinsinden kayan noktalı sayılardır)."
+
+msgid "Bottom-left corner of first layer bounding box"
+msgstr "İlk katman sınırlayıcı kutusunun sol alt köşesi"
+
+msgid "Top-right corner of first layer bounding box"
+msgstr "İlk katman sınırlayıcı kutusunun sağ üst köşesi"
+
+msgid "Size of the first layer bounding box"
+msgstr "İlk katman sınırlayıcı kutusunun boyutu"
+
+msgid "Bottom-left corner of print bed bounding box"
+msgstr "Baskı yatağı sınırlama kutusunun sol alt köşesi"
+
+msgid "Top-right corner of print bed bounding box"
+msgstr "Baskı yatağı sınırlayıcı kutusunun sağ üst köşesi"
+
+msgid "Size of the print bed bounding box"
+msgstr "Baskı yatağı sınırlama kutusunun boyutu"
+
+msgid "Timestamp"
+msgstr "Zaman damgası"
+
+msgid "String containing current time in yyyyMMdd-hhmmss format."
+msgstr "Geçerli saati yyyyMMdd-hhmmss biçiminde içeren dize."
+
+msgid "Day"
+msgstr "Day"
+
+msgid "Hour"
+msgstr "Saat"
+
+msgid "Minute"
+msgstr "Dakika"
+
+msgid "Print preset name"
+msgstr "Ön ayar adını yazdır"
+
+msgid "Name of the print preset used for slicing."
+msgstr "Dilimleme için kullanılan yazdırma ön ayarının adı."
+
+msgid "Filament preset name"
+msgstr "Filament ön ayar adı"
+
+msgid ""
+"Names of the filament presets used for slicing. The variable is a vector "
+"containing one name for each extruder."
+msgstr ""
+"Dilimleme için kullanılan filament ön ayarlarının adları. Değişken, her "
+"ekstruder için bir isim içeren bir vektördür."
+
+msgid "Printer preset name"
+msgstr "Yazıcı ön ayar adı"
+
+msgid "Name of the printer preset used for slicing."
+msgstr "Dilimleme için kullanılan yazıcı ön ayarının adı."
+
+msgid "Physical printer name"
+msgstr "Fiziksel yazıcı adı"
+
+msgid "Name of the physical printer used for slicing."
+msgstr "Dilimleme için kullanılan fiziksel yazıcının adı."
+
+msgid "Layer number"
+msgstr "Katman numarası"
+
+msgid "Index of the current layer. One-based (i.e. first layer is number 1)."
+msgstr "Geçerli katmanın dizini. Tek tabanlı (yani ilk katman 1 numaradır)."
+
+msgid "Layer z"
+msgstr "Z katmanı"
+
+msgid ""
+"Height of the current layer above the print bed, measured to the top of the "
+"layer."
+msgstr ""
+"Geçerli katmanın baskı yatağı üzerindeki yüksekliği, katmanın tepesine "
+"kadar ölçülür."
+
+msgid "Maximal layer z"
+msgstr "Maksimum katman z"
+
+msgid "Height of the last layer above the print bed."
+msgstr "Baskı yatağının üzerindeki son katmanın yüksekliği."
+
+msgid "Filament extruder ID"
+msgstr "Filament ekstruder kimliği"
+
+msgid "The current extruder ID. The same as current_extruder."
+msgstr "Geçerli ekstruder kimliği. Mevcut ekstruder ile aynı."
 
 msgid "Error in zip archive"
 msgstr "Zip arşivinde hata"
@@ -12477,11 +13734,11 @@ msgstr ""
 msgid ""
 "We would rename the presets as \"Vendor Type Serial @printer you "
 "selected\". \n"
-"To add preset for more prinetrs, Please go to printer selection"
+"To add preset for more printers, Please go to printer selection"
 msgstr ""
-"We would rename the presets as \"Vendor Type Serial @printer you "
-"selected\". \n"
-"To add preset for more prinetrs, Please go to printer selection"
+"Ön ayarları şu şekilde yeniden adlandırırdık: \"Satıcı Türü Seçtiğiniz Seri @printer"
+"\". \n"
+"Daha fazla yazıcıya yönelik ön ayar eklemek için lütfen yazıcı seçimine gidin"
 
 msgid "Create Printer/Nozzle"
 msgstr ""
@@ -12496,9 +13753,6 @@ msgid "Create from Template"
 msgstr ""
 
 msgid "Create Based on Current Printer"
-msgstr ""
-
-msgid "wiki"
 msgstr ""
 
 msgid "Import Preset"
@@ -12673,10 +13927,10 @@ msgstr ""
 msgid "Export Configs"
 msgstr ""
 
-msgid "Printer config bundle(.bbscfg)"
+msgid "Printer config bundle(.galaxy_printer)"
 msgstr ""
 
-msgid "Filament bundle(.bbsflmt)"
+msgid "Filament bundle(.galaxy_filament)"
 msgstr ""
 
 msgid "Printer presets(.zip)"
@@ -12715,7 +13969,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Printer and all the filament&process presets that belongs to the printer. \n"
+"Printer and all the filament&&process presets that belongs to the printer. \n"
 "Can be shared with others."
 msgstr ""
 
@@ -12809,6 +14063,9 @@ msgstr ""
 
 msgid "The filament choice not find filament preset, please reselect it"
 msgstr ""
+
+msgid "[Delete Required]"
+msgstr "[Silme Gerekli]"
 
 msgid "Edit Preset"
 msgstr ""
@@ -13045,6 +14302,24 @@ msgid ""
 "Did you know that GalaxySlicer can support Air filtration/Exhuast Fan?"
 msgstr ""
 
+#: resources/data/hints.ini: [hint:G-code window]
+msgid ""
+"G-code window\n"
+"You can turn on/off the G-code window by pressing the <b>C</b> key."
+msgstr ""
+"G-kodu penceresi\n"
+"<b>C</b> tuşuna basarak G*kodu penceresini açabilir/kapatabilirsiniz."
+
+#: resources/data/hints.ini: [hint:Switch workspaces]
+msgid ""
+"Switch workspaces\n"
+"You can switch between <b>Prepare</b> and <b>Preview</b> workspaces by "
+"pressing the <b>Tab</b> key."
+msgstr ""
+"Çalışma alanlarını değiştir\n"
+"<b>Sekme</b> tuşuna basarak <b>Hazırlık</b> ve <b>Önizleme</b> çalışma "
+"alanları arasında geçiş yapabilirsiniz."
+
 #: resources/data/hints.ini: [hint:How to use keyboard shortcuts]
 msgid ""
 "How to use keyboard shortcuts\n"
@@ -13054,6 +14329,16 @@ msgstr ""
 "Klavye kısayolları nasıl kullanılır?\n"
 "Orca Slicer'ın çok çeşitli klavye kısayolları ve 3B sahne işlemleri "
 "sunduğunu biliyor muydunuz?"
+
+#: resources/data/hints.ini: [hint:Reverse on odd]
+msgid ""
+"Reverse on odd\n"
+"Did you know that <b>Reverse on odd</b> feature can significantly improve "
+"the surface quality of your overhangs?"
+msgstr ""
+"Tek sayıyı tersine çevir\n"
+"<b>Tek sayıyı ters çevir</b> özelliğinin çıkıntılarınızın yüzey kalitesini "
+"önemli ölçüde artırabileceğini biliyor muydunuz?"
 
 #: resources/data/hints.ini: [hint:Cut Tool]
 msgid ""
@@ -13072,8 +14357,8 @@ msgid ""
 "problems on the Windows system?"
 msgstr ""
 "Modeli Düzelt\n"
-"Windows sisteminde birçok dilimleme sorununu önlemek için bozuk bir 3D modeli "
-"düzeltebileceğinizi biliyor muydunuz?"
+"Windows sisteminde birçok dilimleme sorununu önlemek için bozuk bir 3D "
+"modeli düzeltebileceğinizi biliyor muydunuz?"
 
 #: resources/data/hints.ini: [hint:Timelapse]
 msgid ""
@@ -13089,7 +14374,8 @@ msgid ""
 "Did you know that you can auto-arrange all objects in your project?"
 msgstr ""
 "Otomatik Düzenleme\n"
-"Projenizdeki tüm nesneleri otomatik olarak düzenleyebileceğinizi biliyor muydunuz?"
+"Projenizdeki tüm nesneleri otomatik olarak düzenleyebileceğinizi biliyor "
+"muydunuz?"
 
 #: resources/data/hints.ini: [hint:Auto-Orient]
 msgid ""
@@ -13253,9 +14539,9 @@ msgid ""
 "the best results."
 msgstr ""
 "İpek Filament Baskı\n"
-"İpek filamentin başarılı bir şekilde basılabilmesi için özel dikkat gösterilmesi "
-"gerektiğini biliyor muydunuz? En iyi sonuçlar için her zaman daha yüksek sıcaklık "
-"ve daha düşük hız önerilir."
+"İpek filamentin başarılı bir şekilde basılabilmesi için özel dikkat "
+"gösterilmesi gerektiğini biliyor muydunuz? En iyi sonuçlar için her zaman "
+"daha yüksek sıcaklık ve daha düşük hız önerilir."
 
 #: resources/data/hints.ini: [hint:Brim for better adhesion]
 msgid ""
@@ -13322,8 +14608,102 @@ msgid ""
 "probability of warping."
 msgstr ""
 
+#~ msgid "Minimum wall length"
+#~ msgstr "Minimum duvar uzunluğu"
+
+#~ msgid ""
+#~ "Adjust this value to prevent short, unclosed walls from being printed, "
+#~ "which could increase print time. Higher values remove more and longer "
+#~ "walls.\n"
+#~ "\n"
+#~ "NOTE: Bottom and top surfaces will not be affected by this value to "
+#~ "prevent visual gaps on the ouside of the model. Adjust 'One wall "
+#~ "threshold' in the Advanced settings below to adjust the sensitivity of "
+#~ "what is considered a top-surface. 'One wall threshold' is only visibile "
+#~ "if this setting is set above the default value of 0.5, or if single-wall "
+#~ "top surfaces is enabled."
+#~ msgstr ""
+#~ "Yazdırma süresini artırabilecek kısa, kapatılmamış duvarların "
+#~ "yazdırılmasını önlemek için bu değeri ayarlayın. Daha yüksek değerler "
+#~ "daha fazla ve daha uzun duvarları kaldırır.\n"
+#~ "\n"
+#~ "NOT: Modelin dış kısmında görsel boşluk kalmaması için alt ve üst "
+#~ "yüzeyler bu değerden etkilenmeyecektir. Üst yüzey olarak kabul edilen "
+#~ "şeyin hassasiyetini ayarlamak için aşağıdaki Gelişmiş ayarlarda 'Tek "
+#~ "duvar eşiği'ni ayarlayın. 'Tek duvar eşiği' yalnızca bu ayar varsayılan "
+#~ "değer olan 0,5'in üzerine ayarlandığında veya tek duvarlı üst yüzeyler "
+#~ "etkinleştirildiğinde görünür."
+
+#~ msgid "Orca Cube"
+#~ msgstr "Orca Küpü"
+
+#~ msgid ""
+#~ "Galaxy would re-calculate your flushing volumes everytime the filaments "
+#~ "color changed. You could disable the auto-calculate in Orca Slicer > "
+#~ "Preferences"
+#~ msgstr ""
+#~ "Orca, filamentlerin rengi her değiştiğinde yıkama hacimlerinizi yeniden "
+#~ "hesaplar. Otomatik hesaplamayı Orca Slicer > Tercihler bölümünden devre "
+#~ "dışı bırakabilirsiniz."
+
 #~ msgid "Orca Tolerance Test"
 #~ msgstr "Orca Tolerans Testi"
+
+#~ msgid ""
+#~ "Relative extrusion is recommended when using \"label_objects\" option."
+#~ "Some extruders work better with this option unckecked (absolute extrusion "
+#~ "mode). Wipe tower is only compatible with relative mode. It is always "
+#~ "enabled on BambuLab printers. Default is checked"
+#~ msgstr ""
+#~ "\"label_objects\" seçeneği kullanılırken göreceli ekstrüzyon önerilir. "
+#~ "Bazı ekstruderler bu seçeneğin işareti kaldırıldığında (mutlak ekstrüzyon "
+#~ "modu) daha iyi çalışır. Temizleme kulesi yalnızca göreceli modla "
+#~ "uyumludur. BambuLab yazıcılarında her zaman etkindir. Varsayılan olarak "
+#~ "işaretlendi"
+
+#~ msgid "Movement:"
+#~ msgstr "Hareket:"
+
+#~ msgid "Movement"
+#~ msgstr "Hareket"
+
+#~ msgid "Auto Segment"
+#~ msgstr "Otomatik Segment"
+
+#~ msgid "Depth ratio"
+#~ msgstr "Derinlik oranı"
+
+#~ msgid "Prizm"
+#~ msgstr "Prizma"
+
+#~ msgid "connector is out of cut contour"
+#~ msgstr "konnektör kesim konturunun dışında"
+
+#~ msgid "connectors are out of cut contour"
+#~ msgstr "konektörler kesim konturunun dışında"
+
+#~ msgid "connector is out of object"
+#~ msgstr "bağlayıcı nesnenin dışında"
+
+#~ msgid "connectors is out of object"
+#~ msgstr "konektörler nesnenin dışında"
+
+#~ msgid ""
+#~ "Invalid state. \n"
+#~ "No one part is selected for keep after cut"
+#~ msgstr ""
+#~ "Geçersiz durum.\n"
+#~ "Kesimden sonra tutmak için hiçbir parça seçilmedi"
+
+#~ msgid "Recalculate"
+#~ msgstr "Yeniden hesapla"
+
+#~ msgid ""
+#~ "Orca recalculates your flushing volumes everytime the filament colors "
+#~ "change. You can change this behavior in Preferences."
+#~ msgstr ""
+#~ "Orca, filament renkleri her değiştiğinde yıkama hacimlerinizi yeniden "
+#~ "hesaplar. Bu davranışı Tercihler'de değiştirebilirsiniz."
 
 #~ msgid ""
 #~ "The printer timed out while receiving a print job. Please check if the "

@@ -4,6 +4,7 @@
 #include "GUI_ObjectList.hpp"
 #include "GUI_Factories.hpp"
 #include "format.hpp"
+#include "libslic3r_version.h"
 
 // Localization headers: include libslic3r version first so everything in this file
 // uses the slic3r/GUI version (the macros will take precedence over the functions).
@@ -27,6 +28,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/nowide/convert.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include <wx/stdpaths.h>
 #include <wx/imagpng.h>
@@ -238,7 +241,7 @@ public:
         scale_font(m_constant_text.version_font, 1.2f);
 
         // this font will be used for the action string
-        m_action_font = Label::Body_14;
+        m_action_font = m_constant_text.credits_font;
 
         // draw logo and constant info text
         Decorate(m_main_bitmap);
@@ -404,6 +407,275 @@ private:
     }
     m_constant_text;
 };
+
+class SplashScreen : public wxSplashScreen
+{
+public:
+    SplashScreen(const wxBitmap& bitmap, long splashStyle, int milliseconds, wxPoint pos = wxDefaultPosition)
+        : wxSplashScreen(bitmap, splashStyle, milliseconds, static_cast<wxWindow*>(wxGetApp().mainframe), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+#ifdef __APPLE__
+            wxSIMPLE_BORDER | wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP
+#else
+            wxSIMPLE_BORDER | wxFRAME_NO_TASKBAR
+#endif // !__APPLE__
+        )
+    {
+        wxASSERT(bitmap.IsOk());
+
+        int init_dpi = get_dpi_for_window(this);
+        this->SetPosition(pos);
+        this->CenterOnScreen();
+        int new_dpi = get_dpi_for_window(this);
+
+        m_scale         = (float)(new_dpi) / (float)(init_dpi);
+
+        m_main_bitmap   = bitmap;
+
+        scale_bitmap(m_main_bitmap, m_scale);
+
+        // init constant texts and scale fonts
+        init_constant_text();
+
+        // this font will be used for the action string
+        m_action_font = m_constant_text.credits_font.Bold();
+
+        // draw logo and constant info text
+        Decorate(m_main_bitmap);
+    }
+
+    void SetText(const wxString& text)
+    {
+        set_bitmap(m_main_bitmap);
+        if (!text.empty()) {
+            wxBitmap bitmap(m_main_bitmap);
+
+            wxMemoryDC memDC;
+            memDC.SelectObject(bitmap);
+
+            memDC.SetFont(m_action_font);
+            memDC.SetTextForeground(wxColour(237, 107, 33));
+            memDC.DrawText(text, int(m_scale * 60), m_action_line_y_position);
+
+            memDC.SelectObject(wxNullBitmap);
+            set_bitmap(bitmap);
+#ifdef __WXOSX__
+            // without this code splash screen wouldn't be updated under OSX
+            wxYield();
+#endif
+        }
+    }
+
+    static wxBitmap MakeBitmap(wxBitmap bmp)
+    {
+        if (!bmp.IsOk())
+            return wxNullBitmap;
+
+        // create dark grey background for the splashscreen
+        // It will be 5/3 of the weight of the bitmap
+        int width = lround((double)5 / 3 * bmp.GetWidth());
+        int height = bmp.GetHeight();
+
+        wxImage image(width, height);
+        unsigned char* imgdata_ = image.GetData();
+        for (int i = 0; i < width * height; ++i) {
+            *imgdata_++ = 51;
+            *imgdata_++ = 51;
+            *imgdata_++ = 51;
+        }
+
+        wxBitmap new_bmp(image);
+
+        wxMemoryDC memDC;
+        memDC.SelectObject(new_bmp);
+        memDC.DrawBitmap(bmp, width - bmp.GetWidth(), 0, true);
+
+        return new_bmp;
+    }
+
+    void Decorate(wxBitmap& bmp)
+    {
+        if (!bmp.IsOk())
+            return;
+
+        // draw text to the box at the left of the splashscreen.
+        // this box will be 2/5 of the weight of the bitmap, and be at the left.
+        int width = lround(bmp.GetWidth() * 0.4);
+
+        // load bitmap for logo
+        BitmapCache bmp_cache;
+        int logo_size = lround(width * 0.25);
+        wxBitmap logo_bmp = *bmp_cache.load_svg(wxGetApp().logo_name(), logo_size, logo_size);
+
+        wxCoord margin = int(m_scale * 20);
+
+        wxRect banner_rect(wxPoint(0, logo_size), wxPoint(width, bmp.GetHeight()));
+        banner_rect.Deflate(margin, 2 * margin);
+
+        // use a memory DC to draw directly onto the bitmap
+        wxMemoryDC memDc(bmp);
+
+        // draw logo
+        memDc.DrawBitmap(logo_bmp, margin, margin, true);
+
+        // draw the (white) labels inside of our black box (at the left of the splashscreen)
+        memDc.SetTextForeground(wxColour(255, 255, 255));
+
+        memDc.SetFont(m_constant_text.title_font);
+        memDc.DrawLabel(m_constant_text.title,   banner_rect, wxALIGN_TOP | wxALIGN_LEFT);
+
+        int title_height = memDc.GetTextExtent(m_constant_text.title).GetY();
+        banner_rect.SetTop(banner_rect.GetTop() + title_height);
+        banner_rect.SetHeight(banner_rect.GetHeight() - title_height);
+
+        memDc.SetFont(m_constant_text.version_font);
+        memDc.DrawLabel(m_constant_text.version, banner_rect, wxALIGN_TOP | wxALIGN_LEFT);
+        int version_height = memDc.GetTextExtent(m_constant_text.version).GetY();
+
+        memDc.SetFont(m_constant_text.credits_font);
+        memDc.DrawLabel(m_constant_text.credits, banner_rect, wxALIGN_BOTTOM | wxALIGN_LEFT);
+        int credits_height = memDc.GetMultiLineTextExtent(m_constant_text.credits).GetY();
+        int text_height    = memDc.GetTextExtent("text").GetY();
+
+        // calculate position for the dynamic text
+        int logo_and_header_height = margin + logo_size + title_height + version_height;
+        m_action_line_y_position = logo_and_header_height + 0.5 * (bmp.GetHeight() - margin - credits_height - logo_and_header_height - text_height);
+    }
+
+private:
+    wxBitmap    m_main_bitmap;
+    wxFont      m_action_font;
+    int         m_action_line_y_position;
+    float       m_scale {1.0};
+
+    struct ConstantText
+    {
+        wxString title;
+        wxString version;
+        wxString credits;
+
+        wxFont   title_font;
+        wxFont   version_font;
+        wxFont   credits_font;
+
+        void init(wxFont init_font)
+        {
+            // title
+            title = wxGetApp().is_editor() ? SLIC3R_APP_FULL_NAME : GCODEVIEWER_APP_NAME;
+
+            // dynamically get the version to display
+// #if BBL_INTERNAL_TESTING
+            // version = _L("Internal Version") + " " + std::string(SLIC3R_VERSION);
+// #else
+            // version = _L("") + " " + std::string(SoftFever_VERSION);
+// #endif
+
+            // credits infornation
+            credits =   title;
+
+            title_font = version_font = credits_font = init_font;
+        }
+    }
+    m_constant_text;
+
+    void init_constant_text()
+    {
+        m_constant_text.init(get_default_font(this));
+
+        // As default we use a system font for current display.
+        // Scale fonts in respect to banner width
+
+        int text_banner_width = lround(0.4 * m_main_bitmap.GetWidth()) - roundl(m_scale * 50); // banner_width - margins
+
+        float title_font_scale = (float)text_banner_width / GetTextExtent(m_constant_text.title).GetX();
+        scale_font(m_constant_text.title_font, title_font_scale > 3.5f ? 3.5f : title_font_scale);
+
+        float version_font_scale = (float)text_banner_width / GetTextExtent(m_constant_text.version).GetX();
+        scale_font(m_constant_text.version_font, version_font_scale > 2.f ? 2.f : version_font_scale);
+
+        // The width of the credits information string doesn't respect to the banner width some times.
+        // So, scale credits_font in the respect to the longest string width
+        int   longest_string_width = word_wrap_string(m_constant_text.credits);
+        float font_scale = (float)text_banner_width / longest_string_width;
+        scale_font(m_constant_text.credits_font, font_scale);
+    }
+
+    void set_bitmap(wxBitmap& bmp)
+    {
+        m_window->SetBitmap(bmp);
+        m_window->Refresh();
+        m_window->Update();
+    }
+
+    void scale_bitmap(wxBitmap& bmp, float scale)
+    {
+        if (scale == 1.0)
+            return;
+
+        wxImage image = bmp.ConvertToImage();
+        if (!image.IsOk() || image.GetWidth() == 0 || image.GetHeight() == 0)
+            return;
+
+        int width   = int(scale * image.GetWidth());
+        int height  = int(scale * image.GetHeight());
+        image.Rescale(width, height, wxIMAGE_QUALITY_BILINEAR);
+
+        bmp = wxBitmap(std::move(image));
+    }
+
+    void scale_font(wxFont& font, float scale)
+    {
+#ifdef __WXMSW__
+        // Workaround for the font scaling in respect to the current active display,
+        // not for the primary display, as it's implemented in Font.cpp
+        // See https://github.com/wxWidgets/wxWidgets/blob/master/src/msw/font.cpp
+        // void wxNativeFontInfo::SetFractionalPointSize(float pointSizeNew)
+        wxNativeFontInfo nfi= *font.GetNativeFontInfo();
+        float pointSizeNew  = scale * font.GetPointSize();
+        nfi.lf.lfHeight     = nfi.GetLogFontHeightAtPPI(pointSizeNew, get_dpi_for_window(this));
+        nfi.pointSize       = pointSizeNew;
+        font = wxFont(nfi);
+#else
+        font.Scale(scale);
+#endif //__WXMSW__
+    }
+
+    // wrap a string for the strings no longer then 55 symbols
+    // return extent of the longest string
+    int word_wrap_string(wxString& input)
+    {
+        size_t line_len = 55;// count of symbols in one line
+        int idx = -1;
+        size_t cur_len = 0;
+
+        wxString longest_sub_string;
+        auto get_longest_sub_string = [input](wxString &longest_sub_str, size_t cur_len, size_t i) {
+            if (cur_len > longest_sub_str.Len())
+                longest_sub_str = input.SubString(i - cur_len + 1, i);
+        };
+
+        for (size_t i = 0; i < input.Len(); i++)
+        {
+            cur_len++;
+            if (input[i] == ' ')
+                idx = i;
+            if (input[i] == '\n')
+            {
+                get_longest_sub_string(longest_sub_string, cur_len, i);
+                idx = -1;
+                cur_len = 0;
+            }
+            if (cur_len >= line_len && idx >= 0)
+            {
+                get_longest_sub_string(longest_sub_string, cur_len, i);
+                input[idx] = '\n';
+                cur_len = i - static_cast<size_t>(idx);
+            }
+        }
+
+        return GetTextExtent(longest_sub_string).GetX();
+    }
+};
+
 
 #ifdef __linux__
 bool static check_old_linux_datadir(const wxString& app_name) {
@@ -744,8 +1016,12 @@ void GUI_App::post_init()
         // BOOST_LOG_TRIVIAL(info) << "Loading user presets...";
         // scrn->SetText(_L("Loading user presets..."));
         if (m_agent) { start_sync_user_preset(); }
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " sync_user_preset: true";
+    } else {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " sync_user_preset: false";
     }
 
+    m_open_method = "double_click";
     bool switch_to_3d = false;
     if (!this->init_params->input_files.empty()) {
 
@@ -769,6 +1045,7 @@ void GUI_App::post_init()
             if (!download_file_url.empty() && ( boost::starts_with(download_file_url, "http://") ||  boost::starts_with(download_file_url, "https://")) ) {
                 request_model_download(download_origin_url);
             }
+            m_open_method = "makerworld";
         }
         else {
             switch_to_3d = true;
@@ -776,22 +1053,27 @@ void GUI_App::post_init()
                 mainframe->select_tab(size_t(MainFrame::tp3DEditor));
                 plater_->select_view_3D("3D");
                 this->plater()->load_gcode(from_u8(this->init_params->input_files.front()));
+                m_open_method = "gcode";
             }
             else {
                 mainframe->select_tab(size_t(MainFrame::tp3DEditor));
                 plater_->select_view_3D("3D");
-                Plater::TakeSnapshot      snapshot(this->plater(), "Load Project", UndoRedo::SnapshotType::ProjectSeparator);
-                const std::vector<size_t> res = this->plater()->load_files(this->init_params->input_files);
-                if (!res.empty()) {
-                    if (this->init_params->input_files.size() == 1) {
-                        // Update application titlebar when opening a project file
-                        const std::string& filename = this->init_params->input_files.front();
-                        this->plater()->up_to_date(true, false);
-                        this->plater()->up_to_date(true, true);
-                        //BBS: remove amf logic as project
-                        if (boost::algorithm::iends_with(filename, ".3mf"))
-                            this->plater()->set_project_filename(from_u8(filename));
+                wxArrayString input_files;
+                for (auto & file : this->init_params->input_files) {
+                    input_files.push_back(wxString::FromUTF8(file));
+                }
+                this->plater()->set_project_filename(_L("Untitled"));
+                this->plater()->load_files(input_files);
+                try {
+                    if (!input_files.empty()) {
+                        std::string file_path = input_files.front().ToStdString();
+                        std::filesystem::path path(file_path);
+                        m_open_method = "file_" + path.extension().string();
                     }
+                }
+                catch (...) {
+                    BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ", file path exception!";
+                    m_open_method = "file";
                 }
             }
         }
@@ -1116,7 +1398,7 @@ std::string GUI_App::get_plugin_url(std::string name, std::string country_code)
 {
     std::string url = get_http_url(country_code);
 
-    std::string curr_version = BBL_PLUGIN_VERSION;
+    std::string curr_version = SLIC3R_VERSION;
     std::string using_version = curr_version.substr(0, 9) + "00";
     if (name == "cameratools")
         using_version = curr_version.substr(0, 6) + "00.00";
@@ -1228,10 +1510,10 @@ int GUI_App::download_plugin(std::string name, std::string package_name, Install
 
 
     if (download_url.empty()) {
-        BOOST_LOG_TRIVIAL(info) << "[download_plugin 1]: no available plugin found for this app version: " << BBL_PLUGIN_VERSION;
+        BOOST_LOG_TRIVIAL(info) << "[download_plugin 1]: no available plugin found for this app version: " << SLIC3R_VERSION;
         if (pro_fn) pro_fn(InstallStatusDownloadFailed, 0, cancel);
         j["result"] = "failed";
-        j["error_msg"] = "[download_plugin 1]: no available plugin found for this app version: " + std::string(BBL_PLUGIN_VERSION);
+        j["error_msg"] = "[download_plugin 1]: no available plugin found for this app version: " + std::string(SLIC3R_VERSION);
         return -1;
     }
     else if (pro_fn) {
@@ -1488,7 +1770,7 @@ bool GUI_App::check_networking_version()
     if (!network_ver.empty()) {
         BOOST_LOG_TRIVIAL(info) << "get_network_agent_version=" << network_ver;
     }
-    std::string studio_ver = BBL_PLUGIN_VERSION;
+    std::string studio_ver = SLIC3R_VERSION;
     if (network_ver.length() >= 8) {
         if (network_ver.substr(0,8) == studio_ver.substr(0,8)) {
             m_networking_compatible = true;
@@ -1895,7 +2177,7 @@ std::map<std::string, std::string> GUI_App::get_extra_header()
     std::map<std::string, std::string> extra_headers;
     extra_headers.insert(std::make_pair("X-BBL-Client-Type", "slicer"));
     extra_headers.insert(std::make_pair("X-BBL-Client-Name", SLIC3R_APP_NAME));
-    extra_headers.insert(std::make_pair("X-BBL-Client-Version", VersionInfo::convert_full_version(BBL_PLUGIN_VERSION)));
+    extra_headers.insert(std::make_pair("X-BBL-Client-Version", VersionInfo::convert_full_version(SLIC3R_VERSION)));
 #if defined(__WINDOWS__)
     extra_headers.insert(std::make_pair("X-BBL-OS-Type", "windows"));
 #elif defined(__APPLE__)
@@ -2081,7 +2363,7 @@ bool GUI_App::on_init_inner()
     }
 #endif
 
-    BOOST_LOG_TRIVIAL(info) << boost::format("gui mode, Current GalaxySlicer Version %1%")%SLIC3R_VERSION;
+    BOOST_LOG_TRIVIAL(info) << boost::format("gui mode, Current GalaxySlicer Version %1%")%GalaxySlicer_VERSION;
     // Enable this to get the default Win32 COMCTRL32 behavior of static boxes.
 //    wxSystemOptions::SetOption("msw.staticbox.optimized-paint", 0);
     // Enable this to disable Windows Vista themes for all wxNotebooks. The themes seem to lead to terrible
@@ -2159,7 +2441,7 @@ bool GUI_App::on_init_inner()
         int last_major = m_last_config_version->maj();
         int last_minor = m_last_config_version->min();
         int last_patch = m_last_config_version->patch()/100;
-        std::string studio_ver = BBL_PLUGIN_VERSION;
+        std::string studio_ver = SLIC3R_VERSION;
         int cur_major = atoi(studio_ver.substr(0,2).c_str());
         int cur_minor = atoi(studio_ver.substr(3,2).c_str());
         int cur_patch = atoi(studio_ver.substr(6,2).c_str());
@@ -2172,8 +2454,8 @@ bool GUI_App::on_init_inner()
         }
     }
 
-    if(app_config->get("version") != BBL_PLUGIN_VERSION) {
-        app_config->set("version", BBL_PLUGIN_VERSION);
+    if(app_config->get("version") != SLIC3R_VERSION) {
+        app_config->set("version", SLIC3R_VERSION);
     }
 
     GalaxySlicerSplashScreen * scrn = nullptr;
@@ -2372,7 +2654,7 @@ bool GUI_App::on_init_inner()
 
     sidebar().obj_list()->init();
     //sidebar().aux_list()->init_auxiliary();
-    //mainframe->m_auxiliary->init_auxiliary();
+    mainframe->m_project->init_auxiliary();
 
 //     update_mode(); // !!! do that later
     SetTopWindow(mainframe);
@@ -2901,14 +3183,17 @@ void GUI_App::UpdateDVCDarkUI(wxDataViewCtrl* dvc, bool highlited/* = false*/)
     UpdateDarkUI(dvc, highlited ? dark_mode() : false);
 #ifdef _MSW_DARK_MODE
     //dvc->RefreshHeaderDarkMode(&m_normal_font);
-    HWND hwnd = (HWND)dvc->GenericGetHeader()->GetHandle();
-    hwnd = GetWindow(hwnd, GW_CHILD);
-    if (hwnd != NULL)
-        NppDarkMode::SetDarkListViewHeader(hwnd);
-    wxItemAttr attr;
-    attr.SetTextColour(NppDarkMode::GetTextColor());
-    attr.SetFont(m_normal_font);
-    dvc->SetHeaderAttr(attr);
+    HWND hwnd;
+    if (!dvc->HasFlag(wxDV_NO_HEADER)) {
+        hwnd = (HWND) dvc->GenericGetHeader()->GetHandle();
+        hwnd = GetWindow(hwnd, GW_CHILD);
+        if (hwnd != NULL)
+            NppDarkMode::SetDarkListViewHeader(hwnd);
+        wxItemAttr attr;
+        attr.SetTextColour(NppDarkMode::GetTextColor());
+        attr.SetFont(m_normal_font);
+        dvc->SetHeaderAttr(attr);
+    }
 #endif //_MSW_DARK_MODE
     if (dvc->HasFlag(wxDV_ROW_LINES))
         dvc->SetAlternateRowColour(m_color_highlight_default);
@@ -3013,17 +3298,8 @@ void GUI_App::link_to_network_check()
     else if (country_code == "CN") {
         url = "https://status.bambulab.cn";
     }
-    else if (country_code == "ENV_CN_DEV") {
-        url = "https://status.bambu-lab.com";
-    }
-    else if (country_code == "ENV_CN_QA") {
-        url = "https://status.bambu-lab.com";
-    }
-    else if (country_code == "ENV_CN_PRE") {
-        url = "https://status.bambu-lab.com";
-    }
     else {
-        url = "https://status.bambu-lab.com";
+        url = "https://status.bambulab.com";
     }
     wxLaunchDefaultBrowser(url);
 }
@@ -3471,8 +3747,7 @@ void GUI_App::request_user_logout()
         bool     transfer_preset_changes = false;
         wxString header = _L("Some presets are modified.") + "\n" +
             _L("You can keep the modifield presets to the new project, discard or save changes as new presets.");
-        using ab        = UnsavedChangesDialog::ActionButtons;
-        wxGetApp().check_and_keep_current_preset_changes(_L("User logged out"), header, ab::KEEP | ab::SAVE, &transfer_preset_changes);
+        wxGetApp().check_and_keep_current_preset_changes(_L("User logged out"), header, ActionButtons::KEEP | ActionButtons::SAVE, &transfer_preset_changes);
 
         m_device_manager->clean_user_info();
         GUI::wxGetApp().sidebar().load_ams_list({}, {});
@@ -3883,7 +4158,7 @@ void GUI_App::check_track_enable()
     if (app_config && app_config->get("firstguide", "privacyuse") == "true") {
         //enable track event
         json header_json;
-        header_json["ver"] = BBL_PLUGIN_VERSION;
+        header_json["ver"] = SLIC3R_VERSION;
         wxString os_desc = wxGetOsDescription();
         int major = 0, minor = 0, micro = 0;
         header_json["os"] = std::string(os_desc.ToUTF8());
@@ -3896,6 +4171,10 @@ void GUI_App::check_track_enable()
         /* record studio start event */
         json j;
         j["user_mode"] = this->get_mode_str();
+        j["open_method"] = m_open_method;
+        if (m_agent) {
+            m_agent->track_event("studio_launch", j.dump());
+        }
     }
 }
 
@@ -4076,7 +4355,7 @@ void GUI_App::check_new_galaxyslicer_version(bool show_tips, int by_user)
                     best_release.set_min(current_version.min());
                     best_release.set_patch(current_version.patch());
 
-                    BOOST_LOG_TRIVIAL(info) << format("The GalaxySlicer version is V x.x.x therefore best pre & release was set to %1%.", best_pre.to_string_output());
+                    BOOST_LOG_TRIVIAL(info) << format("The GalaxySlicer version is V x.x.x therefore best pre & release was set to %1%.", best_pre.to_string());
                 }
                 //GalaxySlicer:
                 //If the slicer version is Vx.0.0. then the slicer version is set below the major version of the slicer. 
@@ -4086,7 +4365,7 @@ void GUI_App::check_new_galaxyslicer_version(bool show_tips, int by_user)
                     best_pre.set_maj(current_version.maj() - 1);
                     best_release.set_maj(current_version.maj() - 1);
 
-                    BOOST_LOG_TRIVIAL(info) << format("The GalaxySlicer version is V x.0.0 therefore best pre & release was set to %1%.", best_pre.to_string_output());
+                    BOOST_LOG_TRIVIAL(info) << format("The GalaxySlicer version is V x.0.0 therefore best pre & release was set to %1%.", best_pre.to_string());
                 }
 
                 std::string best_pre_url;
@@ -4114,7 +4393,7 @@ void GUI_App::check_new_galaxyslicer_version(bool show_tips, int by_user)
                         continue;
                     }
 
-                    BOOST_LOG_TRIVIAL(info) << format("Tag version: %1%", tag_version.to_string_output());
+                    BOOST_LOG_TRIVIAL(info) << format("Tag version: %1%", tag_version.to_string());
 
                     if (current_version == tag_version)
                     {
@@ -4150,8 +4429,8 @@ void GUI_App::check_new_galaxyslicer_version(bool show_tips, int by_user)
                     best_pre_content = best_release_content;
                 }
 
-                //BOOST_LOG_TRIVIAL(info) << format("Current version: %1%", current_version.to_string_output());
-                //BOOST_LOG_TRIVIAL(info) << format("Online version: %1%", best_pre.to_string_output());
+                //BOOST_LOG_TRIVIAL(info) << format("Current version: %1%", current_version.to_string());
+                //BOOST_LOG_TRIVIAL(info) << format("Online version: %1%", best_pre.to_string());
 
                 // if we're the most recent, don't do anything
                 if ((i_am_pre ? best_pre : best_release) <= current_version)
@@ -4165,10 +4444,10 @@ void GUI_App::check_new_galaxyslicer_version(bool show_tips, int by_user)
                     return;
                 }
 
-                //BOOST_LOG_TRIVIAL(info) << format("Got %1% online version: `%2%`. Sending to GUI thread...", SLIC3R_APP_NAME, i_am_pre ? best_pre.to_string_output(): best_release.to_string_output());
+                //BOOST_LOG_TRIVIAL(info) << format("Got %1% online version: `%2%`. Sending to GUI thread...", SLIC3R_APP_NAME, i_am_pre ? best_pre.to_string(): best_release.to_string());
 
                 version_info.url = i_am_pre ? best_pre_url : best_release_url;
-                version_info.version_str = i_am_pre ? best_pre.to_string_output() : best_release.to_string_output();
+                version_info.version_str = i_am_pre ? best_pre.to_string() : best_release.to_string();
                 version_info.description = i_am_pre ? best_pre_content : best_release_content;
                 version_info.force_upgrade = false;
 
@@ -4530,7 +4809,7 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg)
         cancelFn = [this, dlg]() {
             return m_is_closing || dlg->WasCanceled();
         };
-        finishFn = [this, userid = m_agent->get_user_id(), dlg, t = std::weak_ptr(m_user_sync_token)](bool ok) {
+        finishFn = [this, userid = m_agent->get_user_id(), dlg, t = std::weak_ptr<int>(m_user_sync_token)](bool ok) {
             CallAfter([=]{
                 dlg->Destroy();
                 if (ok && m_agent && t.lock() == m_user_sync_token && userid == m_agent->get_user_id()) reload_settings();
@@ -4538,7 +4817,7 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg)
         };
     }
     else {
-        finishFn = [this, userid = m_agent->get_user_id(), t = std::weak_ptr(m_user_sync_token)](bool ok) {
+        finishFn = [this, userid = m_agent->get_user_id(), t = std::weak_ptr<int>(m_user_sync_token)](bool ok) {
             CallAfter([=] {
                 if (ok && m_agent && t.lock() == m_user_sync_token && userid == m_agent->get_user_id()) reload_settings();
             });
@@ -4546,7 +4825,7 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg)
     }
 
     m_sync_update_thread = Slic3r::create_thread(
-        [this, progressFn, cancelFn, finishFn, t = std::weak_ptr(m_user_sync_token)] {
+        [this, progressFn, cancelFn, finishFn, t = std::weak_ptr<int>(m_user_sync_token)] {
             // get setting list, update setting list
             std::string version = preset_bundle->get_vendor_profile_version(PresetBundle::BBL_BUNDLE).to_string();
             int ret = m_agent->get_setting_list2(version, [this](auto info) {
@@ -5397,11 +5676,11 @@ std::vector<std::pair<unsigned int, std::string>> GUI_App::get_selected_presets(
 bool GUI_App::check_and_save_current_preset_changes(const wxString& caption, const wxString& header, bool remember_choice/* = true*/, bool dont_save_insted_of_discard/* = false*/)
 {
     if (has_current_preset_changes()) {
-        int act_buttons = UnsavedChangesDialog::ActionButtons::SAVE;
+        int act_buttons = ActionButtons::SAVE;
         if (dont_save_insted_of_discard)
-            act_buttons |= UnsavedChangesDialog::ActionButtons::DONT_SAVE;
+            act_buttons |= ActionButtons::DONT_SAVE;
         if (remember_choice)
-            act_buttons |= UnsavedChangesDialog::ActionButtons::REMEMBER_CHOISE;
+            act_buttons |= ActionButtons::REMEMBER_CHOISE;
         UnsavedChangesDialog dlg(caption, header, "", act_buttons);
         if (dlg.ShowModal() == wxID_CANCEL)
             return false;
@@ -5673,7 +5952,7 @@ void GUI_App::OSXStoreOpenFiles(const wxArrayString &fileNames)
 
 void GUI_App::MacOpenURL(const wxString& url)
 {
-    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "get mac url " << url;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "get mac url " << url;
 
     if (!url.empty() && boost::starts_with(url, "galaxysliceropen://")) {
         auto input_str_arr = split_str(url.ToStdString(), "galaxysliceropen://");
@@ -5684,7 +5963,7 @@ void GUI_App::MacOpenURL(const wxString& url)
         }
 
         std::string download_file_url = url_decode(download_origin_url);
-        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << download_file_url;
+        BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << download_file_url;
         if (!download_file_url.empty() && (boost::starts_with(download_file_url, "http://") || boost::starts_with(download_file_url, "https://"))) {
 
             if (m_post_initialized) {
@@ -5857,6 +6136,12 @@ void GUI_App::open_mall_page_dialog()
 
     if (result < 0) {
        link_url = host_url + model_url;
+    }
+
+    if (link_url.find("?") != std::string::npos) {
+        link_url += "&from=GalaxySlicer";
+    } else {
+        link_url += "?from=GalaxySlicer";
     }
 
     wxLaunchDefaultBrowser(link_url);
@@ -6102,8 +6387,7 @@ void GUI_App::gcode_thumbnails_debug()
                     width = 0;
                     height = 0;
                     rows.clear();
-                }
-                else if (reading_image)
+                } else if (reading_image)
                     row += gcode_line.substr(2);
             }
         }

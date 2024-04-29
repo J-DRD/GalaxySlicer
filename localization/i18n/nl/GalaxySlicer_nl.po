@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GalaxySlicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-23 16:42+0100\n"
+"POT-Creation-Date: 2024-01-28 12:43+0100\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -213,6 +213,9 @@ msgstr "mm"
 msgid "Position"
 msgstr "Positie"
 
+#. TRN - Input label. Be short as possible
+#. Angle between Y axis and text line direction.
+#. TRN - Input label. Be short as possible
 msgid "Rotation"
 msgstr "Rotatie"
 
@@ -252,6 +255,7 @@ msgstr "Wereld coördinaten"
 msgid "°"
 msgstr "°"
 
+#. TRN - Input label. Be short as possible
 msgid "Size"
 msgstr "Maat"
 
@@ -260,6 +264,113 @@ msgstr "%"
 
 msgid "uniform scale"
 msgstr "Uniform schalen"
+
+msgid "Planar"
+msgstr ""
+
+msgid "Dovetail"
+msgstr ""
+
+msgid "Auto"
+msgstr "Automatisch"
+
+msgid "Manual"
+msgstr ""
+
+msgid "Plug"
+msgstr "Plug"
+
+msgid "Dowel"
+msgstr "Deuvel"
+
+msgid "Snap"
+msgstr ""
+
+msgid "Prism"
+msgstr ""
+
+msgid "Frustum"
+msgstr "Frustum"
+
+msgid "Square"
+msgstr "Vierkant"
+
+msgid "Hexagon"
+msgstr "Zeskant"
+
+msgid "Keep orientation"
+msgstr ""
+
+msgid "Place on cut"
+msgstr "Op kniplijn plaatsen"
+
+msgid "Flip upside down"
+msgstr ""
+
+msgid "Connectors"
+msgstr "Verbindingen"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Style"
+msgstr "Stijl"
+
+msgid "Shape"
+msgstr "Vorm"
+
+#. TRN - Input label. Be short as possible
+#. Size in emboss direction
+#. TRN - Input label. Be short as possible
+msgid "Depth"
+msgstr ""
+
+msgid "Groove"
+msgstr ""
+
+msgid "Width"
+msgstr "Breedte"
+
+msgid "Flap Angle"
+msgstr ""
+
+msgid "Groove Angle"
+msgstr ""
+
+msgid "Part"
+msgstr "Onderdeel"
+
+msgid "Object"
+msgstr "Voorwerp"
+
+msgid ""
+"Click to flip the cut plane\n"
+"Drag to move the cut plane"
+msgstr ""
+
+msgid ""
+"Click to flip the cut plane\n"
+"Drag to move the cut plane\n"
+"Right-click a part to assign it to the other side"
+msgstr ""
+
+msgid "Move cut plane"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Change cut mode"
+msgstr ""
+
+msgid "Tolerance"
+msgstr "Speling"
+
+msgid "Drag"
+msgstr "Drag"
+
+msgid "Draw cut line"
+msgstr ""
 
 msgid "Left click"
 msgstr "Left click"
@@ -272,9 +383,6 @@ msgstr "Right click"
 
 msgid "Remove connector"
 msgstr "Remove connector"
-
-msgid "Drag"
-msgstr "Drag"
 
 msgid "Move connector"
 msgstr "Move connector"
@@ -291,29 +399,63 @@ msgstr "Select all connectors"
 msgid "Cut"
 msgstr "Knippen"
 
-msgid "non-mainifold edges be caused by cut tool, do you want to fix it now?"
+msgid "Rotate cut plane"
 msgstr ""
 
-msgid "Repairing model object"
-msgstr "Model object repareren"
+msgid "Remove connectors"
+msgstr "Verbindingen verwijderen"
 
-msgid "Connector"
-msgstr "Connector"
+msgid "Bulge"
+msgstr ""
 
-msgid "Movement:"
-msgstr "Beweging:"
+msgid "Bulge proportion related to radius"
+msgstr ""
 
-msgid "Movement"
-msgstr "Beweging"
+msgid "Space"
+msgstr "Ruimte"
 
-msgid "Height"
-msgstr "Hoogte"
+msgid "Space proportion related to radius"
+msgstr ""
+
+msgid "Confirm connectors"
+msgstr "Verbindingen bevestigen"
+
+msgid "Cancel"
+msgstr "Annuleren"
+
+msgid "Build Volume"
+msgstr ""
+
+msgid "Flip cut plane"
+msgstr ""
+
+msgid "Groove change"
+msgstr ""
+
+msgid "Reset"
+msgstr "Terugzetten"
+
+#. TRN: This is an entry in the Undo/Redo stack. The whole line will be 'Edited: (name of whatever was edited)'.
+msgid "Edited"
+msgstr ""
+
+msgid "Cut position"
+msgstr ""
+
+msgid "Reset cutting plane"
+msgstr ""
 
 msgid "Edit connectors"
 msgstr "Edit connectors"
 
 msgid "Add connectors"
 msgstr "Add connectors"
+
+msgid "Reset cut"
+msgstr ""
+
+msgid "Reset cutting plane and remove connectors"
+msgstr ""
 
 msgid "Upper part"
 msgstr "Upper part"
@@ -324,9 +466,6 @@ msgstr "Lower part"
 msgid "Keep"
 msgstr "Keep"
 
-msgid "Place on cut"
-msgstr "Place on cut"
-
 msgid "Flip"
 msgstr "Flip"
 
@@ -336,50 +475,8 @@ msgstr "After cut"
 msgid "Cut to parts"
 msgstr "In delen knippen"
 
-msgid "Auto Segment"
-msgstr "Automatische segmenteren"
-
 msgid "Perform cut"
 msgstr "Knippen uitvoeren"
-
-msgid "Reset"
-msgstr "Terugzetten"
-
-msgid "Connectors"
-msgstr "Connectors"
-
-msgid "Type"
-msgstr "Type"
-
-msgid "Style"
-msgstr "Stijl"
-
-msgid "Shape"
-msgstr "Vorm"
-
-msgid "Depth ratio"
-msgstr "Depth ratio"
-
-msgid "Remove connectors"
-msgstr "Remove connectors"
-
-msgid "Prizm"
-msgstr "Prizm"
-
-msgid "Frustum"
-msgstr "Frustum"
-
-msgid "Square"
-msgstr "Square"
-
-msgid "Hexagon"
-msgstr "Hexagon"
-
-msgid "Confirm connectors"
-msgstr "Confirm connectors"
-
-msgid "Cancel"
-msgstr "Annuleren"
 
 msgid "Warning"
 msgstr "Waarschuwing"
@@ -387,36 +484,49 @@ msgstr "Waarschuwing"
 msgid "Invalid connectors detected"
 msgstr "Invalid connectors detected"
 
-msgid "connector is out of cut contour"
-msgstr "connector is out of cut contour"
+#, c-format, boost-format
+msgid "%1$d connector is out of cut contour"
+msgid_plural "%1$d connectors are out of cut contour"
+msgstr[0] ""
+msgstr[1] ""
 
-msgid "connectors are out of cut contour"
-msgstr "connectors are out of cut contour"
-
-msgid "connector is out of object"
-msgstr "connector is out of object"
-
-msgid "connectors is out of object"
-msgstr "Connectors must be on object surface."
+#, c-format, boost-format
+msgid "%1$d connector is out of object"
+msgid_plural "%1$d connectors are out of object"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Some connectors are overlapped"
 msgstr "Some connectors are overlapped"
 
-msgid ""
-"Invalid state. \n"
-"No one part is selected for keep after cut"
+msgid "Select at least one object to keep after cutting."
 msgstr ""
 "Invalid state. \n"
 "No one part is selected to keep after cut"
 
-msgid "Plug"
-msgstr "Plug"
+msgid "Cut plane is placed out of object"
+msgstr ""
 
-msgid "Dowel"
-msgstr "Dowel"
+msgid "Cut plane with groove is invalid"
+msgstr ""
 
-msgid "Tolerance"
-msgstr "Tolerance"
+msgid "Connector"
+msgstr "Connector"
+
+msgid "Cut by Plane"
+msgstr ""
+
+msgid "non-manifold edges be caused by cut tool, do you want to fix it now?"
+msgstr ""
+
+msgid "Repairing model object"
+msgstr "Model object repareren"
+
+msgid "Cut by line"
+msgstr ""
+
+msgid "Delete connector"
+msgstr ""
 
 msgid "Mesh name"
 msgstr "Constructie name"
@@ -514,6 +624,8 @@ msgstr "Naad schilderen verlaten"
 msgid "Paint-on seam editing"
 msgstr "Paint-on naadbewerking"
 
+#. TRN - Input label. Be short as possible
+#. Select look of letter shape
 msgid "Font"
 msgstr "Lettertype"
 
@@ -548,6 +660,655 @@ msgstr "Rotate text"
 
 msgid "Text shape"
 msgstr "Tekstvorm"
+
+msgid "Set Mirror"
+msgstr ""
+
+msgid "Embossed text"
+msgstr ""
+
+msgid "Enter emboss gizmo"
+msgstr ""
+
+msgid "Leave emboss gizmo"
+msgstr ""
+
+msgid "Embossing actions"
+msgstr ""
+
+msgid "Emboss"
+msgstr ""
+
+msgid "Text-Rotate"
+msgstr ""
+
+msgid "NORMAL"
+msgstr ""
+
+msgid "SMALL"
+msgstr ""
+
+msgid "ITALIC"
+msgstr ""
+
+msgid "SWISS"
+msgstr ""
+
+msgid "MODERN"
+msgstr ""
+
+msgid "First font"
+msgstr ""
+
+msgid "Default font"
+msgstr ""
+
+msgid "Advanced"
+msgstr "Geavanceerd"
+
+msgid ""
+"The text cannot be written using the selected font. Please try choosing a "
+"different font."
+msgstr ""
+
+msgid "Embossed text cannot contain only white spaces."
+msgstr ""
+
+msgid "Text contains character glyph (represented by '?') unknown by font."
+msgstr ""
+
+msgid "Text input doesn't show font skew."
+msgstr ""
+
+msgid "Text input doesn't show font boldness."
+msgstr ""
+
+msgid "Text input doesn't show gap between lines."
+msgstr ""
+
+msgid "Too tall, diminished font height inside text input."
+msgstr ""
+
+msgid "Too small, enlarged font height inside text input."
+msgstr ""
+
+msgid "Text doesn't show current horizontal alignment."
+msgstr ""
+
+msgid "Revert font changes."
+msgstr ""
+
+#, boost-format
+msgid "Font \"%1%\" can't be selected."
+msgstr ""
+
+msgid "Operation"
+msgstr ""
+
+msgid "Join"
+msgstr ""
+
+msgid "Click to change text into object part."
+msgstr ""
+
+msgid "You can't change a type of the last solid part of the object."
+msgstr ""
+
+msgctxt "EmbossOperation"
+msgid "Cut"
+msgstr ""
+
+msgid "Click to change part type into negative volume."
+msgstr ""
+
+msgid "Modifier"
+msgstr "Aanpasser"
+
+msgid "Click to change part type into modifier."
+msgstr ""
+
+msgid "Change Text Type"
+msgstr ""
+
+#, boost-format
+msgid "Rename style(%1%) for embossing text"
+msgstr ""
+
+msgid "Name can't be empty."
+msgstr ""
+
+msgid "Name has to be unique."
+msgstr ""
+
+msgid "OK"
+msgstr "Offline"
+
+msgid "Rename style"
+msgstr ""
+
+msgid "Rename current style."
+msgstr ""
+
+msgid "Can't rename temporary style."
+msgstr ""
+
+msgid "First Add style to list."
+msgstr ""
+
+#, boost-format
+msgid "Save %1% style"
+msgstr ""
+
+msgid "No changes to save."
+msgstr ""
+
+msgid "New name of style"
+msgstr ""
+
+msgid "Save as new style"
+msgstr ""
+
+msgid "Only valid font can be added to style."
+msgstr ""
+
+msgid "Add style to my list."
+msgstr ""
+
+msgid "Save as new style."
+msgstr ""
+
+msgid "Remove style"
+msgstr ""
+
+msgid "Can't remove the last existing style."
+msgstr ""
+
+#, boost-format
+msgid "Are you sure you want to permanently remove the \"%1%\" style?"
+msgstr ""
+
+#, boost-format
+msgid "Delete \"%1%\" style."
+msgstr ""
+
+#, boost-format
+msgid "Can't delete \"%1%\". It is last style."
+msgstr ""
+
+#, boost-format
+msgid "Can't delete temporary style \"%1%\"."
+msgstr ""
+
+#, boost-format
+msgid "Modified style \"%1%\""
+msgstr ""
+
+#, boost-format
+msgid "Current style is \"%1%\""
+msgstr ""
+
+#, boost-format
+msgid ""
+"Changing style to \"%1%\" will discard current style modification.\n"
+"\n"
+"Would you like to continue anyway?"
+msgstr ""
+
+msgid "Not valid style."
+msgstr ""
+
+#, boost-format
+msgid "Style \"%1%\" can't be used and will be removed from a list."
+msgstr ""
+
+msgid "Unset italic"
+msgstr ""
+
+msgid "Set italic"
+msgstr ""
+
+msgid "Unset bold"
+msgstr ""
+
+msgid "Set bold"
+msgstr ""
+
+msgid "Revert text size."
+msgstr ""
+
+msgid "Revert embossed depth."
+msgstr ""
+
+msgid ""
+"Advanced options cannot be changed for the selected font.\n"
+"Select another font."
+msgstr ""
+
+msgid "Revert using of model surface."
+msgstr ""
+
+msgid "Revert Transformation per glyph."
+msgstr ""
+
+msgid "Set global orientation for whole text."
+msgstr ""
+
+msgid "Set position and orientation per glyph."
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Left"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Center"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Right"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Top"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Middle"
+msgstr ""
+
+msgctxt "Alignment"
+msgid "Bottom"
+msgstr ""
+
+msgid "Revert alignment."
+msgstr ""
+
+#. TRN EmbossGizmo: font units
+msgid "points"
+msgstr ""
+
+msgid "Revert gap between characters"
+msgstr ""
+
+msgid "Distance between characters"
+msgstr ""
+
+msgid "Revert gap between lines"
+msgstr ""
+
+msgid "Distance between lines"
+msgstr ""
+
+msgid "Undo boldness"
+msgstr ""
+
+msgid "Tiny / Wide glyphs"
+msgstr ""
+
+msgid "Undo letter's skew"
+msgstr ""
+
+msgid "Italic strength ratio"
+msgstr ""
+
+msgid "Undo translation"
+msgstr ""
+
+msgid "Distance of the center of the text to the model surface."
+msgstr ""
+
+msgid "Undo rotation"
+msgstr ""
+
+msgid "Rotate text Clock-wise."
+msgstr ""
+
+msgid "Unlock the text's rotation when moving text along the object's surface."
+msgstr ""
+
+msgid "Lock the text's rotation when moving text along the object's surface."
+msgstr ""
+
+msgid "Select from True Type Collection."
+msgstr ""
+
+msgid "Set text to face camera"
+msgstr ""
+
+msgid "Orient the text towards the camera."
+msgstr ""
+
+#, boost-format
+msgid ""
+"Can't load exactly same font(\"%1%\"). Aplication selected a similar "
+"one(\"%2%\"). You have to specify font for enable edit text."
+msgstr ""
+
+msgid "No symbol"
+msgstr ""
+
+msgid "Loading"
+msgstr "Laden"
+
+msgid "In queue"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Height of one text line - Font Ascent
+msgid "Height"
+msgstr "Hoogte"
+
+#. TRN - Input label. Be short as possible
+#. Copy surface of model on surface of the embossed text
+#. TRN - Input label. Be short as possible
+msgid "Use surface"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Option to change projection on curved surface
+#. for each character(glyph) in text separately
+msgid "Per glyph"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Align Top|Middle|Bottom and Left|Center|Right
+msgid "Alignment"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Char gap"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Line gap"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Boldness"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Like Font italic
+msgid "Skew ratio"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Distance from model surface to be able
+#. move text as part fully into not flat surface
+#. move text as modifier fully out of not flat surface
+#. TRN - Input label. Be short as possible
+msgid "From surface"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+#. Keep vector from bottom to top of text aligned with printer Y axis
+msgid "Keep up"
+msgstr ""
+
+#. TRN - Input label. Be short as possible.
+#. Some Font file contain multiple fonts inside and
+#. this is numerical selector of font inside font collections
+msgid "Collection"
+msgstr ""
+
+msgid "Enter SVG gizmo"
+msgstr ""
+
+msgid "Leave SVG gizmo"
+msgstr ""
+
+msgid "SVG actions"
+msgstr ""
+
+msgid "SVG"
+msgstr ""
+
+#. TRN This is an item label in the undo-redo stack.
+msgid "SVG-Rotate"
+msgstr ""
+
+#, boost-format
+msgid "Opacity (%1%)"
+msgstr ""
+
+#, boost-format
+msgid "Color gradient (%1%)"
+msgstr ""
+
+msgid "Undefined fill type"
+msgstr ""
+
+msgid "Linear gradient"
+msgstr ""
+
+msgid "Radial gradient"
+msgstr ""
+
+msgid "Open filled path"
+msgstr ""
+
+msgid "Undefined stroke type"
+msgstr ""
+
+msgid "Path can't be healed from selfintersection and multiple points."
+msgstr ""
+
+msgid ""
+"Final shape constains selfintersection or multiple points with same "
+"coordinate."
+msgstr ""
+
+#, boost-format
+msgid "Shape is marked as invisible (%1%)."
+msgstr ""
+
+#. TRN: The first placeholder is shape identifier, the second one is text describing the problem.
+#, boost-format
+msgid "Fill of shape (%1%) contains unsupported: %2%."
+msgstr ""
+
+#, boost-format
+msgid "Stroke of shape (%1%) is too thin (minimal width is %2% mm)."
+msgstr ""
+
+#, boost-format
+msgid "Stroke of shape (%1%) contains unsupported: %2%."
+msgstr ""
+
+msgid "Face the camera"
+msgstr ""
+
+#. TRN - Preview of filename after clear local filepath.
+msgid "Unknown filename"
+msgstr ""
+
+#, boost-format
+msgid "SVG file path is \"%1%\""
+msgstr ""
+
+msgid "Reload SVG file from disk."
+msgstr ""
+
+msgid "Change file"
+msgstr ""
+
+msgid "Change to another .svg file"
+msgstr ""
+
+msgid "Forget the file path"
+msgstr ""
+
+msgid ""
+"Do NOT save local path to 3MF file.\n"
+"Also disables 'reload from disk' option."
+msgstr ""
+
+#. TRN: An menu option to convert the SVG into an unmodifiable model part.
+msgid "Bake"
+msgstr ""
+
+#. TRN: Tooltip for the menu item.
+msgid "Bake into model as uneditable part"
+msgstr ""
+
+msgid "Save as"
+msgstr ""
+
+msgid "Save SVG file"
+msgstr ""
+
+msgid "Save as '.svg' file"
+msgstr ""
+
+msgid "Size in emboss direction."
+msgstr ""
+
+#. TRN: The placeholder contains a number.
+#, boost-format
+msgid "Scale also changes amount of curve samples (%1%)"
+msgstr ""
+
+msgid "Width of SVG."
+msgstr ""
+
+msgid "Height of SVG."
+msgstr ""
+
+msgid "Lock/unlock the aspect ratio of the SVG."
+msgstr ""
+
+msgid "Reset scale"
+msgstr ""
+
+msgid "Resize"
+msgstr ""
+
+msgid "Distance of the center of the SVG to the model surface."
+msgstr ""
+
+msgid "Reset distance"
+msgstr ""
+
+msgid "Reset rotation"
+msgstr ""
+
+msgid "Lock/unlock rotation angle when dragging above the surface."
+msgstr ""
+
+msgid "Mirror vertically"
+msgstr ""
+
+msgid "Mirror horizontally"
+msgstr ""
+
+#. TRN: This is the name of the action that shows in undo/redo stack (changing part type from SVG to something else).
+msgid "Change SVG Type"
+msgstr ""
+
+#. TRN - Input label. Be short as possible
+msgid "Mirror"
+msgstr "Spiegelen"
+
+msgid "Choose SVG file for emboss:"
+msgstr ""
+
+#, boost-format
+msgid "File does NOT exist (%1%)."
+msgstr ""
+
+#, boost-format
+msgid "Filename has to end with \".svg\" but you selected %1%"
+msgstr ""
+
+#, boost-format
+msgid "Nano SVG parser can't load from file (%1%)."
+msgstr ""
+
+#, boost-format
+msgid "SVG file does NOT contain a single path to be embossed (%1%)."
+msgstr ""
+
+msgid "Vertex"
+msgstr ""
+
+msgid "Edge"
+msgstr ""
+
+msgid "Plane"
+msgstr ""
+
+msgid "Point on edge"
+msgstr ""
+
+msgid "Point on circle"
+msgstr ""
+
+msgid "Point on plane"
+msgstr ""
+
+msgid "Center of edge"
+msgstr ""
+
+msgid "Center of circle"
+msgstr ""
+
+msgid "ShiftLeft mouse button"
+msgstr ""
+
+msgid "Select feature"
+msgstr ""
+
+msgid "Select point"
+msgstr ""
+
+msgid "Delete"
+msgstr "Verwijderen"
+
+msgid "Restart selection"
+msgstr ""
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "Unselect"
+msgstr ""
+
+msgid "Measure"
+msgstr ""
+
+msgid "Edit to scale"
+msgstr ""
+
+msgctxt "Verb"
+msgid "Scale"
+msgstr ""
+
+msgid "None"
+msgstr "Geen"
+
+msgid "Diameter"
+msgstr "Diameter"
+
+msgid "Length"
+msgstr "Lengte"
+
+msgid "Selection"
+msgstr ""
+
+msgid "Copy to clipboard"
+msgstr "Kopieer naar klembord"
+
+msgid "Perpendicular distance"
+msgstr ""
+
+msgid "Distance"
+msgstr ""
+
+msgid "Direct distance"
+msgstr ""
+
+msgid "Distance XYZ"
+msgstr ""
 
 msgid "Ctrl+"
 msgstr "Ctrl+"
@@ -618,6 +1379,9 @@ msgstr "Kritische fout"
 #, boost-format
 msgid "GalaxySlicer got an unhandled exception: %1%"
 msgstr ""
+
+msgid "Untitled"
+msgstr "Naamloos"
 
 msgid "Downloading Bambu Network Plug-in"
 msgstr "Bambu Netwerk Plug-in downloaden"
@@ -734,9 +1498,6 @@ msgstr ""
 msgid "Sync user presets"
 msgstr ""
 
-msgid "Loading"
-msgstr "Laden"
-
 msgid "Loading user preset"
 msgstr "Voorinstelling voor gebruiker laden"
 
@@ -766,9 +1527,6 @@ msgstr "Selecteer een G-code bestand:"
 
 msgid "Import File"
 msgstr "Import File"
-
-msgid "Delete"
-msgstr "Verwijderen"
 
 msgid "Choose files"
 msgstr "Kies bestanden"
@@ -840,9 +1598,6 @@ msgstr "Veeg opties"
 msgid "Bed adhension"
 msgstr "Printbed hechting"
 
-msgid "Advanced"
-msgstr "Geavanceerd"
-
 msgid "Add part"
 msgstr "Onderdeel toevoegen"
 
@@ -909,8 +1664,8 @@ msgstr ""
 msgid "Torus"
 msgstr ""
 
-msgid "Orca Cube"
-msgstr "Orca-kubus"
+msgid "Galaxy Cube"
+msgstr ""
 
 msgid "3DBenchy"
 msgstr "3DBenchy"
@@ -924,16 +1679,10 @@ msgstr "Voron-kubus"
 msgid "Stanford Bunny"
 msgstr ""
 
-msgid "Galaxy Cube"
-msgstr ""
-
 msgid "Galaxy Flower"
 msgstr ""
 
 msgid "Text"
-msgstr ""
-
-msgid "SVG"
 msgstr ""
 
 msgid "Height range Modifier"
@@ -1064,9 +1813,6 @@ msgstr "Langs de Z as"
 
 msgid "Mirror along the Z axis"
 msgstr "Spiegelen langs de Z as"
-
-msgid "Mirror"
-msgstr "Spiegelen"
 
 msgid "Mirror object"
 msgstr "Spiegel object"
@@ -1346,12 +2092,6 @@ msgstr "Height ranges"
 msgid "Settings for height range"
 msgstr "Settings for height range"
 
-msgid "Object"
-msgstr "Voorwerp"
-
-msgid "Part"
-msgstr "Onderdeel"
-
 msgid "Layer"
 msgstr "Laag"
 
@@ -1377,9 +2117,6 @@ msgstr ""
 
 msgid "Negative Part"
 msgstr "Negatief deel"
-
-msgid "Modifier"
-msgstr "Aanpasser"
 
 msgid "Support Blocker"
 msgstr "Support blokkade"
@@ -1460,9 +2197,6 @@ msgstr "Vulling (infill) dichtheid(%)"
 msgid "Auto Brim"
 msgstr "Brim automatisch instellen"
 
-msgid "Auto"
-msgstr "Automatisch"
-
 msgid "Mouse ear"
 msgstr ""
 
@@ -1537,9 +2271,6 @@ msgstr "Aangepaste G-code"
 
 msgid "Enter Custom G-code used on current layer:"
 msgstr "Voer de aangepaste G-code in die op de huidige laag wordt gebruikt:"
-
-msgid "OK"
-msgstr "Offline"
 
 msgid "Jump to Layer"
 msgstr "Spring naar laag"
@@ -2446,9 +3177,6 @@ msgstr "Upload inplannen in `%1%`. Zie Venster -> Print Host Upload Queue"
 msgid "Origin"
 msgstr "Begin"
 
-msgid "Diameter"
-msgstr "Diameter"
-
 msgid "Size in X and Y of the rectangular plate."
 msgstr "Maat in X en Y van de vierkante printplaat."
 
@@ -3005,6 +3733,9 @@ msgstr "Tijd"
 msgid "Percent"
 msgstr "Procent"
 
+msgid "Used filament"
+msgstr "Verbruikt filament"
+
 msgid "Layer Height (mm)"
 msgstr "Laaghoogte (mm)"
 
@@ -3022,9 +3753,6 @@ msgstr "Temperatuur (°C)"
 
 msgid "Volumetric flow rate (mm³/s)"
 msgstr "Volumestroom (mm³/s)"
-
-msgid "Used filament"
-msgstr "Verbruikt filament"
 
 msgid "Travel"
 msgstr "Verplaatsen"
@@ -3323,6 +4051,15 @@ msgstr "Live gaan"
 
 msgid "Resolution"
 msgstr "Resolutie"
+
+msgid "Enable"
+msgstr "Inschakelen"
+
+msgid "Hostname or IP"
+msgstr ""
+
+msgid "Custom camera source"
+msgstr ""
 
 msgid "Show \"Live Video\" guide page."
 msgstr "Toon \"Live Video\" gids pagina."
@@ -3776,6 +4513,12 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
+msgid ""
+"\n"
+"Hint: Make sure you have added the corresponding printer before importing "
+"the configs."
+msgstr ""
+
 msgid "Import result"
 msgstr "Importeer resultaat"
 
@@ -4099,6 +4842,9 @@ msgstr "MicroSD-kaart"
 
 msgid "Camera Setting"
 msgstr "Camera-instelling"
+
+msgid "Switch Camera View"
+msgstr ""
 
 msgid "Control"
 msgstr "Besturing"
@@ -4557,11 +5303,11 @@ msgstr ""
 msgid "Lock current plate"
 msgstr ""
 
-msgid "Customize current plate"
+msgid "Edit current plate name"
 msgstr ""
 
-msgid "Untitled"
-msgstr "Naamloos"
+msgid "Customize current plate"
+msgstr ""
 
 #, boost-format
 msgid " plate %1%:"
@@ -5202,6 +5948,9 @@ msgid "Login Region"
 msgstr "Inlogregio"
 
 msgid "Stealth Mode"
+msgstr ""
+
+msgid "Check for stable updates only"
 msgstr ""
 
 msgid "Metric"
@@ -6104,6 +6853,11 @@ msgstr ""
 "independent support layer height"
 
 msgid ""
+"Layer height is too small.\n"
+"It will set to min_layer_height\n"
+msgstr ""
+
+msgid ""
 "Layer height exceeds the limit in Printer Settings -> Extruder -> Layer "
 "height limits ,this may cause printing quality issues."
 msgstr ""
@@ -6141,6 +6895,9 @@ msgid "Wall generator"
 msgstr "Wandgenerator"
 
 msgid "Walls and surfaces"
+msgstr ""
+
+msgid "Small Area Infill Flow Compensation (experimental)"
 msgstr ""
 
 msgid "Bridging"
@@ -6632,11 +7389,29 @@ msgstr "Algemeen"
 msgid "Capabilities"
 msgstr "Mogelijkheden"
 
+msgid "Show all presets (including incompatible)"
+msgstr "Toon alle presets (inclusief incompatibele)"
+
 msgid "Select presets to compare"
 msgstr "Select presets to compare"
 
-msgid "Show all presets (including incompatible)"
-msgstr "Toon alle presets (inclusief incompatibele)"
+msgid ""
+"You can only transfer to current active profile because it has been modified."
+msgstr ""
+
+msgid ""
+"Transfer the selected options from left preset to the right.\n"
+"Note: New modified presets will be selected in settings tabs after close "
+"this dialog."
+msgstr ""
+
+msgid "Transfer values from left to right"
+msgstr ""
+
+msgid ""
+"If enabled, this dialog can be used for transver selected values from left "
+"to right preset."
+msgstr ""
 
 msgid "Add File"
 msgstr "Bestand toevoegen"
@@ -6650,6 +7425,9 @@ msgstr "Omslag"
 #, boost-format
 msgid "The name \"%1%\" already exists."
 msgstr "De naam \"%1%\" bestaat reeds."
+
+msgid "Back"
+msgstr "Achterzijde"
 
 msgid "Basic Info"
 msgstr "Basisinfo"
@@ -6759,8 +7537,8 @@ msgid "Flushing volumes for filament change"
 msgstr "Volumes reinigen voor filament wijziging"
 
 msgid ""
-"Studio would re-calculate your flushing volumes everytime the filaments "
-"color changed. You could disable the auto-calculate in Bambu Studio > "
+"Galaxy would re-calculate your flushing volumes everytime the filaments "
+"color changed. You could disable the auto-calculate in GalaxySlicer  > "
 "Preferences"
 msgstr ""
 
@@ -6823,9 +7601,6 @@ msgstr "⌘+Shift+G"
 
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
-
-msgid "Copy to clipboard"
-msgstr "Kopieer naar klembord"
 
 msgid "Paste from clipboard"
 msgstr "Plakken vanuit klembord"
@@ -6940,9 +7715,6 @@ msgstr "Shift+willekeurige pijl"
 msgid "Movement step set to 1 mm"
 msgstr "Bewegingsinterval ingesteld op 1mm"
 
-msgid "Esc"
-msgstr "Esc"
-
 msgid "keyboard 1-9: set filament for object/part"
 msgstr "Toets 1-9: kies filament voor het object/onderdeel"
 
@@ -6991,7 +7763,16 @@ msgstr "Gizmo SLA-ondersteuningspunten"
 msgid "Gizmo FDM paint-on seam"
 msgstr "Gizmo FDM seam schilderen"
 
-msgid "Swtich between Prepare/Prewview"
+msgid "Gizmo Text emboss / engrave"
+msgstr ""
+
+msgid "Zoom in"
+msgstr ""
+
+msgid "Zoom out"
+msgstr ""
+
+msgid "Switch between Prepare/Preview"
 msgstr ""
 
 msgid "Plater"
@@ -7026,9 +7807,6 @@ msgstr "Stel het extrudernnumer in voor de objecten en onderdelen"
 
 msgid "Delete objects, parts, modifiers  "
 msgstr "Verwijder objecten, onderdelen, aanpassingen "
-
-msgid "Space"
-msgstr "Ruimte"
 
 msgid "Select the object/part and press space to change the name"
 msgstr ""
@@ -7192,11 +7970,8 @@ msgstr ""
 msgid ""
 "The firmware version is abnormal. Repairing and updating are required before "
 "printing. Do you want to update now? You can also update later on printer or "
-"update next time starting the studio."
+"update next time starting the GalaxySlicer."
 msgstr ""
-"De firmwareversie is abnormaal. Repareren en bijwerken is vereist voor het "
-"afdrukken. Wil je nu updaten? Je kunt ook later op de printer updaten of "
-"updaten wanneer je Bambu Studio de volgende keer start."
 
 msgid "Extension Board"
 msgstr "Extension Board"
@@ -7735,11 +8510,11 @@ msgid "Hostname, IP or URL"
 msgstr "Hostnaam, IP of URL"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field should contain "
-"the hostname, IP address or URL of the printer host instance. Print host "
-"behind HAProxy with basic auth enabled can be accessed by putting the user "
-"name and password into the URL in the following format: https://username:"
-"password@your-octopi-address/"
+"GalaxySlicer can upload G-code files to a printer host. This field should "
+"contain the hostname, IP address or URL of the printer host instance. Print "
+"host behind HAProxy with basic auth enabled can be accessed by putting the "
+"user name and password into the URL in the following format: https://"
+"username:password@your-octopi-address/"
 msgstr ""
 "Slic3r kan G-codebestanden uploaden naar een printerhost. Dit veld moet de "
 "hostnaam, het IP-adres of de URL van de printerhostinstantie bevatten. "
@@ -7759,8 +8534,8 @@ msgid "API Key / Password"
 msgstr "API sleutel / wachtwoord"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field should contain "
-"the API Key or the password required for authentication."
+"GalaxySlicer can upload G-code files to a printer host. This field should "
+"contain the API Key or the password required for authentication."
 msgstr ""
 "Slic3r kan G-codebestanden uploaden naar een printerhost. Dit veld moet de "
 "API-sleutel of het wachtwoord bevatten dat nodig is voor authenticatie."
@@ -7949,6 +8724,29 @@ msgstr ""
 "deze instelling niet actief is en dat de dikte van de bodem bepaald wordt "
 "door het aantal bodem lagen."
 
+msgid "Apply gap fill"
+msgstr ""
+
+msgid ""
+"Enables gap fill for the selected surfaces. The minimum gap length that will "
+"be filled can be controlled from the filter out tiny gaps option below.\n"
+"\n"
+"Options:\n"
+"1. Everywhere: Applies gap fill to top, bottom and internal solid surfaces\n"
+"2. Top and Bottom surfaces: Applies gap fill to top and bottom surfaces "
+"only\n"
+"3. Nowhere: Disables gap fill\n"
+msgstr ""
+
+msgid "Everywhere"
+msgstr ""
+
+msgid "Top and bottom surfaces"
+msgstr ""
+
+msgid "Nowhere"
+msgstr ""
+
 msgid "Force cooling for overhang and bridge"
 msgstr "Forceer koeling voor overhangende delen en bruggen (bridge)"
 
@@ -8067,7 +8865,7 @@ msgid ""
 "value. This can be useful to not let the 'one perimeter on top' trigger on "
 "surface that should be covered only by perimeters. This value can be a mm or "
 "a % of the perimeter extrusion width.\n"
-"Warning: If enabled, artifacts can be created is you have some thin features "
+"Warning: If enabled, artifacts can be created if you have some thin features "
 "on the next layer, like letters. Set this setting to 0 to remove these "
 "artifacts."
 msgstr ""
@@ -8119,6 +8917,23 @@ msgid ""
 "For this setting to be the most effective, it is recomended to set the "
 "Reverse Threshold to 0 so that all internal walls print in alternating "
 "directions on odd layers irrespective of their overhang degree."
+msgstr ""
+
+msgid "Bridge counterbole holes"
+msgstr ""
+
+msgid ""
+"This option creates bridges for counterbore holes, allowing them to be "
+"printed without support. Available modes include:\n"
+"1. None: No bridge is created.\n"
+"2. Partially Bridged: Only a part of the unsupported area will be bridged.\n"
+"3. Sacrificial Layer: A full sacrificial bridge layer is created."
+msgstr ""
+
+msgid "Partially bridged"
+msgstr ""
+
+msgid "Sacrificial layer"
 msgstr ""
 
 msgid "Reverse threshold"
@@ -8252,6 +9067,15 @@ msgstr "Op basis van laag"
 msgid "By object"
 msgstr "Op basis van object"
 
+msgid "Intra-layer order"
+msgstr ""
+
+msgid "Print order within a single layer"
+msgstr ""
+
+msgid "As object list"
+msgstr ""
+
 msgid "Slow printing down for better layer cooling"
 msgstr "Printsnelheid omlaag brengen zodat de laag beter kan koelen"
 
@@ -8353,6 +9177,47 @@ msgid ""
 "using large nozzles."
 msgstr ""
 
+msgid "Don't filter out small internal bridges (experimental)"
+msgstr ""
+
+msgid ""
+"This option can help reducing pillowing on top surfaces in heavily slanted "
+"or curved models.\n"
+"\n"
+"By default, small internal bridges are filtered out and the internal solid "
+"infill is printed directly over the sparse infill. This works well in most "
+"cases, speeding up printing without too much compromise on top surface "
+"quality. \n"
+"\n"
+"However, in heavily slanted or curved models especially where too low sparse "
+"infill density is used, this may result in curling of the unsupported solid "
+"infill, causing pillowing.\n"
+"\n"
+"Enabling this option will print internal bridge layer over slightly "
+"unsupported internal solid infill. The options below control the amount of "
+"filtering, i.e. the amount of internal bridges created.\n"
+"\n"
+"Disabled - Disables this option. This is the default behaviour and works "
+"well in most cases.\n"
+"\n"
+"Limited filtering - Creates internal bridges on heavily slanted surfaces, "
+"while avoiding creating uncessesary interal bridges. This works well for "
+"most difficult models.\n"
+"\n"
+"No filtering - Creates internal bridges on every potential internal "
+"overhang. This option is useful for heavily slanted top surface models. "
+"However, in most cases it creates too many unecessary bridges."
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Limited filtering"
+msgstr ""
+
+msgid "No filtering"
+msgstr ""
+
 msgid "Max bridge length"
 msgstr "Maximale bruglengte"
 
@@ -8392,6 +9257,18 @@ msgid ""
 msgstr ""
 "Voeg dichte vulling toe in de buurt van hellende oppervlakken om de "
 "verticale schaaldikte te garanderen (boven+onder vaste lagen)."
+
+msgid "Further reduce solid infill on walls (experimental)"
+msgstr ""
+
+msgid ""
+"Further reduces any solid infill applied to walls. As there will be very "
+"limited infill supporting solid surfaces, make sure that you are using "
+"adequate number of walls to support the part on sloping surfaces.\n"
+"\n"
+"For heavily sloped surfaces this option is not suitable as it will generate "
+"too thin of a top layer and should be disabled."
+msgstr ""
 
 msgid "Top surface pattern"
 msgstr "Patroon bovenvlak"
@@ -8910,11 +9787,12 @@ msgstr ""
 msgid ""
 "Connect an infill line to an internal perimeter with a short segment of an "
 "additional perimeter. If expressed as percentage (example: 15%) it is "
-"calculated over infill extrusion width. Slic3r tries to connect two close "
-"infill lines to a short perimeter segment. If no such perimeter segment "
-"shorter than infill_anchor_max is found, the infill line is connected to a "
-"perimeter segment at just one side and the length of the perimeter segment "
-"taken is limited to this parameter, but no longer than anchor_length_max. \n"
+"calculated over infill extrusion width. GalaxySlicer tries to connect two "
+"close infill lines to a short perimeter segment. If no such perimeter "
+"segment shorter than infill_anchor_max is found, the infill line is "
+"connected to a perimeter segment at just one side and the length of the "
+"perimeter segment taken is limited to this parameter, but no longer than "
+"anchor_length_max. \n"
 "Set this parameter to zero to disable anchoring perimeters connected to a "
 "single infill line."
 msgstr ""
@@ -8931,11 +9809,12 @@ msgstr ""
 msgid ""
 "Connect an infill line to an internal perimeter with a short segment of an "
 "additional perimeter. If expressed as percentage (example: 15%) it is "
-"calculated over infill extrusion width. Slic3r tries to connect two close "
-"infill lines to a short perimeter segment. If no such perimeter segment "
-"shorter than this parameter is found, the infill line is connected to a "
-"perimeter segment at just one side and the length of the perimeter segment "
-"taken is limited to infill_anchor, but no longer than this parameter. \n"
+"calculated over infill extrusion width. GalaxySlicer tries to connect two "
+"close infill lines to a short perimeter segment. If no such perimeter "
+"segment shorter than this parameter is found, the infill line is connected "
+"to a perimeter segment at just one side and the length of the perimeter "
+"segment taken is limited to infill_anchor, but no longer than this "
+"parameter. \n"
 "If set to 0, the old algorithm for infill connection will be used, it should "
 "create the same result as with 1000 & 0."
 msgstr ""
@@ -9097,9 +9976,6 @@ msgstr ""
 "Deze instelling zorgt ervoor dat de toolhead willekeurig schudt tijdens het "
 "printen van muren, zodat het oppervlak er ruw uitziet. Deze instelling "
 "regelt de \"fuzzy\" positie."
-
-msgid "None"
-msgstr "Geen"
 
 msgid "Contour"
 msgstr "Contour"
@@ -9307,6 +10183,12 @@ msgstr "Het type G-code waarmee de printer compatibel is"
 msgid "Klipper"
 msgstr ""
 
+msgid "Support multi bed types"
+msgstr ""
+
+msgid "Enable this option if you want to use multiple bed types"
+msgstr ""
+
 msgid "Label objects"
 msgstr ""
 
@@ -9481,6 +10363,22 @@ msgstr ""
 
 msgid "This G-code will be used as a custom code"
 msgstr "Deze G-code wordt gebruikt als een aangepaste code"
+
+msgid "Enable Flow Compensation"
+msgstr ""
+
+msgid "Enable flow compensation for small infill areas"
+msgstr ""
+
+msgid "Flow Compensation Model"
+msgstr ""
+
+msgid ""
+"Flow Compensation Model, used to adjust the flow for small infill areas. The "
+"model is expressed as a comma separated pair of values for extrusion length "
+"and flow correction factors, one per line, in the following format: "
+"\"1.234,5.678\""
+msgstr ""
 
 msgid "Maximum speed X"
 msgstr "Maximale snelheid voor X"
@@ -9699,8 +10597,8 @@ msgid "Host Type"
 msgstr "Hosttype"
 
 msgid ""
-"Slic3r can upload G-code files to a printer host. This field must contain "
-"the kind of the host."
+"GalaxySlicer can upload G-code files to a printer host. This field must "
+"contain the kind of the host."
 msgstr ""
 "Slic3r kan G-codebestanden uploaden naar een printerhost. Dit veld moet het "
 "type host bevatten."
@@ -9771,9 +10669,6 @@ msgstr ""
 "Dat betekent dat het sijpelen niet zichtbaar is. Dit kan de retraction times "
 "voor complexe modellen verkorten en printtijd besparen, maar het segmenteren "
 "en het genereren van G-codes langzamer maken."
-
-msgid "Enable"
-msgstr "Inschakelen"
 
 msgid "Filename format"
 msgstr "Bestandsnaam formaat"
@@ -9849,7 +10744,7 @@ msgid ""
 "If you want to process the output G-code through custom scripts, just list "
 "their absolute paths here. Separate multiple scripts with a semicolon. "
 "Scripts will be passed the absolute path to the G-code file as the first "
-"argument, and they can access the Slic3r config settings by reading "
+"argument, and they can access the GalaxySlicer config settings by reading "
 "environment variables."
 msgstr ""
 
@@ -9933,9 +10828,6 @@ msgid "Force a retraction when changes layer"
 msgstr ""
 "Dit forceert retraction (terugtrekken van filament) als er gewisseld wordt "
 "van laag"
-
-msgid "Length"
-msgstr "Lengte"
 
 msgid "Retraction Length"
 msgstr "Terugtrek (retraction) lengte"
@@ -10078,9 +10970,6 @@ msgstr "Dichtstbijzijnde"
 msgid "Aligned"
 msgstr "Uitgelijnd"
 
-msgid "Back"
-msgstr "Achterzijde"
-
 msgid "Random"
 msgstr "Willekeurig"
 
@@ -10117,6 +11006,21 @@ msgstr ""
 msgid ""
 "To minimize the visibility of the seam in a closed loop extrusion, a small "
 "inward movement is executed before the extruder leaves the loop."
+msgstr ""
+
+msgid "Wipe before external loop"
+msgstr ""
+
+msgid ""
+"To minimise visibility of potential overextrusion at the start of an "
+"external perimeter when printing with Outer/Inner or Inner/Outer/Inner wall "
+"print order, the deretraction is performed slightly on the inside from the "
+"start of the external perimeter. That way any potential over extrusion is "
+"hidden from the outside surface. \n"
+"\n"
+"This is useful when printing with Outer/Inner or Inner/Outer/Inner wall "
+"print order as in these modes it is more likely an external perimeter is "
+"printed immediately after a deretraction move."
 msgstr ""
 
 msgid "Wipe speed"
@@ -10837,9 +11741,6 @@ msgstr ""
 "Dit is het volume van het materiaal dat de extruder op de prime toren "
 "uitwerpt."
 
-msgid "Width"
-msgstr "Breedte"
-
 msgid "Width of prime tower"
 msgstr "Dit is de breedte van de prime toren."
 
@@ -10995,8 +11896,8 @@ msgstr ""
 msgid ""
 "Relative extrusion is recommended when using \"label_objects\" option.Some "
 "extruders work better with this option unckecked (absolute extrusion mode). "
-"Wipe tower is only compatible with relative mode. It is always enabled on "
-"BambuLab printers. Default is checked"
+"Wipe tower is only compatible with relative mode. It is recommended on most "
+"printers. Default is checked"
 msgstr ""
 
 msgid ""
@@ -11184,6 +12085,242 @@ msgid "Load custom gcode"
 msgstr ""
 
 msgid "Load custom gcode from json"
+msgstr ""
+
+msgid "Current z-hop"
+msgstr ""
+
+msgid "Contains z-hop present at the beginning of the custom G-code block."
+msgstr ""
+
+msgid ""
+"Position of the extruder at the beginning of the custom G-code block. If the "
+"custom G-code travels somewhere else, it should write to this variable so "
+"PrusaSlicer knows where it travels from when it gets control back."
+msgstr ""
+
+msgid ""
+"Retraction state at the beginning of the custom G-code block. If the custom "
+"G-code moves the extruder axis, it should write to this variable so "
+"PrusaSlicer deretracts correctly when it gets control back."
+msgstr ""
+
+msgid "Extra deretraction"
+msgstr ""
+
+msgid "Currently planned extra extruder priming after deretraction."
+msgstr ""
+
+msgid "Current extruder"
+msgstr ""
+
+msgid "Zero-based index of currently used extruder."
+msgstr ""
+
+msgid "Current object index"
+msgstr ""
+
+msgid ""
+"Specific for sequential printing. Zero-based index of currently printed "
+"object."
+msgstr ""
+
+msgid "Has wipe tower"
+msgstr ""
+
+msgid "Whether or not wipe tower is being generated in the print."
+msgstr ""
+
+msgid "Initial extruder"
+msgstr ""
+
+msgid ""
+"Zero-based index of the first extruder used in the print. Same as "
+"initial_tool."
+msgstr ""
+
+msgid "Initial tool"
+msgstr ""
+
+msgid ""
+"Zero-based index of the first extruder used in the print. Same as "
+"initial_extruder."
+msgstr ""
+
+msgid "Is extruder used?"
+msgstr ""
+
+msgid "Vector of bools stating whether a given extruder is used in the print."
+msgstr ""
+
+msgid "Volume per extruder"
+msgstr ""
+
+msgid "Total filament volume extruded per extruder during the entire print."
+msgstr ""
+
+msgid "Total toolchanges"
+msgstr ""
+
+msgid "Number of toolchanges during the print."
+msgstr ""
+
+msgid "Total volume"
+msgstr ""
+
+msgid "Total volume of filament used during the entire print."
+msgstr ""
+
+msgid "Weight per extruder"
+msgstr ""
+
+msgid ""
+"Weight per extruder extruded during the entire print. Calculated from "
+"filament_density value in Filament Settings."
+msgstr ""
+
+msgid "Total weight"
+msgstr ""
+
+msgid ""
+"Total weight of the print. Calculated from filament_density value in "
+"Filament Settings."
+msgstr ""
+
+msgid "Total layer count"
+msgstr ""
+
+msgid "Number of layers in the entire print."
+msgstr ""
+
+msgid "Number of objects"
+msgstr ""
+
+msgid "Total number of objects in the print."
+msgstr ""
+
+msgid "Number of instances"
+msgstr ""
+
+msgid "Total number of object instances in the print, summed over all objects."
+msgstr ""
+
+msgid "Scale per object"
+msgstr ""
+
+msgid ""
+"Contains a string with the information about what scaling was applied to the "
+"individual objects. Indexing of the objects is zero-based (first object has "
+"index 0).\n"
+"Example: 'x:100% y:50% z:100'."
+msgstr ""
+
+msgid "Input filename without extension"
+msgstr ""
+
+msgid "Source filename of the first object, without extension."
+msgstr ""
+
+msgid ""
+"The vector has two elements: x and y coordinate of the point. Values in mm."
+msgstr ""
+
+msgid ""
+"The vector has two elements: x and y dimension of the bounding box. Values "
+"in mm."
+msgstr ""
+
+msgid "First layer convex hull"
+msgstr ""
+
+msgid ""
+"Vector of points of the first layer convex hull. Each element has the "
+"following format:'[x, y]' (x and y are floating-point numbers in mm)."
+msgstr ""
+
+msgid "Bottom-left corner of first layer bounding box"
+msgstr ""
+
+msgid "Top-right corner of first layer bounding box"
+msgstr ""
+
+msgid "Size of the first layer bounding box"
+msgstr ""
+
+msgid "Bottom-left corner of print bed bounding box"
+msgstr ""
+
+msgid "Top-right corner of print bed bounding box"
+msgstr ""
+
+msgid "Size of the print bed bounding box"
+msgstr ""
+
+msgid "Timestamp"
+msgstr ""
+
+msgid "String containing current time in yyyyMMdd-hhmmss format."
+msgstr ""
+
+msgid "Day"
+msgstr ""
+
+msgid "Hour"
+msgstr ""
+
+msgid "Minute"
+msgstr ""
+
+msgid "Print preset name"
+msgstr ""
+
+msgid "Name of the print preset used for slicing."
+msgstr ""
+
+msgid "Filament preset name"
+msgstr ""
+
+msgid ""
+"Names of the filament presets used for slicing. The variable is a vector "
+"containing one name for each extruder."
+msgstr ""
+
+msgid "Printer preset name"
+msgstr ""
+
+msgid "Name of the printer preset used for slicing."
+msgstr ""
+
+msgid "Physical printer name"
+msgstr ""
+
+msgid "Name of the physical printer used for slicing."
+msgstr ""
+
+msgid "Layer number"
+msgstr ""
+
+msgid "Index of the current layer. One-based (i.e. first layer is number 1)."
+msgstr ""
+
+msgid "Layer z"
+msgstr ""
+
+msgid ""
+"Height of the current layer above the print bed, measured to the top of the "
+"layer."
+msgstr ""
+
+msgid "Maximal layer z"
+msgstr ""
+
+msgid "Height of the last layer above the print bed."
+msgstr ""
+
+msgid "Filament extruder ID"
+msgstr ""
+
+msgid "The current extruder ID. The same as current_extruder."
 msgstr ""
 
 msgid "Error in zip archive"
@@ -12138,7 +13275,7 @@ msgstr ""
 msgid ""
 "We would rename the presets as \"Vendor Type Serial @printer you "
 "selected\". \n"
-"To add preset for more prinetrs, Please go to printer selection"
+"To add preset for more printers, Please go to printer selection"
 msgstr ""
 
 msgid "Create Printer/Nozzle"
@@ -12154,9 +13291,6 @@ msgid "Create from Template"
 msgstr ""
 
 msgid "Create Based on Current Printer"
-msgstr ""
-
-msgid "wiki"
 msgstr ""
 
 msgid "Import Preset"
@@ -12331,10 +13465,10 @@ msgstr ""
 msgid "Export Configs"
 msgstr ""
 
-msgid "Printer config bundle(.bbscfg)"
+msgid "Printer config bundle(.galaxy_printer)"
 msgstr ""
 
-msgid "Filament bundle(.bbsflmt)"
+msgid "Filament bundle(.galaxy_filament)"
 msgstr ""
 
 msgid "Printer presets(.zip)"
@@ -12373,7 +13507,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Printer and all the filament&process presets that belongs to the printer. \n"
+"Printer and all the filament&&process presets that belongs to the printer. \n"
 "Can be shared with others."
 msgstr ""
 
@@ -12466,6 +13600,9 @@ msgid "Copy preset from filament"
 msgstr ""
 
 msgid "The filament choice not find filament preset, please reselect it"
+msgstr ""
+
+msgid "[Delete Required]"
 msgstr ""
 
 msgid "Edit Preset"
@@ -12693,11 +13830,31 @@ msgid ""
 "Did you know that GalaxySlicer can support Air filtration/Exhuast Fan?"
 msgstr ""
 
+#: resources/data/hints.ini: [hint:G-code window]
+msgid ""
+"G-code window\n"
+"You can turn on/off the G-code window by pressing the <b>C</b> key."
+msgstr ""
+
+#: resources/data/hints.ini: [hint:Switch workspaces]
+msgid ""
+"Switch workspaces\n"
+"You can switch between <b>Prepare</b> and <b>Preview</b> workspaces by "
+"pressing the <b>Tab</b> key."
+msgstr ""
+
 #: resources/data/hints.ini: [hint:How to use keyboard shortcuts]
 msgid ""
 "How to use keyboard shortcuts\n"
 "Did you know that Galaxy Slicer offers a wide range of keyboard shortcuts "
 "and 3D scene operations."
+msgstr ""
+
+#: resources/data/hints.ini: [hint:Reverse on odd]
+msgid ""
+"Reverse on odd\n"
+"Did you know that <b>Reverse on odd</b> feature can significantly improve "
+"the surface quality of your overhangs?"
 msgstr ""
 
 #: resources/data/hints.ini: [hint:Cut Tool]
@@ -12963,3 +14120,33 @@ msgid ""
 "ABS, appropriately increasing the heatbed temperature can reduce the "
 "probability of warping."
 msgstr ""
+
+#~ msgid ""
+#~ "The firmware versio l. Repairing and updating are required before "
+#~ "printing. Do you want to update now? You can also update later on printer "
+#~ "or update next time starting the GalaxySlicer."
+#~ msgstr ""
+#~ "De firmwareversie is abnormaal. Repareren en bijwerken is vereist voor "
+#~ "het afdrukken. Wil je nu updaten? Je kunt ook later op de printer updaten "
+#~ "of updaten wanneer je Bambu Studio de volgende keer start."
+
+#~ msgid "Orca Cube"
+#~ msgstr "Orca-kubus"
+
+#~ msgid "Depth ratio"
+#~ msgstr "Depth ratio"
+
+#~ msgid "Prizm"
+#~ msgstr "Prizm"
+
+#~ msgid "connector is out of cut contour"
+#~ msgstr "connector is out of cut contour"
+
+#~ msgid "connectors are out of cut contour"
+#~ msgstr "connectors are out of cut contour"
+
+#~ msgid "connector is out of object"
+#~ msgstr "connector is out of object"
+
+#~ msgid "connectors is out of object"
+#~ msgstr "Connectors must be on object surface."

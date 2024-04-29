@@ -88,7 +88,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/deps/build
         shell: cmd
-        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip GalaxySlicer_dep.zip ${{ github.workspace }}/deps/build/GalaxySlicer_dep'
+        run: ${{ github.workspace }}/tools/7z.exe a -tzip GalaxySlicer_dep.zip ${{ github.workspace }}/deps/build/GalaxySlicer_dep'
         
       - name: Upload Windows dependencies
         if: matrix.os == 'windows-latest'
@@ -115,7 +115,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/build
         shell: cmd
-        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip GalaxySlicer_WINx64.zip ${{ github.workspace }}/build/GalaxySlicer/'
+        run: ${{ github.workspace }}/tools/7z.exe a -tzip GalaxySlicer_WINx64.zip ${{ github.workspace }}/build/GalaxySlicer/'
         
       - name: Upload Windows Slicer Build
         if: matrix.os == 'windows-latest'

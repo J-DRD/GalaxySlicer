@@ -1,6 +1,25 @@
-on:
-push:
-    - master
+name: Build Orca
+
+on: 
+    push:
+      branches: 
+       - master
+      paths:
+       - 'src/**'
+       - '**/CMakeLists.txt'
+       - 'version.inc'
+       - 'bbl/**'
+       - 'resources/**'
+
+    pull_request:
+      branches: 
+       - main 
+      paths:
+       - 'src/**'
+       - '**/CMakeLists.txt'
+       - 'version.inc'
+       - 'bbl/**'
+       - 'resources/**'
 
 jobs:
   build_orca:

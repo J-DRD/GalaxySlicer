@@ -71,7 +71,7 @@ jobs:
             choco install strawberryperl
             mkdir ${{ github.workspace }}/deps/build
             mkdir ${{ github.workspace }}/deps/build/GalaxySlicer_dep
-            .\build_release_vs2022.bat deps
+            ${{ github.workspace }}/./build_release_vs2022.bat deps
             
       - name: Cleaning up the Windows Build Directory
         if: matrix.os == 'windows-latest'
@@ -88,7 +88,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/deps/build
         shell: cmd
-        run: ${{ github.workspace }}/tools/7z.exe a -tzip GalaxySlicer_dep.zip ${{ github.workspace }}/deps/build/GalaxySlicer_dep'
+        run: ${{ github.workspace }}/tools/./7z.exe a -tzip GalaxySlicer_dep.zip ${{ github.workspace }}/deps/build/GalaxySlicer_dep'
         
       - name: Upload Windows dependencies
         if: matrix.os == 'windows-latest'
@@ -109,13 +109,13 @@ jobs:
 
       - name: Build GalaxySlicer
         working-directory: ${{ github.workspace }}
-        run: .\build_release_vs2022.bat slicer
+        run: ${{ github.workspace }}/tools/./build_release_vs2022.bat slicer
 
       - name: Pack Windows Slicer Build
         if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/build
         shell: cmd
-        run: ${{ github.workspace }}/tools/7z.exe a -tzip GalaxySlicer_WINx64.zip ${{ github.workspace }}/build/GalaxySlicer/'
+        run: ${{ github.workspace }}/tools/./7z.exe a -tzip GalaxySlicer_WINx64.zip ${{ github.workspace }}/build/GalaxySlicer/'
         
       - name: Upload Windows Slicer Build
         if: matrix.os == 'windows-latest'

@@ -195,6 +195,7 @@ pushd deps/build
          fi
      popd
      echo "done"
+fi    
 
     # FIXME: only clean deps if compiling succeeds; otherwise reruns waste tonnes of time!
     # clean deps
@@ -202,6 +203,7 @@ pushd deps/build
     # rm -rf dep_*
 popd
 echo "done"
+fi
 
 # Create main "build" directory
 if [ ! -d "build" ]

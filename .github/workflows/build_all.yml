@@ -115,7 +115,7 @@ jobs:
       
             
       - name: Invoke Reusable Workflow
-        uses: ${{ github.workspace }}/.github/workflows/build_check_cache.yml@master/head
+        uses: ${{ github.workspace }}/.github/workflows/build_check_cache.yml@master
         with:
           os: ${{ matrix.os }}
           arch: ${{ matrix.arch }}

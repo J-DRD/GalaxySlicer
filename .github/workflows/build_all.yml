@@ -57,4 +57,3 @@ jobs:
           os: ${{ matrix.os }}
           arch: ${{ matrix.arch }}
           build-deps-only: ${{ github.event.inputs.build-deps-only || false }}
-        secrets: inherit

@@ -1,5 +1,4 @@
-name: Build all
-
+name: Build Windows x64 Slicer
 on:
   push:
     branches:
@@ -44,13 +43,12 @@ concurrency:
 
 jobs:
 
-  build_deps:
+  build_slicer:
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            arch: x86_64
     runs-on: ${{ matrix.os }}
 
     steps:

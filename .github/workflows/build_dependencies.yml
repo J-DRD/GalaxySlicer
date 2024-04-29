@@ -3,13 +3,13 @@ name: Build dependencies
 on:
   pull_request:
     branches:
-      - main
+      - master
     paths:
       - 'deps/**'
       - '.github/workflows/**'
   push:
     branches:
-      - main
+      - master
     paths:
       - 'deps/**'
       - '.github/workflows/**'

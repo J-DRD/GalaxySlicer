@@ -48,11 +48,12 @@ jobs:
           - os: macos-12
             arch: arm64
     runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
       - name: Invoke Reusable Workflow
-        uses: ./.github/workflows/build_check_cache.yml@main
+        uses: ./.github/workflows/build_check_cache.yml@refs/heads/main
         with:
           os: ${{ matrix.os }}
           arch: ${{ matrix.arch }}

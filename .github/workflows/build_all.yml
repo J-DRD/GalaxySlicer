@@ -3,6 +3,7 @@ name: Build all
 on:
   push:
     branches:
+      - main
       - master
       - release/*
     paths:
@@ -12,9 +13,12 @@ on:
       - 'version.inc'
       - 'localization/**'
       - 'resources/**'
+      - 'bbl/**'
       - ".github/workflows/build_*.yml"
+      
   pull_request:
     branches:
+      - main
       - master
       - release/*
     paths:
@@ -22,7 +26,11 @@ on:
       - 'src/**'
       - '**/CMakeLists.txt'
       - 'version.inc'
+      - 'localization/**'
+      - 'resources/**'
+      - 'bbl/**'
       - ".github/workflows/build_*.yml"
+      
   workflow_dispatch:
     inputs:
       build-deps-only:
@@ -35,6 +43,76 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+  build_deps:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: windows-2022
+            arch: x86_64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: setup dev on Windows
+        if: matrix.os == 'windows-2022'
+        uses: ilammy/msvc-dev-cmd@v1     
+    
+      - name: setup msbuild on Windows
+        if: matrix.os == 'windows-2022'
+        uses: microsoft/setup-msbuild@v1.1
+
+      # Build Windows dependencies
+      - name: Build on Windows
+        if: matrix.os == 'windows-2022'
+        working-directory: ${{ github.workspace }}
+        run: |
+            choco install strawberryperl
+            mkdir ${{ github.workspace }}/deps/build
+            mkdir ${{ github.workspace }}/deps/build/GalaxySlicer_dep
+            .\build_release_vs2022.bat deps
+            
+      - name: Cleaning up the Windows Build Directory
+        if: matrix.os == 'windows-2022'
+        working-directory: ${{ github.workspace }}/deps/build
+        shell: cmd
+        run: |
+            rmdir /s /q dep_wxWidgets-prefix
+            rmdir /s /q dep_OpenSSL-prefix
+            rmdir /s /q dep_OCCT-prefix
+            rmdir /s /q dep_CGAL-prefix
+            rmdir /s /q dep_Boost-prefix
+        
+      - name: Pack Windows dependencies
+        if: matrix.os == 'windows-2022'
+        working-directory: ${{ github.workspace }}/deps/build
+        shell: cmd
+        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip GalaxySlicer_dep.zip ${{ github.workspace }}/deps/build/GalaxySlicer_dep'
+        
+      - name: Upload Windows dependencies
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-artifact@v3
+        with:
+          name: GalaxySlicer_dep
+          path: ${{ github.workspace }}/deps/build/GalaxySlicer_dep.zip
+
+      - name: Get the date on Ubuntu and macOS
+        if: matrix.os != 'windows-latest'
+        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Get the date on Windows
+        if: matrix.os == 'windows-latest'
+        run: echo "date=$(Get-Date -Format 'yyyyMMdd')" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+        shell: pwsh
+
+      - name: Build GalaxySlicer
+        working-directory: ${{ github.workspace }}
+        run: .\build_release_vs2022.bat slicer
+
   build_all:
     name: Build All
     strategy:
@@ -48,7 +126,6 @@ jobs:
           - os: macos-12
             arch: arm64
     runs-on: ${{ matrix.os }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -57,44 +134,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: microsoft/setup-msbuild@v1.1
 
-      - name: Get the date on Ubuntu and macOS
-        if: matrix.os != 'windows-latest'
-        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Get the date on Windows
-        if: matrix.os == 'windows-latest'
-        run: echo "date=$(Get-Date -Format 'yyyyMMdd')" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
-        shell: pwsh
-
-      # Specific build steps for each OS
-      - name: Build on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-            choco install strawberryperl
-            mkdir deps/build
-            mkdir deps/build/OrcaSlicer_dep
-            .\build_release_vs2022.bat deps
-            .\build_release_vs2022.bat pack
-
-      - name: Build on Mac ${{ matrix.arch }}
-        if: matrix.os == 'macos-12'
-        run: |
-            brew install cmake git gettext automake texinfo
-            mkdir -p deps/build_${{ matrix.arch }}/OrcaSlicer_dep_${{ matrix.arch }}
-            ./build_release_macos.sh -dp -a ${{ matrix.arch }} -t 10.15
-
       - name: Build on Ubuntu
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-latest'
         run: |
             sudo apt-get update
             sudo apt-get install -y build-essential cmake git
             mkdir -p deps/build/destdir
-            ./BuildLinux.sh -dr
-
-      - name: Invoke Reusable Workflow
-        uses: ./.github/workflows/build_check_cache.yml@master
-        with:
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          build-deps-only: ${{ github.event.inputs.build-deps-only || false }}
+            sudo bash ./BuildLinux.sh -u
+            sudo bash ./BuildLinux.sh -d
+            sudo bash ./BuildLinux.sh -i            
+            

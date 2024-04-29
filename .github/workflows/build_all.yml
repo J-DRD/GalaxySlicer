@@ -46,10 +46,10 @@ jobs:
 
   build_deps:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
-          - os: windows-2022
+          - os: windows-latest
             arch: x86_64
     runs-on: ${{ matrix.os }}
 
@@ -58,16 +58,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: setup dev on Windows
-        if: matrix.os == 'windows-2022'
+        if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1     
     
       - name: setup msbuild on Windows
-        if: matrix.os == 'windows-2022'
+        if: matrix.os == 'windows-latest'
         uses: microsoft/setup-msbuild@v1.1
 
       # Build Windows dependencies
       - name: Build on Windows
-        if: matrix.os == 'windows-2022'
+        if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}
         run: |
             choco install strawberryperl
@@ -76,7 +76,7 @@ jobs:
             .\build_release_vs2022.bat deps
             
       - name: Cleaning up the Windows Build Directory
-        if: matrix.os == 'windows-2022'
+        if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/deps/build
         shell: cmd
         run: |
@@ -87,13 +87,13 @@ jobs:
             rmdir /s /q dep_Boost-prefix
         
       - name: Pack Windows dependencies
-        if: matrix.os == 'windows-2022'
+        if: matrix.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/deps/build
         shell: cmd
         run: '"C:/Program Files/7-Zip/7z.exe" a -tzip GalaxySlicer_dep.zip ${{ github.workspace }}/deps/build/GalaxySlicer_dep'
         
       - name: Upload Windows dependencies
-        if: matrix.os == 'windows-2022'
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
           name: GalaxySlicer_dep
@@ -113,26 +113,30 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: .\build_release_vs2022.bat slicer
 
-  build_all:
-    name: Build All
+      - name: Pack Windows Slicer Build
+        if: matrix.os == 'windows-latest'
+        working-directory: ${{ github.workspace }}/build
+        shell: cmd
+        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip GalaxySlicer_WINx64.zip ${{ github.workspace }}/build/GalaxySlicer/'
+        
+      - name: Upload Windows Slicer Build
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: GalaxySlicer_WINx64
+          path: ${{ github.workspace }}/build/GalaxySlicer_WINx64.zip
+
+  build_linux_appimage:
+    name: Build Linux AppImage
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-          - os: windows-latest
-          - os: macos-12
-            arch: x86_64
-          - os: macos-12
-            arch: arm64
+          - os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Setup dev on Windows
-        if: matrix.os == 'windows-latest'
-        uses: microsoft/setup-msbuild@v1.1
 
       - name: Build on Ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -143,4 +147,10 @@ jobs:
             sudo bash ./BuildLinux.sh -u
             sudo bash ./BuildLinux.sh -d
             sudo bash ./BuildLinux.sh -i            
-            
+        
+      - name: Upload AppImage Artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: AppImage
+          path: ${{ github.workspace }}/deps/build/destdir
